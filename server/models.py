@@ -101,3 +101,19 @@ class Item(db.Model):
 
     def __repr__(self):
         return f"<Item {self.name}>"
+
+        class MenuOutletItem(db.Model):
+    __tablename__ = "menu_outlet_items"
+
+    id = db.Column(db.Integer, primary_key=True)
+    outlet_id = db.Column(db.Integer, db.ForeignKey("outlets.id"), nullable=False)
+    item_id = db.Column(db.Integer, db.ForeignKey("items.id"), nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint("outlet_id", "item_id", name="unique_outlet_item"),
+    )
+
+    orders = db.relationship("Order", backref="menu_item", lazy=True)
+
+    def __repr__(self):
+        return f"<MenuOutletItem outlet={self.outlet_id} item={self.item_id}>"
