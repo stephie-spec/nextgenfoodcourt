@@ -66,3 +66,20 @@ class Customer(db.Model):
 
     def __repr__(self):
         return f"<Customer {self.email}>"
+class Outlet(db.Model):
+    __tablename__ = "outlets"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), nullable=False)
+    category_name = db.Column(Enum(CuisineCategory), nullable=False)
+    owner_id = db.Column(db.Integer, db.ForeignKey("owner.id"), nullable=False)
+
+    menu_items = db.relationship(
+        "MenuOutletItem",
+        backref="outlet",
+        cascade="all, delete-orphan",
+        lazy=True
+    )
+
+    def __repr__(self):
+        return f"<Outlet {self.name}>"
