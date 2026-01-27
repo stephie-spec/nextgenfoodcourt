@@ -117,3 +117,31 @@ class Item(db.Model):
 
     def __repr__(self):
         return f"<MenuOutletItem outlet={self.outlet_id} item={self.item_id}>"
+class Order(db.Model):
+    __tablename__ = "orders"
+
+    id = db.Column(db.Integer, primary_key=True)
+    menu_outlet_item_id = db.Column(
+        db.Integer,
+        db.ForeignKey("menu_outlet_items.id"),
+        nullable=False
+    )
+    customer_id = db.Column(
+        db.Integer,
+        db.ForeignKey("customer.id"),
+        nullable=False
+    )
+    quantity = db.Column(db.Integer, nullable=False)
+    status = db.Column(Enum(OrderStatus), default=OrderStatus.pending)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    estimated = db.Column(db.DateTime)
+
+    table_booking = db.relationship(
+        "TableBooking",
+        backref="order",
+        uselist=False,
+        cascade="all, delete-orphan"
+    )
+
+    def __repr__(self):
+        return f"<Order {self.id}>"
