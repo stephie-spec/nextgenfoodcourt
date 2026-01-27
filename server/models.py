@@ -83,3 +83,21 @@ class Outlet(db.Model):
 
     def __repr__(self):
         return f"<Outlet {self.name}>"
+class Item(db.Model):
+    __tablename__ = "items"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), nullable=False)
+    image = db.Column(db.String(255))
+    price = db.Column(db.Integer, nullable=False)
+    is_available = db.Column(db.Boolean, default=True)
+
+    menu_links = db.relationship(
+        "MenuOutletItem",
+        backref="item",
+        cascade="all, delete-orphan",
+        lazy=True
+    )
+
+    def __repr__(self):
+        return f"<Item {self.name}>"
