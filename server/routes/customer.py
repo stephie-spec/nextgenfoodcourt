@@ -1,6 +1,6 @@
 from flask import request
 from flask_restful import Resource
-from server.models import db, Customer, Order, Item, check_password, hash_password, password_hashed
+from server.models import db, Customer, Order, Item, check_password, hash_password, password_hashed, MenuOutletItem as MOI, Outlet
 # from flask_cors import cross_origin
 
 
@@ -41,13 +41,36 @@ class CustomerLogin(Resource):
 # View list of all outlets
 class ListOutlets(Resource):
 
-    pass
+    def get(self):
+
+        outlets = Outlet.query.all()
+        outlet_list = [{
+            "name": outlet.name,
+            "cuisine": outlet.category_name
+        } for outlet in outlets]
+
+        return {"outlets": outlet_list}, 200
 
 
-# View menu of a specific outlet
+# View the menu of a specific outlet
 class OutletMenu(Resource):
 
-    pass
+    def get(self, outlet_id):
+
+        outlet = Outlet.query.get(outlet_id)
+        if not outlet:
+            return {"message": "Outlet not found."}, 404
+        
+        # MOI -MenuOutletItem
+        menu_items = MOI.query.filter_by(outlet_id=outlet.id).all()
+        menu = [{
+            "item_name": item.name,
+            "price": item.price,
+            "image": item.image,
+            "price": item.price
+        } for item in menu_items]
+
+        return {"outlet": outlet.name, "menu": menu}, 200
 
 
 # Place an order
