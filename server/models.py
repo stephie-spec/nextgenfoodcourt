@@ -145,3 +145,20 @@ class Order(db.Model):
 
     def __repr__(self):
         return f"<Order {self.id}>"
+        class TableBooking(db.Model):
+    __tablename__ = "table_bookings"
+
+    id = db.Column(db.Integer, primary_key=True)
+    order_id = db.Column(
+        db.Integer,
+        db.ForeignKey("orders.id"),
+        unique=True,
+        nullable=False
+    )
+    table_number = db.Column(db.Integer, nullable=False)
+    capacity = db.Column(db.Integer, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    duration = db.Column(db.Interval)
+
+    def __repr__(self):
+        return f"<TableBooking table={self.table_number}>"
