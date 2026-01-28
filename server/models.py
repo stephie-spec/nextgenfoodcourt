@@ -21,7 +21,7 @@ class Owner(db.Model):
 
     outlets = db.relationship(
         "Outlet",
-        backref="owner",
+        back_populates="owner",
         cascade="all, delete-orphan",
         lazy=True
     )
@@ -38,7 +38,7 @@ class Customer(db.Model):
 
     orders = db.relationship(
         "Order",
-        backref="customer",
+        back_populates="customer",
         cascade="all, delete-orphan",
         lazy=True
     )
@@ -53,9 +53,13 @@ class Outlet(db.Model):
     category_name = db.Column(db.String(120))
     owner_id = db.Column(db.Integer, db.ForeignKey("owner.id"), nullable=False)
 
+    owner = db.relationship(
+        "Owner",
+        back_populates="outlet"
+    )
     menu_items = db.relationship(
         "MenuOutletItem",
-        backref="outlet",
+        back_populates="outlet",
         cascade="all, delete-orphan",
         lazy=True
     )
@@ -73,7 +77,7 @@ class Item(db.Model):
 
     menu_links = db.relationship(
         "MenuOutletItem",
-        backref="item",
+        back_populates="item",
         cascade="all, delete-orphan",
         lazy=True
     )
@@ -88,14 +92,29 @@ class MenuOutletItem(db.Model):
     outlet_id = db.Column(db.Integer, db.ForeignKey("outlets.id"), nullable=False)
     item_id = db.Column(db.Integer, db.ForeignKey("items.id"), nullable=False)
 
+    outlet = db.relationship(
+        "Outlet",
+        back_populates="menu_items"
+    )
+
+    item = db.relationship(
+        "Item",
+        back_populates="menu_links"
+    )
+
+    orders = db.relationship(
+        "Order",
+        back_populates="menu_item",
+        lazy=True
+    )
+
     __table_args__ = (
         UniqueConstraint("outlet_id", "item_id", name="unique_outlet_item"),
     )
 
-    orders = db.relationship("Order", backref="menu_item", lazy=True)
-
     def __repr__(self):
         return f"<MenuOutletItem outlet={self.outlet_id} item={self.item_id}>"
+
 class Order(db.Model):
     __tablename__ = "orders"
 
@@ -115,15 +134,26 @@ class Order(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     estimated = db.Column(db.DateTime)
 
+    customer = db.relationship(
+        "Customer",
+        back_populates="orders"
+    )
+
+    menu_item = db.relationship(
+        "MenuOutletItem",
+        back_populates="orders"
+    )
+
     table_booking = db.relationship(
         "TableBooking",
-        backref="order",
+        back_populates="order",
         uselist=False,
         cascade="all, delete-orphan"
     )
 
     def __repr__(self):
         return f"<Order {self.id}>"
+
 class TableBooking(db.Model):
     __tablename__ = "table_bookings"
 
@@ -138,6 +168,10 @@ class TableBooking(db.Model):
     capacity = db.Column(db.Integer, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     duration = db.Column(db.Interval)
+    order = db.relationship(
+        "Order",
+        back_populates="table_booking"
+    )
 
     def __repr__(self):
         return f"<TableBooking table={self.table_number}>"
