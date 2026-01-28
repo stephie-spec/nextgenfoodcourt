@@ -7,7 +7,6 @@ export default function OutletCard({ outlet, isFavorite, onToggleFavorite }) {
   return (
     <div className="col-md-6 col-lg-4 mb-4">
       <div className="card h-100 shadow-sm">
-        {/* Outlet Header */}
         <div className="card-header bg-white">
           <div className="d-flex justify-content-between align-items-start">
             <div className="d-flex align-items-center">
@@ -27,7 +26,6 @@ export default function OutletCard({ outlet, isFavorite, onToggleFavorite }) {
         </div>
         
         <div className="card-body">
-          {/* Rating and Delivery */}
           <div className="d-flex justify-content-between align-items-center mb-3">
             <div className="d-flex align-items-center">
               <span className="text-warning me-1">
@@ -42,7 +40,6 @@ export default function OutletCard({ outlet, isFavorite, onToggleFavorite }) {
             </div>
           </div>
           
-          {/* Tags */}
           <div className="mb-3">
             <div className="d-flex flex-wrap gap-1">
               {outlet.tags.map((tag, index) => (
@@ -53,7 +50,6 @@ export default function OutletCard({ outlet, isFavorite, onToggleFavorite }) {
             </div>
           </div>
           
-          {/* Location and Timing */}
           <div className="mb-3">
             <div className="mb-2">
               <i className="bi bi-geo-alt me-1"></i>
@@ -71,7 +67,6 @@ export default function OutletCard({ outlet, isFavorite, onToggleFavorite }) {
             </div>
           </div>
           
-          {/* Action Buttons */}
           <div className="d-grid gap-2">
             <button 
               className="btn btn-primary"
