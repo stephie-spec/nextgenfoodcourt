@@ -94,7 +94,7 @@ class Item(db.Model):
     def __repr__(self):
         return f"<Item {self.name}>"
 
-        class MenuOutletItem(db.Model):
+class MenuOutletItem(db.Model):
     __tablename__ = "menu_outlet_items"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -137,7 +137,7 @@ class Order(db.Model):
 
     def __repr__(self):
         return f"<Order {self.id}>"
-        class TableBooking(db.Model):
+class TableBooking(db.Model):
     __tablename__ = "table_bookings"
 
     id = db.Column(db.Integer, primary_key=True)
