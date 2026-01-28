@@ -1,7 +1,7 @@
 
 import jwt
 from flask import current_app
-from models import Onwer, Customer
+from models import Owner, Customer
 
 
 def decode_token (token) :
