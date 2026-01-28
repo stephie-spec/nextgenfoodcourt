@@ -11,15 +11,7 @@ class OrderStatus(enum.Enum):
     completed = "completed"
 
 
-class CuisineCategory(enum.Enum):
-    kenyan = "kenyan"
-    ethiopian = "ethiopian"
-    nigerian = "nigerian"
-    indian = "indian"
-    chinese = "chinese"
-    italian = "italian"
-    american = "american"
-    other = "other"
+
 class Owner(db.Model):
     __tablename__ = "owner"
 
@@ -71,7 +63,7 @@ class Outlet(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), nullable=False)
-    category_name = db.Column(Enum(CuisineCategory), nullable=False)
+    category_name = db.Column(db.String(120))
     owner_id = db.Column(db.Integer, db.ForeignKey("owner.id"), nullable=False)
 
     menu_items = db.relationship(
