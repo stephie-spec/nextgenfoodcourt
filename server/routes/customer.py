@@ -66,8 +66,7 @@ class OutletMenu(Resource):
         menu = [{
             "item_name": item.name,
             "price": item.price,
-            "image": item.image,
-            "price": item.price
+            "image": item.image
         } for item in menu_items]
 
         return {"outlet": outlet.name, "menu": menu}, 200
@@ -98,5 +97,5 @@ api.add_resource(CustomerLogin, "/api/customer/login")
 api.add_resource(ListOutlets, "/api/customer/outlets")
 api.add_resource(OutletMenu, "/api/customer/outlet/<int:outlet_id>/menu")
 api.add_resource(CreateOrder, "/api/customer/order")
-api.add_resource(CustomerOrders, "/api/customer/orders")
+api.add_resource(CustomerOrders, "/api/customer/my_orders")
 api.add_resource(CustomerTableBooking, "/api/customer/book-table")
