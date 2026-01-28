@@ -2,7 +2,6 @@ from datetime import datetime
 import enum
 
 from flask_sqlalchemy import SQLAlchemy
-from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import Enum, UniqueConstraint
 
 db = SQLAlchemy()
@@ -26,15 +25,9 @@ class Owner(db.Model):
         cascade="all, delete-orphan",
         lazy=True
     )
-
-    def set_password(self, password):
-        self.password_hashed = generate_password_hash(password)
-
-    def check_password(self, password):
-        return check_password_hash(self.password_hashed, password)
-
     def __repr__(self):
         return f"<Owner {self.email}>"
+
 class Customer(db.Model):
     __tablename__ = "customer"
 
@@ -49,15 +42,9 @@ class Customer(db.Model):
         cascade="all, delete-orphan",
         lazy=True
     )
-
-    def set_password(self, password):
-        self.password_hashed = generate_password_hash(password)
-
-    def check_password(self, password):
-        return check_password_hash(self.password_hashed, password)
-
     def __repr__(self):
         return f"<Customer {self.email}>"
+
 class Outlet(db.Model):
     __tablename__ = "outlets"
 
