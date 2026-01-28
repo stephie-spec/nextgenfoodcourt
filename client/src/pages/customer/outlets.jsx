@@ -25,11 +25,11 @@ export default function CustomerOutlets() {
       rating: 4.5,
       reviewCount: 245,
       delivery_time: "20-30 min",
-      image: "🍔",
+      image: " ",
       isOpen: true,
       specialOffer: "20% OFF",
-      minOrder: "₹199",
-      deliveryFee: "₹40",
+      minOrder: "Ksh 199",
+      deliveryFee: "Ksh 40",
       tags: ["Burgers", "Shakes", "Fries"]
     },
     { 
@@ -42,11 +42,11 @@ export default function CustomerOutlets() {
       rating: 4.7,
       reviewCount: 189,
       delivery_time: "25-35 min",
-      image: "🍕",
+      image: " ",
       isOpen: true,
       specialOffer: "Buy 1 Get 1 Free",
-      minOrder: "₹299",
-      deliveryFee: "₹50",
+      minOrder: "299",
+      deliveryFee: "Ksh 50",
       tags: ["Pizza", "Pasta"]
     },
     { 
@@ -59,11 +59,11 @@ export default function CustomerOutlets() {
       rating: 4.3,
       reviewCount: 167,
       delivery_time: "15-25 min",
-      image: "🍜",
+      image: "",
       isOpen: true,
       specialOffer: null,
-      minOrder: "₹249",
-      deliveryFee: "₹35",
+      minOrder: "Ksh 249",
+      deliveryFee: "Ksh 35",
       tags: ["Noodles", "Rice"]
     }
   ];
@@ -72,7 +72,7 @@ export default function CustomerOutlets() {
   const customerStats = {
     totalOrders: 24,
     favoriteOutlet: "Burger Paradise",
-    totalSpent: "₹8,540"
+    totalSpent: "Ksh 8,540"
   };
 
   // State
