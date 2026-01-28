@@ -2,7 +2,6 @@ from datetime import datetime
 import enum
 
 from flask_sqlalchemy import SQLAlchemy
-from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import Enum, UniqueConstraint
 
 db = SQLAlchemy()
@@ -11,15 +10,7 @@ class OrderStatus(enum.Enum):
     completed = "completed"
 
 
-class CuisineCategory(enum.Enum):
-    kenyan = "kenyan"
-    ethiopian = "ethiopian"
-    nigerian = "nigerian"
-    indian = "indian"
-    chinese = "chinese"
-    italian = "italian"
-    american = "american"
-    other = "other"
+
 class Owner(db.Model):
     __tablename__ = "owner"
 
@@ -30,19 +21,13 @@ class Owner(db.Model):
 
     outlets = db.relationship(
         "Outlet",
-        backref="owner",
+        back_populates="owner",
         cascade="all, delete-orphan",
         lazy=True
     )
-
-    def set_password(self, password):
-        self.password_hashed = generate_password_hash(password)
-
-    def check_password(self, password):
-        return check_password_hash(self.password_hashed, password)
-
     def __repr__(self):
         return f"<Owner {self.email}>"
+
 class Customer(db.Model):
     __tablename__ = "customer"
 
@@ -53,30 +38,28 @@ class Customer(db.Model):
 
     orders = db.relationship(
         "Order",
-        backref="customer",
+        back_populates="customer",
         cascade="all, delete-orphan",
         lazy=True
     )
-
-    def set_password(self, password):
-        self.password_hashed = generate_password_hash(password)
-
-    def check_password(self, password):
-        return check_password_hash(self.password_hashed, password)
-
     def __repr__(self):
         return f"<Customer {self.email}>"
+
 class Outlet(db.Model):
     __tablename__ = "outlets"
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), nullable=False)
-    category_name = db.Column(Enum(CuisineCategory), nullable=False)
+    category_name = db.Column(db.String(120))
     owner_id = db.Column(db.Integer, db.ForeignKey("owner.id"), nullable=False)
 
+    owner = db.relationship(
+        "Owner",
+        back_populates="outlet"
+    )
     menu_items = db.relationship(
         "MenuOutletItem",
-        backref="outlet",
+        back_populates="outlet",
         cascade="all, delete-orphan",
         lazy=True
     )
@@ -94,7 +77,7 @@ class Item(db.Model):
 
     menu_links = db.relationship(
         "MenuOutletItem",
-        backref="item",
+        back_populates="item",
         cascade="all, delete-orphan",
         lazy=True
     )
@@ -102,21 +85,36 @@ class Item(db.Model):
     def __repr__(self):
         return f"<Item {self.name}>"
 
-        class MenuOutletItem(db.Model):
+class MenuOutletItem(db.Model):
     __tablename__ = "menu_outlet_items"
 
     id = db.Column(db.Integer, primary_key=True)
     outlet_id = db.Column(db.Integer, db.ForeignKey("outlets.id"), nullable=False)
     item_id = db.Column(db.Integer, db.ForeignKey("items.id"), nullable=False)
 
+    outlet = db.relationship(
+        "Outlet",
+        back_populates="menu_items"
+    )
+
+    item = db.relationship(
+        "Item",
+        back_populates="menu_links"
+    )
+
+    orders = db.relationship(
+        "Order",
+        back_populates="menu_item",
+        lazy=True
+    )
+
     __table_args__ = (
         UniqueConstraint("outlet_id", "item_id", name="unique_outlet_item"),
     )
 
-    orders = db.relationship("Order", backref="menu_item", lazy=True)
-
     def __repr__(self):
         return f"<MenuOutletItem outlet={self.outlet_id} item={self.item_id}>"
+
 class Order(db.Model):
     __tablename__ = "orders"
 
@@ -136,16 +134,27 @@ class Order(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     estimated = db.Column(db.DateTime)
 
+    customer = db.relationship(
+        "Customer",
+        back_populates="orders"
+    )
+
+    menu_item = db.relationship(
+        "MenuOutletItem",
+        back_populates="orders"
+    )
+
     table_booking = db.relationship(
         "TableBooking",
-        backref="order",
+        back_populates="order",
         uselist=False,
         cascade="all, delete-orphan"
     )
 
     def __repr__(self):
         return f"<Order {self.id}>"
-        class TableBooking(db.Model):
+
+class TableBooking(db.Model):
     __tablename__ = "table_bookings"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -159,6 +168,10 @@ class Order(db.Model):
     capacity = db.Column(db.Integer, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     duration = db.Column(db.Interval)
+    order = db.relationship(
+        "Order",
+        back_populates="table_booking"
+    )
 
     def __repr__(self):
         return f"<TableBooking table={self.table_number}>"
