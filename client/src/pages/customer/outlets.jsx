@@ -3,7 +3,6 @@ import { useRouter } from "next/router";
 import { useAuth } from "@/contexts/AuthContext";
 import Layout from "@/components/Layout";
 
-// Import components
 import CustomerHeader from "@/components/customer/Header";
 import StatsBar from "@/components/customer/StatsBar";
 import SearchBar from "@/components/customer/SearchBar";
@@ -98,7 +97,6 @@ export default function CustomerOutlets() {
     setLoading(false);
   }, [user, authLoading, router]);
 
-  // Filter outlets
   const filteredOutlets = selectedCategory === "All" 
     ? outlets 
     : outlets.filter(outlet => outlet.category_name === selectedCategory);
@@ -110,7 +108,6 @@ export default function CustomerOutlets() {
       )
     : filteredOutlets;
 
-  // Toggle favorite
   const toggleFavorite = (outletId) => {
     if (favorites.includes(outletId)) {
       setFavorites(favorites.filter(id => id !== outletId));
@@ -119,7 +116,6 @@ export default function CustomerOutlets() {
     }
   };
 
-  // Loading state
   if (authLoading || loading) {
     return (
       <div className="container text-center mt-5 py-5">
