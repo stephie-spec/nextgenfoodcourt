@@ -19,7 +19,7 @@ def create_app():
 
     @app.route("/")
     def index():
-    return {"message": "Food Court API is running"}, 200
+        return {"message": "Food Court API is running"}, 200
 
     api.add_resource(OwnerListResource, "/owners")
     api.add_resource(OwnerResource, "/owners/<int:owner_id>")
@@ -31,4 +31,4 @@ def create_app():
 app = create_app()
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, port=5555)
