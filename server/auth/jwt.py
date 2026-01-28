@@ -21,9 +21,9 @@ def decode_token (token) :
     
 
     if payload ["role"] == "owner" :
-        user =  Owner.query.get ( payload ["id"] )
+        return Owner.query.get ( payload ["id"] )
 
     elif payload ["role"] == "customer" :
-        user = Customer.query.get ( payload ["id"] )
+        return Customer.query.get ( payload ["id"] )
     
-    return user
+    return None
