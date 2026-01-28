@@ -17,9 +17,14 @@ def create_app():
 
     api = Api(app)
 
+    @app.route("/")
+    def index():
+    return {"message": "Food Court API is running"}, 200
+
     api.add_resource(OwnerListResource, "/owners")
     api.add_resource(OwnerResource, "/owners/<int:owner_id>")
 
+    
     return app
 
 
