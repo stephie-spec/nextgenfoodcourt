@@ -2,8 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
+import StatCard from '@/components/StatCard';
 import OrderCard from '@/components/OrderCard';
 import AuthGuard from '@/components/AuthGuard';
+import { TrendingUp, Clock, DollarSign, ShoppingBag } from 'lucide-react';
+
 
 export default function CustomerDashboard() {
   const [orders, setOrders] = useState([]);
@@ -18,55 +21,119 @@ export default function CustomerDashboard() {
     setOrders(mockOrders);
   }, []);
 
+  const totalSpent = orders.reduce((sum, o) => sum + o.total, 0);
+  const pendingOrders = orders.filter(o => o.status === 'pending').length;
+
   return (
     <AuthGuard requiredRole="customer">
       <DashboardLayout title="Customer Dashboard">
-        <div className="grid md:grid-cols-3 gap-6">
-          <div className="col-span-3 grid grid-cols-3 gap-4 mb-8">
-            <div className="bg-white border rounded-lg p-6 text-center">
-              <div className="text-3xl font-bold">{orders.length}</div>
-              <div className="text-gray-600">Total Orders</div>
-            </div>
-            <div className="bg-white border rounded-lg p-6 text-center">
-              <div className="text-3xl font-bold">
-                {orders.filter(o => o.status === 'pending').length}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <StatCard
+            title="Total Orders"
+            value={orders.length}
+            icon="orders"
+            trend="+12%"
+            description="from last month"
+            color="primary"
+          />
+          
+          <StatCard
+            title="Pending Orders"
+            value={pendingOrders}
+            icon="pending"
+            color="orange"
+          />
+          
+          <StatCard
+            title="Total Spent"
+            value={`$${totalSpent.toFixed(2)}`}
+            icon="revenue"
+            trend="+8%"
+            description="from last month"
+            color="green"
+          />
+          
+          <StatCard
+            title="Favorites"
+            value="12"
+            icon="users"
+            description="Saved dishes"
+            color="purple"
+          />
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-bold text-gray-900">Recent Orders</h2>
+                <button className="text-primary font-medium hover:text-primary/80">
+                  View All
+                </button>
               </div>
-              <div className="text-gray-600">Pending</div>
-            </div>
-            <div className="bg-white border rounded-lg p-6 text-center">
-              <div className="text-3xl font-bold">
-                ${orders.reduce((sum, o) => sum + o.total, 0).toFixed(2)}
+              
+              <div className="space-y-4">
+                {orders.length === 0 ? (
+                  <div className="text-center py-12">
+                    <ShoppingBag className="w-16 h-16 text-gray-300 mx-auto" />
+                    <p className="text-gray-500 mt-4">No orders yet</p>
+                    <button className="mt-4 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90">
+                      Order Now
+                    </button>
+                  </div>
+                ) : (
+                  orders.map(order => (
+                    <OrderCard key={order.id} order={order} />
+                  ))
+                )}
               </div>
-              <div className="text-gray-600">Total Spent</div>
             </div>
           </div>
 
-          <div className="col-span-3">
-            <h2 className="text-xl font-bold mb-4">Recent Orders</h2>
-            {orders.length === 0 ? (
-              <p className="text-gray-500">No orders yet.</p>
-            ) : (
-              orders.map(order => (
-                <OrderCard key={order.id} order={order} />
-              ))
-            )}
-          </div>
+          <div className="space-y-6">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h2>
+              <div className="space-y-3">
+                <button className="w-full py-3 px-4 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors font-medium">
+                  Order Food Now
+                </button>
+                <button className="w-full py-3 px-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium">
+                  View Favorites
+                </button>
+                <button className="w-full py-3 px-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium">
+                  Edit Profile
+                </button>
+                <button className="w-full py-3 px-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium">
+                  Need Help?
+                </button>
+              </div>
+            </div>
 
-          <div className="col-span-3 mt-8">
-            <h2 className="text-xl font-bold mb-4">Quick Actions</h2>
-            <div className="flex gap-4">
-              <a 
-                href="/outlets" 
-                className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90"
-              >
-                Order Food
-              </a>
-              <a 
-                href="/profile" 
-                className="px-6 py-3 border rounded-lg hover:bg-gray-50"
-              >
-                Edit Profile
-              </a>
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-4">Order Status</h2>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                    <span className="font-medium">Order #001</span>
+                  </div>
+                  <span className="text-sm text-gray-600">Preparing</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                    <span className="font-medium">Order #002</span>
+                  </div>
+                  <span className="text-sm text-gray-600">On the way</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-3 h-3 bg-gray-300 rounded-full"></div>
+                    <span className="font-medium">Order #003</span>
+                  </div>
+                  <span className="text-sm text-gray-600">Delivered</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>

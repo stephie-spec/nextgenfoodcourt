@@ -2,9 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
+import StatCard from '@/components/StatCard';
 import OutletCard from '@/components/OutletCard';
 import OrderCard from '@/components/OrderCard';
 import AuthGuard from '@/components/AuthGuard';
+import { Plus } from 'lucide-react';
+
 
 export default function OwnerDashboard() {
   const [outlets, setOutlets] = useState([]);
@@ -26,67 +29,130 @@ export default function OwnerDashboard() {
     setOrders(mockOrders);
   }, []);
 
+  const todayRevenue = orders.reduce((sum, o) => sum + o.total, 0);
+  const pendingCount = orders.filter(o => o.status === 'pending').length;
+  
   return (
     <AuthGuard requiredRole="owner">
       <DashboardLayout title="Owner Dashboard">
-        <div className="grid md:grid-cols-3 gap-6">
-          <div className="col-span-3 grid grid-cols-3 gap-4 mb-8">
-            <div className="bg-white border rounded-lg p-6 text-center">
-              <div className="text-3xl font-bold">{outlets.length}</div>
-              <div className="text-gray-600">Outlets</div>
-            </div>
-            <div className="bg-white border rounded-lg p-6 text-center">
-              <div className="text-3xl font-bold">{orders.length}</div>
-              <div className="text-gray-600">Pending Orders</div>
-            </div>
-            <div className="bg-white border rounded-lg p-6 text-center">
-              <div className="text-3xl font-bold">
-                ${orders.reduce((sum, o) => sum + o.total, 0).toFixed(2)}
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <StatCard
+            title="Total Outlets"
+            value={outlets.length}
+            icon="users"
+            trend="+1"
+            description="new this month"
+            color="primary"
+          />
+          
+          <StatCard
+            title="Today's Revenue"
+            value={`$${todayRevenue.toFixed(2)}`}
+            icon="revenue"
+            trend="+24%"
+            description="from yesterday"
+            color="green"
+          />
+          
+          <StatCard
+            title="Pending Orders"
+            value={pendingCount}
+            icon="pending"
+            color="orange"
+          />
+          
+          <StatCard
+            title="Avg. Rating"
+            value="4.8"
+            icon="trend"
+            description="from 128 reviews"
+            color="purple"
+          />
+        </div>
+
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Outlets Section */}
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-bold text-gray-900">Your Outlets</h2>
+                <button className="p-2 text-primary hover:bg-primary/10 rounded-lg">
+                  <Plus className="w-5 h-5" />
+                </button>
               </div>
-              <div className="text-gray-600">Today's Revenue</div>
+              
+              <div className="space-y-4">
+                {outlets.map(outlet => (
+                  <div key={outlet.id} className="p-4 border border-gray-200 rounded-lg hover:border-primary/50 transition-colors">
+                    <OutletCard outlet={outlet} />
+                  </div>
+                ))}
+                
+                <button className="w-full py-4 border-2 border-dashed border-gray-300 rounded-xl hover:border-primary hover:bg-primary/5 transition-colors flex flex-col items-center justify-center gap-2">
+                  <Plus className="w-6 h-6 text-gray-400" />
+                  <span className="font-medium text-gray-600">Add New Outlet</span>
+                </button>
+              </div>
             </div>
           </div>
 
-          <div className="md:col-span-1">
-            <h2 className="text-xl font-bold mb-4">Your Outlets</h2>
-            {outlets.map(outlet => (
-              <OutletCard key={outlet.id} outlet={outlet} />
-            ))}
-            <button className="w-full py-3 border-2 border-dashed rounded-lg hover:bg-gray-50">
-              + Add Outlet
-            </button>
-          </div>
-
-          <div className="md:col-span-2">
-            <h2 className="text-xl font-bold mb-4">Recent Orders</h2>
-            {orders.length === 0 ? (
-              <p className="text-gray-500">No orders yet.</p>
-            ) : (
-              orders.map(order => (
-                <div key={order.id} className="border rounded-lg p-4 mb-4">
-                  <OrderCard order={order} />
-                  <div className="flex gap-2 mt-4">
-                    <button className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">
-                      Complete
-                    </button>
-                    <button className="px-4 py-2 border rounded-lg hover:bg-gray-50">
-                      View Details
-                    </button>
-                  </div>
+          {/* Orders & Management */}
+          <div className="lg:col-span-2">
+            {/* Recent Orders */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-8">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-bold text-gray-900">Recent Orders</h2>
+                <div className="flex gap-2">
+                  <button className="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50">
+                    Filter
+                  </button>
+                  <button className="px-4 py-2 text-sm bg-primary text-white rounded-lg hover:bg-primary/90">
+                    Refresh
+                  </button>
                 </div>
-              ))
-            )}
-          </div>
+              </div>
+              
+              <div className="space-y-4">
+                {orders.map(order => (
+                  <div key={order.id} className="bg-gray-50 rounded-xl p-4">
+                    <OrderCard order={order} />
+                    <div className="flex gap-3 mt-4">
+                      <button className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm font-medium">
+                        Mark Complete
+                      </button>
+                      <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors text-sm font-medium">
+                        View Details
+                      </button>
+                      <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors text-sm font-medium">
+                        Contact Customer
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
 
-          <div className="col-span-3 mt-8">
-            <h2 className="text-xl font-bold mb-4">Quick Actions</h2>
-            <div className="flex gap-4">
-              <button className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90">
-                Add Menu Item
-              </button>
-              <button className="px-6 py-3 border rounded-lg hover:bg-gray-50">
-                View Analytics
-              </button>
+            {/* Quick Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-gradient-to-br from-primary to-primary/80 text-white rounded-2xl p-6">
+                <h3 className="text-lg font-bold mb-2">Best Seller</h3>
+                <p className="text-3xl font-bold mb-1">Injera Platter</p>
+                <p className="text-primary-foreground/80">Addis Kitchen</p>
+              </div>
+              
+              <div className="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-2xl p-6">
+                <h3 className="text-lg font-bold mb-2">Today's Goal</h3>
+                <p className="text-3xl font-bold mb-1">85%</p>
+                <p className="text-white/80">$1,248 of $1,500</p>
+              </div>
+              
+              <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-2xl p-6">
+                <h3 className="text-lg font-bold mb-2">Customer Rating</h3>
+                <p className="text-3xl font-bold mb-1">4.8★</p>
+                <p className="text-white/80">128 reviews</p>
+              </div>
             </div>
           </div>
         </div>
