@@ -1,8 +1,9 @@
+
 from flask import request
 from flask_restful import Resource
-from server.models import db, Customer
-from ..auth.permissions import require_customer
-from ..auth.jwt import generate_token
+from models import db, Customer
+from auth.permissions import require_customer
+from auth.jwt import generate_token
 from werkzeug.security import generate_password_hash, check_password_hash
 
 # from flask_cors import cross_origin
@@ -138,7 +139,9 @@ class CustomerLoginResource(Resource) :
 
 # To be moved to app.py :
 
-api.add_resource(CustomerSignUp, "/api/customer/signup")
-api.add_resource(CustomerDetails, "/api/customer/details")
+# api.add_resource(CustomerSignUp, "/api/customer/signup")
+# api.add_resource(CustomerDetails, "/api/customer/details")
+# api.add_resource(CustomerLoginResource, "/api/customer/login")
+
 
 

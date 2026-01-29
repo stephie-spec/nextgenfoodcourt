@@ -1,7 +1,7 @@
 from flask import request
 from flask_restful import Resource
-from server.models import db, check_password, hash_password, password_hashed, Outlet, Owner
-from ..auth.permissions import require_owner
+from models import db, Outlet, Owner, MenuOutletItem, Item
+from auth.permissions import require_owner
 
 
 # View list of all outlets
@@ -128,12 +128,12 @@ class OutletMenu(Resource):
             return {"message": "Outlet not found."}, 404
         
         # MOI -MenuOutletItem
-        menu_items = MOI.query.filter_by(outlet_id=outlet.id).all()
+        menu_links = MenuOutletItem.query.filter_by(outlet_id=outlet.id).all()
         menu = [{
-            "item_name": item.name,
-            "price": item.price,
-            "image": item.image
-        } for item in menu_items]
+            "item_name": link.item.name,
+            "price": link.item.price,
+            "image": link.item.image
+        } for link in menu_links]
 
         return {"outlet": outlet.name, "menu": menu}, 200
     
@@ -141,6 +141,6 @@ class OutletMenu(Resource):
 
 # To be moved to app.py :
 
-api.add_resource(ListOutlets, "/api/outlets")
-api.add_resource(OutletResource, "/outlets/<int:outlet_id>")
-api.add_resource(OutletMenu, "/api/outlet/<int:outlet_id>/menu")
+# api.add_resource(ListOutlets, "/api/outlets")
+# api.add_resource(OutletResource, "/outlets/<int:outlet_id>")
+# api.add_resource(OutletMenu, "/api/outlet/<int:outlet_id>/menu")
