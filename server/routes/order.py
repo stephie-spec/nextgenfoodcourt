@@ -96,8 +96,8 @@ class OrderResource(Resource):
             "menu_outlet_item_id": order.menu_outlet_item_id,
             "quantity": order.quantity,
             "status": order.status.value,
-            "created_at": order.created_at,
-            "estimated": order.estimated
+            "created_at": order.created_at.isoformat(),
+            "estimated": order.estimated.isoformat() if order.estimated else None
         }, 200
 
     def put(self, order_id):
