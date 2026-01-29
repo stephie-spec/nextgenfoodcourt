@@ -1,6 +1,5 @@
 'use client'; // Marks this component as a Client Component in Next.js (App Router)
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Moon, Sun, Search, LogIn, UserPlus, ShoppingCart, X } from 'lucide-react'; // Icon set
 import { useTheme } from 'next-themes'; //  (dark/light)
 import Link from 'next/link'; // Client-side navigation
@@ -13,6 +12,12 @@ export default function Navbar() {
   const [searchOpen, setSearchOpen] = useState(false); // Toggle search input
   const [searchQuery, setSearchQuery] = useState(''); // Search text
   const [cartCount, setCartCount] = useState(0); // Cart item count
+  const [mounted, setMounted] = useState(false); // Track client-side mount
+
+  // Ensure component only renders theme toggle after client mount
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Handle search input changes
   const handleSearch = (e) => {
@@ -103,17 +108,19 @@ export default function Navbar() {
             </button>
 
             {/* Dark / Light mode toggle */}
-            <button
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              className="p-2 sm:p-2.5 bg-secondary hover:bg-accent/20 text-accent rounded-full transition-colors"
-              aria-label="Toggle theme"
-            >
-              {theme === 'dark' ? (
-                <Sun className="w-4 sm:w-5 h-4 sm:h-5" />
-              ) : (
-                <Moon className="w-4 sm:w-5 h-4 sm:h-5" />
-              )}
-            </button>
+            {mounted && (
+              <button
+                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                className="p-2 sm:p-2.5 bg-secondary hover:bg-accent/20 text-accent rounded-full transition-colors"
+                aria-label="Toggle theme"
+              >
+                {theme === 'dark' ? (
+                  <Sun className="w-4 sm:w-5 h-4 sm:h-5" />
+                ) : (
+                  <Moon className="w-4 sm:w-5 h-4 sm:h-5" />
+                )}
+              </button>
+            )}
 
             {/* Auth actions (desktop only) */}
             <div className="hidden sm:flex items-center gap-2">
