@@ -1,14 +1,14 @@
 import "@/styles/globals.css";
 
-import { AuthProvider } from '@/contexts/AuthContext';
+import { SessionProvider } from 'next-auth/react';
 import { ThemeProvider } from "next-themes";
 
 export default function App({ Component, pageProps }) {
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      <AuthProvider>
+      <SessionProvider session={pageProps.session}>
       <Component {...pageProps} />
-      </AuthProvider>
+      </SessionProvider>
     </ThemeProvider>
   );
 }
