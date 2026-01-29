@@ -1,261 +1,127 @@
-'use client';
-
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { useTheme } from 'next-themes';
-import { Sun, Moon, ShoppingCart, Calendar } from 'lucide-react';
+import { ChevronRight, Utensils, Calendar } from 'lucide-react';
 
-const foodImages = [
-  '/food-1.jpg',
-  '/food-2.jpg',
-  '/food-3.jpg',
-  '/food-4.jpg',
-];
+export default function HeroSection() {
+// State to track which image is currently being shown
+const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-export default function Hero() {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isAutoPlay, setIsAutoPlay] = useState(true);
-  const [mounted, setMounted] = useState(false);
-  const { theme, setTheme } = useTheme();
+//  Array of image paths used in the hero section slideshow
+const heroImages = ['/food-1.jpg', '/food-2.jpg', '/food-3.jpg', '/food-4.jpg'];
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+useEffect(() => {
+  // Set up an interval to change the image every 5 seconds
+  const interval = setInterval(() => {
+    // Update the image index, looping back to the start when reaching the end
+    setCurrentImageIndex((prev) => (prev + 1) % heroImages.length);
+  }, 5000);
 
-  useEffect(() => {
-    if (!isAutoPlay) return;
-
-    const interval = setInterval(() => {
-      setCurrentImageIndex((prev) => (prev + 1) % foodImages.length);
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [isAutoPlay]);
-
-  const goToImage = (index) => {
-    setCurrentImageIndex(index);
-    setIsAutoPlay(false);
-  };
-
-  const nextImage = () => {
-    setCurrentImageIndex((prev) => (prev + 1) % foodImages.length);
-    setIsAutoPlay(false);
-  };
-
-  const prevImage = () => {
-    setCurrentImageIndex((prev) => (prev - 1 + foodImages.length) % foodImages.length);
-    setIsAutoPlay(false);
-  };
-
-  if (!mounted) return null;
+  // Clear the interval when the component unmounts to prevent memory leaks
+  return () => clearInterval(interval);
+}, [heroImages.length]); // Re-run effect only if the number of images changes
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Navigation Header */}
-      <nav className="sticky top-0 z-40 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <div className="flex-shrink-0">
-              <Link href="/" className="text-2xl font-bold text-primary">
-                Nextgen Food Court
-              </Link>
-            </div>
+    <section className="relative w-full pt-20 overflow-hidden">
+      {/* Hero Background - Kitchen Setting */}
+      <div className="absolute inset-0 -z-10">
+        <Image
+          src="/kitchen.jpg"
+          alt="Professional kitchen with fresh ingredients"
+          fill
+          className="object-cover opacity-35"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/75 to-background/50"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/20 to-background"></div>
+      </div>
 
-            {/* Desktop Navigation Links */}
-            <div className="hidden md:flex items-center gap-8">
-              <Link href="/outlets" className="text-foreground hover:text-primary transition-colors">
-                Outlets
-              </Link>
-              <Link href="/menu" className="text-foreground hover:text-primary transition-colors">
-                Menu
-              </Link>
-              <Link href="/special-orders" className="text-foreground hover:text-primary transition-colors">
-                Special Orders
-              </Link>
-            </div>
-
-            {/* Right side: Theme toggle and Auth links */}
-            <div className="flex items-center gap-4">
-              {/* Theme Toggle */}
-              <button
-                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                className="p-2 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors"
-                aria-label="Toggle theme"
-              >
-                {theme === 'dark' ? (
-                  <Sun className="w-5 h-5 text-foreground" />
-                ) : (
-                  <Moon className="w-5 h-5 text-foreground" />
-                )}
-              </button>
-
-              {/* Auth Links */}
-              <div className="hidden sm:flex items-center gap-2">
-                <Link
-                  href="/login"
-                  className="px-4 py-2 text-foreground hover:text-primary transition-colors"
-                >
-                  Login
-                </Link>
-                <Link
-                  href="/signup"
-                  className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
-                >
-                  Sign Up
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      {/* Hero Section */}
-      <section className="relative w-full overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-            {/* Left Content */}
-            <div className="flex flex-col justify-center space-y-6 order-2 lg:order-1">
-              <div>
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-4">
-                  Taste Africa, Savor Excellence
-                </h1>
-                <p className="text-lg md:text-xl text-muted-foreground mb-4">
-                  Experience authentic African cuisines from 20+ premium outlets serving Ethiopian, Nigerian, Congolese, Kenyan and more.
-                </p>
-              </div>
-
-              {/* Features */}
-              <div className="space-y-3 text-muted-foreground">
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 bg-primary rounded-full"></div>
-                  <span>20+ outlets with diverse cuisines</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 bg-primary rounded-full"></div>
-                  <span>Fast delivery and table booking</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 bg-primary rounded-full"></div>
-                  <span>Special orders and catering available</span>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4 pt-6">
-                <button
-                  onClick={async () => {
-                    try {
-                      const response = await fetch('/api/cart', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                          action: 'add-to-cart',
-                          timestamp: new Date(),
-                        }),
-                      });
-                      const result = await response.json();
-                      console.log('Cart response:', result);
-                      // TODO: Show success toast or redirect to cart
-                    } catch (error) {
-                      console.error('Cart error:', error);
-                      // TODO: Show error toast
-                    }
-                  }}
-                  className="flex items-center justify-center gap-2 px-6 py-3 bg-primary text-primary-foreground font-semibold rounded-lg hover:bg-primary/90 transition-colors"
-                >
-                  <ShoppingCart className="w-5 h-5" />
-                  Add to Cart
-                </button>
-                <button
-                  onClick={async () => {
-                    try {
-                      const response = await fetch('/api/bookings', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                          action: 'book-table',
-                          timestamp: new Date(),
-                        }),
-                      });
-                      const result = await response.json();
-                      console.log('Booking response:', result);
-                      // TODO: Show booking modal or redirect to booking page
-                    } catch (error) {
-                      console.error('Booking error:', error);
-                      // TODO: Show error toast
-                    }
-                  }}
-                  className="flex items-center justify-center gap-2 px-6 py-3 border-2 border-primary text-primary font-semibold rounded-lg hover:bg-primary/10 transition-colors"
-                >
-                  <Calendar className="w-5 h-5" />
-                  Book a Table
-                </button>
-              </div>
-            </div>
-
-            {/* Right - Image Carousel */}
-            <div className="order-1 lg:order-2">
-              <div className="relative h-96 md:h-[500px] lg:h-[550px] w-full rounded-2xl overflow-hidden shadow-2xl">
-                {/* Main Image */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center py-16 md:py-24">
+          {/* Left - Image Carousel */}
+          <div className="relative h-96 md:h-[500px] order-2 lg:order-1">
+            {/* Main Image */}
+            <div className="absolute inset-0 rounded-2xl overflow-hidden shadow-2xl">
+              {heroImages.map((image, index) => (
                 <Image
-                  src={foodImages[currentImageIndex] || "/placeholder.svg"}
-                  alt={`Food carousel image ${currentImageIndex + 1}`}
+                  key={index}
+                  src={image || "/placeholder.svg"}
+                  alt={`Delicious dish ${index + 1}`}
                   fill
-                  className="object-cover transition-opacity duration-500"
-                  priority
+                  className={`object-cover transition-opacity duration-1000 ${
+                    index === currentImageIndex ? 'opacity-100' : 'opacity-0'
+                  }`}
+                  priority={index === 0}
                 />
+              ))}
+              {/* Overlay Gradient */}
+              <div className="absolute inset-0 bg-gradient-to-t from-background/40 to-transparent"></div>
+            </div>
 
-                {/* Overlay gradient */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
-
-                {/* Navigation Buttons */}
+            {/* Navigation Dots */}
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-3 z-10">
+              {heroImages.map((_, index) => (
                 <button
-                  onClick={prevImage}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-white/20 hover:bg-white/40 backdrop-blur-sm p-3 rounded-full transition-all"
-                  aria-label="Previous image"
-                >
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-                <button
-                  onClick={nextImage}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-white/20 hover:bg-white/40 backdrop-blur-sm p-3 rounded-full transition-all"
-                  aria-label="Next image"
-                >
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
+                  key={index}
+                  onClick={() => setCurrentImageIndex(index)}
+                  className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                    index === currentImageIndex
+                      ? 'bg-primary w-8'
+                      : 'bg-white/50 hover:bg-white/70'
+                  }`}
+                  aria-label={`View image ${index + 1}`}
+                />
+              ))}
+            </div>
 
-                {/* Dot Indicators */}
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 flex gap-2">
-                  {foodImages.map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => goToImage(index)}
-                      className={`h-3 rounded-full transition-all ${
-                        index === currentImageIndex
-                          ? 'w-8 bg-white'
-                          : 'w-3 bg-white/50 hover:bg-white/75'
-                      }`}
-                      aria-label={`Go to image ${index + 1}`}
-                    />
-                  ))}
-                </div>
-              </div>
+            {/* Floating Food Info */}
+            <div className="absolute top-6 right-6 bg-white/95 dark:bg-card/95 backdrop-blur px-4 py-3 rounded-xl shadow-lg">
+              <p className="text-sm font-semibold text-foreground">Featured</p>
+              <p className="text-xs text-muted-foreground">African cuisines</p>
+            </div>
+          </div>
 
-              {/* Carousel Auto-play Toggle */}
-              <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
-                <div className={`w-2 h-2 rounded-full ${isAutoPlay ? 'bg-primary animate-pulse' : 'bg-muted'}`}></div>
-                <span>{isAutoPlay ? 'Auto-playing' : 'Paused'}</span>
+          {/* Right Content */}
+          <div className="flex flex-col gap-6 order-1 lg:order-2">
+            <div className="space-y-3">
+              <h1 className="text-5xl md:text-6xl font-bold text-foreground leading-tight">
+                Discover <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">African</span> Flavors
+              </h1>
+              <p className="text-lg text-muted-foreground">
+                Experience authentic cuisines from 20+ premium outlets. Ethiopian, Nigerian, Congolese, Kenyan and more, all in one vibrant space.
+              </p>
+            </div>
+
+            {/* Stats */}
+            <div className="grid grid-cols-3 gap-4 py-6 border-y border-border">
+              <div>
+                <div className="text-3xl font-bold text-primary">20+</div>
+                <p className="text-sm text-muted-foreground">Outlets</p>
               </div>
+              <div>
+                <div className="text-3xl font-bold text-accent">100+</div>
+                <p className="text-sm text-muted-foreground">Dishes</p>
+              </div>
+              <div>
+                <div className="text-3xl font-bold text-primary">24/7</div>
+                <p className="text-sm text-muted-foreground">Available</p>
+              </div>
+            </div>
+
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4">
+              <button className="group flex items-center justify-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition-all duration-300 transform hover:scale-105">
+                <Utensils className="w-5 h-5" />
+                Order Now
+                <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </button>
+              <button className="flex items-center justify-center gap-2 px-8 py-4 border-2 border-primary text-primary font-semibold rounded-xl hover:bg-primary/10 transition-colors">
+                <Calendar className="w-5 h-5" />
+                Book a Table
+              </button>
             </div>
           </div>
         </div>
-      </section>
-    </div>
+      </div>
+    </section>
   );
 }
