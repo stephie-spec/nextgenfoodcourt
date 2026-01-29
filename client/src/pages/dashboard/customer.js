@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import DashboardLayout from '../../components/DashboardLayout';
-import OrderCard from '../../components/OrderCard';
-import AuthGuard from '../../components/AuthGuard';
+import DashboardLayout from '@/components/DashboardLayout';
+import OrderCard from '@/components/OrderCard';
+import AuthGuard from '@/components/AuthGuard';
 
 export default function CustomerDashboard() {
   const [orders, setOrders] = useState([]);
@@ -22,7 +22,6 @@ export default function CustomerDashboard() {
     <AuthGuard requiredRole="customer">
       <DashboardLayout title="Customer Dashboard">
         <div className="grid md:grid-cols-3 gap-6">
-          {/* Stats */}
           <div className="col-span-3 grid grid-cols-3 gap-4 mb-8">
             <div className="bg-white border rounded-lg p-6 text-center">
               <div className="text-3xl font-bold">{orders.length}</div>

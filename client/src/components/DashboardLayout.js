@@ -6,6 +6,10 @@ import Link from 'next/link';
 export default function DashboardLayout({ children, title }) {
   const { data: session } = useSession();
 
+  if (!session) {
+    return children;
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-white">
