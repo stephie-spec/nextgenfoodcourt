@@ -23,90 +23,90 @@ export default function CustomerDashboard() {
   ];
 
   useEffect(() => {
+
     const mockOutlets = [
-      { 
-        id: 1, 
-        name: 'Addis Kitchen', 
+      {
+        id: 1,
+        name: 'Addis Kitchen',
         category_name: 'Ethiopian Cuisine',
         description: 'Authentic Ethiopian dishes with traditional injera bread. Family recipes passed down for generations.',
         rating: 4.8,
-        today_orders: 24,
-        minOrder: 15,
-        deliveryTime: '25-35',
-        distance: '0.5 mi',
+        reviews: '128',
+        hours: '10AM-10PM',
+        popularItem: 'Injera Platter',
         isOpen: true,
+        isFavorite: true,
         tags: ['ethiopian', 'injera', 'vegetarian', 'traditional']
       },
-      { 
-        id: 2, 
-        name: 'Lagos Grill', 
+      {
+        id: 2,
+        name: 'Lagos Grill',
         category_name: 'Nigerian Cuisine',
         description: 'Vibrant Nigerian flavors with signature jollof rice and grilled specialties. Perfect for parties!',
         rating: 4.6,
-        today_orders: 18,
-        minOrder: 18,
-        deliveryTime: '30-40',
-        distance: '0.8 mi',
+        reviews: '89',
+        hours: '10AM-10PM',
+        popularItem: 'Jollof Rice',
         isOpen: true,
+        isFavorite: false,
         tags: ['nigerian', 'jollof', 'spicy', 'party']
       },
-      { 
-        id: 3, 
-        name: 'Nairobi Flame', 
+      {
+        id: 3,
+        name: 'Nairobi Flame',
         category_name: 'Kenyan Cuisine',
         description: 'Traditional Kenyan grilled meats cooked over charcoal, served fresh and smoky.',
         rating: 4.9,
-        today_orders: 12,
-        minOrder: 22,
-        deliveryTime: '35-45',
-        distance: '1.2 mi',
+        reviews: '156',
+        hours: '10AM-10PM',
+        popularItem: 'Nyama Choma',
         isOpen: true,
+        isFavorite: true,
         tags: ['kenyan', 'nyama-choma', 'bbq', 'grilled']
       },
-      { 
-        id: 4, 
-        name: 'Kinshasa Kitchen', 
+      {
+        id: 4,
+        name: 'Kinshasa Kitchen',
         category_name: 'Congolese Cuisine',
         description: 'Authentic Congolese dishes featuring traditional cooking methods and fresh ingredients.',
         rating: 4.7,
-        today_orders: 8,
-        minOrder: 16,
-        deliveryTime: '40-50',
-        distance: '1.5 mi',
+        reviews: '76',
+        hours: '10AM-10PM',
+        popularItem: 'Fufu & Fish',
         isOpen: true,
+        isFavorite: false,
         tags: ['congolese', 'fufu', 'fish', 'stew']
       },
-      { 
-        id: 5, 
-        name: 'Cairo Oasis', 
+      {
+        id: 5,
+        name: 'Cairo Oasis',
         category_name: 'Egyptian Cuisine',
         description: 'Traditional Egyptian street food and authentic dishes from the heart of Cairo.',
         rating: 4.5,
-        today_orders: 15,
-        minOrder: 12,
-        deliveryTime: '25-35',
-        distance: '0.7 mi',
+        reviews: '92',
+        hours: '10AM-10PM',
+        popularItem: 'Koshari',
         isOpen: true,
+        isFavorite: false,
         tags: ['egyptian', 'koshari', 'street-food', 'vegetarian']
       },
-      { 
-        id: 6, 
-        name: 'Cape Town Grill', 
+      {
+        id: 6,
+        name: 'Cape Town Grill',
         category_name: 'South African Cuisine',
         description: 'Modern South African braai and traditional dishes with a contemporary twist.',
         rating: 4.8,
-        today_orders: 20,
-        minOrder: 20,
-        deliveryTime: '30-40',
-        distance: '1.0 mi',
+        reviews: '104',
+        hours: '10AM-10PM',
+        popularItem: 'Braai Platter',
         isOpen: true,
+        isFavorite: true,
         tags: ['south-african', 'braai', 'game-meat', 'modern']
       },
     ];
-
     const mockOrders = [
-      { 
-        id: 'ORD-001', 
+      {
+        id: 'ORD-001',
         created_at: new Date().toISOString(),
         estimated_status: 'preparing',
         total: 45.99,
@@ -122,8 +122,8 @@ export default function CustomerDashboard() {
         delivery_time: '25 mins',
         customer_name: 'You'
       },
-      { 
-        id: 'ORD-002', 
+      {
+        id: 'ORD-002',
         created_at: '2024-01-15T18:30:00Z',
         estimated_status: 'delivered',
         total: 29.50,
@@ -151,13 +151,13 @@ export default function CustomerDashboard() {
   // Filter outlets based on search and category
   const filteredOutlets = outlets.filter(outlet => {
     const matchesSearch = outlet.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         outlet.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         outlet.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
-    
-    const matchesCategory = selectedCategory === 'all' || 
-                           outlet.category_name.toLowerCase().includes(selectedCategory.toLowerCase()) ||
-                           outlet.tags.some(tag => tag.toLowerCase() === selectedCategory.toLowerCase());
-    
+      outlet.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      outlet.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+
+    const matchesCategory = selectedCategory === 'all' ||
+      outlet.category_name.toLowerCase().includes(selectedCategory.toLowerCase()) ||
+      outlet.tags.some(tag => tag.toLowerCase() === selectedCategory.toLowerCase());
+
     return matchesSearch && matchesCategory;
   });
 
@@ -169,36 +169,35 @@ export default function CustomerDashboard() {
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <StatCard
+            title="Saved Outlets"
+            value={outlets.filter(o => o.isFavorite).length}
+            icon="heart"
+            description="favorites"
+            color="purple"
+          />
+
+          <StatCard
             title="Active Orders"
             value={activeOrders.length}
             icon="pending"
-            description="Being prepared"
+            description="being prepared"
             color="orange"
           />
-          
+
           <StatCard
-            title="Avg Delivery"
-            value="32 mins"
-            icon="clock"
-            trend="-5 mins"
-            description="faster than last month"
-            color="green"
-          />
-          
-          <StatCard
-            title="Favorite Outlets"
-            value="4"
+            title="Your Rating"
+            value="4.7★"
             icon="star"
-            description="saved for later"
+            description="average given"
             color="yellow"
           />
-          
+
           <StatCard
-            title="Total Orders"
-            value={orders.length}
-            icon="orders"
+            title="Table Bookings"
+            value="2"
+            icon="users"
             description="this month"
-            color="purple"
+            color="green"
           />
         </div>
 
@@ -254,7 +253,7 @@ export default function CustomerDashboard() {
                 <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
                   <Store className="w-16 h-16 text-gray-300 mx-auto" />
                   <p className="text-gray-500 mt-4">No outlets found matching your search</p>
-                  <button 
+                  <button
                     onClick={() => {
                       setSearchTerm('');
                       setSelectedCategory('all');
@@ -272,12 +271,12 @@ export default function CustomerDashboard() {
             <div>
               <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-6">Active Orders</h2>
-                
+
                 {activeOrders.length === 0 ? (
                   <div className="text-center py-12">
                     <ShoppingBag className="w-16 h-16 text-gray-300 mx-auto" />
                     <p className="text-gray-500 mt-4">No active orders</p>
-                    <button 
+                    <button
                       onClick={() => setActiveTab('outlets')}
                       className="mt-4 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90"
                     >
@@ -299,12 +298,12 @@ export default function CustomerDashboard() {
             <div>
               <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-6">Order History</h2>
-                
+
                 {pastOrders.length === 0 ? (
                   <div className="text-center py-12">
                     <Clock className="w-16 h-16 text-gray-300 mx-auto" />
                     <p className="text-gray-500 mt-4">No order history yet</p>
-                    <button 
+                    <button
                       onClick={() => setActiveTab('outlets')}
                       className="mt-4 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90"
                     >

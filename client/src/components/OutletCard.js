@@ -1,6 +1,6 @@
 'use client';
 
-import { Store, MapPin, Star, Clock, Tag, Users } from 'lucide-react';
+import { Store, MapPin, Star, Tag, Users, CheckCircle, Clock } from 'lucide-react';
 import Image from 'next/image';
 
 export default function OutletCard({ outlet, isOwner = false }) {
@@ -19,17 +19,18 @@ export default function OutletCard({ outlet, isOwner = false }) {
   // Tags based on cuisine type
   const getTags = (category) => {
     const tagMap = {
-      'Ethiopian': ['Spicy', 'Injera', 'Traditional', 'Vegetarian'],
+      'Ethiopian': ['Family Style', 'Injera', 'Traditional', 'Vegetarian Options'],
       'Nigerian': ['Jollof Rice', 'Spicy', 'Grilled', 'Party Food'],
-      'Kenyan': ['Nyama Choma', 'Grilled', 'BBQ', 'Traditional'],
-      'Congolese': ['Fufu', 'Fish', 'Stew', 'Traditional'],
-      'Egyptian': ['Koshari', 'Falafel', 'Street Food', 'Vegetarian'],
-      'South African': ['Braai', 'BBQ', 'Game Meat', 'Modern']
+      'Kenyan': ['Nyama Choma', 'BBQ', 'Charcoal Grill', 'Traditional'],
+      'Congolese': ['Fufu', 'Fish Stew', 'Comfort Food', 'Traditional'],
+      'Egyptian': ['Koshari', 'Street Food', 'Falafel', 'Vegetarian Friendly'],
+      'South African': ['Braai', 'Game Meat', 'Modern Twist', 'Wine Pairing']
     };
     return tagMap[category] || ['African', 'Traditional', 'Authentic'];
   };
 
-  const tags = getTags(outlet.category_name?.split(' ')[0] || 'African');
+  const category = outlet.category_name?.split(' ')[0] || 'African';
+  const tags = getTags(category);
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
@@ -43,11 +44,11 @@ export default function OutletCard({ outlet, isOwner = false }) {
         />
         <div className="absolute top-3 left-3">
           <span className={`px-3 py-1.5 rounded-full text-xs font-medium ${
-            outlet.status === 'active' || outlet.isOpen
+            outlet.isOpen
               ? 'bg-green-100 text-green-800' 
               : 'bg-gray-100 text-gray-800'
           }`}>
-            {outlet.status === 'active' || outlet.isOpen ? 'Open Now' : 'Closed'}
+            {outlet.isOpen ? 'Open Now' : 'Closed'}
           </span>
         </div>
       </div>
@@ -60,20 +61,18 @@ export default function OutletCard({ outlet, isOwner = false }) {
             <div className="flex items-center gap-1">
               <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
               <span className="font-bold">{outlet.rating || 4.5}</span>
+              <span className="text-gray-500 text-sm">({outlet.reviews || '120+'})</span>
             </div>
           </div>
           
           <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
             <MapPin className="w-4 h-4" />
-            <span>{outlet.category_name || 'African Cuisine'}</span>
-            {outlet.distance && (
-              <span className="text-gray-500">• {outlet.distance}</span>
-            )}
+            <span>Level 2 • {outlet.category_name || 'African Cuisine'}</span>
           </div>
 
           {/* Description */}
           <p className="text-sm text-gray-600 mb-4 line-clamp-2">
-            {outlet.description || `Authentic ${outlet.category_name?.split(' ')[0] || 'African'} cuisine prepared by expert chefs using traditional methods.`}
+            {outlet.description || `Authentic ${category} cuisine prepared by expert chefs using traditional methods.`}
           </p>
 
           {/* Tags */}
@@ -92,27 +91,63 @@ export default function OutletCard({ outlet, isOwner = false }) {
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3 py-4 border-t border-gray-200">
-          <div className="text-center">
-            <div className="flex items-center justify-center gap-1 mb-1">
-              <Users className="w-4 h-4 text-blue-500" />
-              <p className="text-lg font-bold text-gray-900">{outlet.today_orders || 0}</p>
-            </div>
-            <p className="text-xs text-gray-600">Today's Orders</p>
-          </div>
-          
-          <div className="text-center">
-            <p className="text-lg font-bold text-gray-900">
-              {outlet.minOrder ? `$${outlet.minOrder}` : '$15'}
-            </p>
-            <p className="text-xs text-gray-600">Min Order</p>
-          </div>
-          
-          <div className="text-center">
-            <p className="text-lg font-bold text-gray-900">
-              {outlet.deliveryTime || '30-45'}
-            </p>
-            <p className="text-xs text-gray-600">Mins</p>
-          </div>
+          {isOwner ? (
+            // OWNER VIEW: Business metrics
+            <>
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-1 mb-1">
+                  <Users className="w-4 h-4 text-blue-500" />
+                  <p className="text-lg font-bold text-gray-900">{outlet.today_orders || 0}</p>
+                </div>
+                <p className="text-xs text-gray-600">Today's Orders</p>
+              </div>
+              
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-1 mb-1">
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  <p className="text-lg font-bold text-gray-900">
+                    {outlet.rating || 4.5}★
+                  </p>
+                </div>
+                <p className="text-xs text-gray-600">Rating</p>
+              </div>
+              
+              <div className="text-center">
+                <p className="text-lg font-bold text-gray-900">{outlet.total_orders || 0}</p>
+                <p className="text-xs text-gray-600">Total Orders</p>
+              </div>
+            </>
+          ) : (
+            // CUSTOMER VIEW: Customer info for food court
+            <>
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-1 mb-1">
+                  <Clock className="w-4 h-4 text-blue-500" />
+                  <p className="text-lg font-bold text-gray-900">
+                    {outlet.hours || '10AM-10PM'}
+                  </p>
+                </div>
+                <p className="text-xs text-gray-600">Hours</p>
+              </div>
+              
+              <div className="text-center">
+                <p className="text-lg font-bold text-gray-900">
+                  {outlet.popularItem || 'Injera Platter'}
+                </p>
+                <p className="text-xs text-gray-600">Popular Item</p>
+              </div>
+              
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-1 mb-1">
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  <p className="text-lg font-bold text-gray-900">
+                    {outlet.rating || 4.5}★
+                  </p>
+                </div>
+                <p className="text-xs text-gray-600">Rating</p>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Action Buttons */}
@@ -126,7 +161,7 @@ export default function OutletCard({ outlet, isOwner = false }) {
             </button>
           ) : (
             <button className="flex-1 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium">
-              Save
+              {outlet.isFavorite ? 'Saved ✓' : 'Save'}
             </button>
           )}
         </div>
