@@ -1,11 +1,24 @@
 import { useState } from "react";
+import { useRouter } from "next/router";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Login() {
+  const router = useRouter();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
     role: "customer",
   });
+
+    const sampleUsers = {
+    'john@example.com': { password: 'password123', name: 'John Doe', role: 'customer', id: 1 },
+    'jane@example.com': { password: 'password123', name: 'Jane Smith', role: 'customer', id: 2 },
+    'customer@foodcourt.com': { password: 'food123', name: 'Demo Customer', role: 'customer', id: 3 },
+    'owner@burgerparadise.com': { password: 'owner123', name: 'Burger Paradise Owner', role: 'owner', id: 4 },
+    'pizza@mozzie.com': { password: 'pizza123', name: 'Mozzie Pizzeria', role: 'owner', id: 5 },
+    'owner@foodcourt.com': { password: 'owner123', name: 'Demo Restaurant Owner', role: 'owner', id: 6 },
+  };
 
   const handleChange = (e) => {
     setFormData({
@@ -18,10 +31,23 @@ export default function Login() {
     e.preventDefault();
     console.log("Login Data:", formData);
 
+    const result = login(formData.email, formData.password);
     
+    if (result.success) {
+      if (result.user.role === "customer") {
+        router.push("/customer/outlets");
+      } else {
+        router.push("/owner/outlets");
+      }
+    } else {
+      setError("Invalid email or password");
+    }
+
   };
 
   return (
+    <div>Login</div>
+    /*
     <div className="container mt-5">
       <div className="row justify-content-center">
         <div className="col-md-5">
@@ -83,5 +109,6 @@ export default function Login() {
         </div>
       </div>
     </div>
+    */
   );
 }

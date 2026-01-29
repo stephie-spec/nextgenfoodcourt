@@ -1,90 +1,99 @@
 import { useRouter } from "next/router";
-import { FaStar, FaClock, FaHeart, FaPercent } from "react-icons/fa";
+import { FaStar, FaClock, FaMapMarkerAlt, FaTruck, FaEye, FaShareAlt, FaShoppingCart } from "react-icons/fa";
+import { IoTime } from "react-icons/io5";
 
 export default function OutletCard({ outlet, isFavorite, onToggleFavorite }) {
   const router = useRouter();
 
   return (
-    <div className="col-md-6 col-lg-4 mb-4">
-      <div className="card h-100 shadow-sm">
-        <div className="card-header bg-white">
-          <div className="d-flex justify-content-between align-items-start">
-            <div className="d-flex align-items-center">
-              <span className="display-4 me-3">{outlet.image}</span>
+    <div className="w-full sm:w-1/2 lg:w-1/3 px-2 mb-6">
+      <div className="bg-card text-card-foreground rounded-xl border shadow-sm hover:shadow-md transition-shadow h-full flex flex-col">
+        <div className="p-4 border-b">
+          <div className="flex justify-between items-start">
+            <div className="flex items-center">
+              <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center mr-3">
+                <span className="text-2xl">{outlet.image || " "}</span>
+              </div>
               <div>
-                <h5 className="card-title mb-1">{outlet.name}</h5>
-                <span className="badge bg-primary">{outlet.category_name}</span>
+                <h3 className="font-semibold text-lg">{outlet.name}</h3>
+                <span className="inline-block px-2 py-1 bg-primary/10 text-primary text-xs font-medium rounded-full">
+                  {outlet.category_name}
+                </span>
               </div>
             </div>
             <button 
-              className={`btn btn-sm ${isFavorite ? 'btn-danger' : 'btn-outline-danger'}`}
+              className={`p-2 rounded-full ${isFavorite ? 'bg-yellow-100 text-yellow-600' : 'bg-muted text-muted-foreground hover:bg-yellow-50'}`}
               onClick={() => onToggleFavorite(outlet.id)}
+              aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
             >
-              <FaHeart />
+              <FaStar className={isFavorite ? "fill-yellow-500" : ""} />
             </button>
           </div>
         </div>
         
-        <div className="card-body">
-          <div className="d-flex justify-content-between align-items-center mb-3">
-            <div className="d-flex align-items-center">
-              <span className="text-warning me-1">
+        <div className="p-4 flex-grow">
+          <div className="flex justify-between items-center mb-4">
+            <div className="flex items-center">
+              <span className="text-yellow-500 mr-1">
                 <FaStar />
               </span>
-              <strong>{outlet.rating}</strong>
-              <span className="text-muted ms-1">({outlet.reviewCount})</span>
+              <span className="font-semibold">{outlet.rating}</span>
+              <span className="text-muted-foreground text-sm ml-1">({outlet.reviewCount})</span>
             </div>
-            <div className="d-flex align-items-center text-info">
-              <FaClock className="me-1" />
-              <span>{outlet.delivery_time}</span>
+            <div className="flex items-center text-blue-500">
+              <FaClock className="mr-1" />
+              <span className="text-sm font-medium">{outlet.delivery_time}</span>
             </div>
           </div>
           
-          <div className="mb-3">
-            <div className="d-flex flex-wrap gap-1">
+          <div className="mb-4">
+            <div className="flex flex-wrap gap-1">
               {outlet.tags.map((tag, index) => (
-                <span key={index} className="badge bg-light text-dark border">
+                <span key={index} className="px-2 py-1 bg-muted text-muted-foreground text-xs rounded-full border">
                   {tag}
                 </span>
               ))}
             </div>
           </div>
           
-          <div className="mb-3">
-            <div className="mb-2">
-              <i className="bi bi-geo-alt me-1"></i>
-              {outlet.location}
+          <div className="mb-6 space-y-2">
+            <div className="flex items-center text-sm">
+              <FaMapMarkerAlt className="mr-2 text-muted-foreground" />
+              <span>{outlet.location}</span>
             </div>
-            <div className="d-flex justify-content-between">
-              <span>
-                <i className="bi bi-clock me-1"></i>
-                {outlet.opening_time} - {outlet.closing_time}
-              </span>
-              <span className="text-primary">
-                <i className="bi bi-truck me-1"></i>
-                {outlet.deliveryFee}
-              </span>
+            <div className="flex justify-between text-sm">
+              <div className="flex items-center">
+                <IoTime className="mr-2 text-muted-foreground" />
+                <span>{outlet.opening_time} - {outlet.closing_time}</span>
+              </div>
+              <div className="flex items-center text-primary">
+                <FaTruck className="mr-2" />
+                <span className="font-medium">{outlet.deliveryFee}</span>
+              </div>
             </div>
           </div>
           
-          <div className="d-grid gap-2">
+          <div className="space-y-3">
             <button 
-              className="btn btn-primary"
+              className="w-full bg-primary text-primary-foreground py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
               onClick={() => router.push(`/customer/menu?outlet=${outlet.id}`)}
               disabled={!outlet.isOpen}
             >
               {outlet.isOpen ? (
                 <>
-                  <i className="bi bi-cart-plus me-1"></i> Order Now
+                  <FaShoppingCart className="mr-2" />
+                  Order Now
                 </>
               ) : "Currently Closed"}
             </button>
-            <div className="btn-group">
-              <button className="btn btn-outline-secondary btn-sm">
-                <i className="bi bi-eye me-1"></i> View Menu
+            <div className="flex gap-2">
+              <button className="flex-1 border border-input bg-background py-2 rounded-lg text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors flex items-center justify-center">
+                <FaEye className="mr-2" />
+                View Menu
               </button>
-              <button className="btn btn-outline-secondary btn-sm">
-                <i className="bi bi-share me-1"></i> Share
+              <button className="flex-1 border border-input bg-background py-2 rounded-lg text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors flex items-center justify-center">
+                <FaShareAlt className="mr-2" />
+                Share
               </button>
             </div>
           </div>
