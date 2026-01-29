@@ -9,6 +9,7 @@ import SearchBar from "@/components/customer/SearchBar";
 import CategoryFilter from "@/components/customer/CategoryFilter";
 import SpecialOffer from "@/components/customer/SpecialOffer";
 import OutletCard from "@/components/customer/OutletCard";
+import { FaFrown } from "react-icons/fa";
 
 export default function CustomerOutlets() {
   const router = useRouter();
@@ -25,7 +26,7 @@ export default function CustomerOutlets() {
       rating: 4.5,
       reviewCount: 245,
       delivery_time: "20-30 min",
-      image: " ",
+      image: "🍔",
       isOpen: true,
       specialOffer: "20% OFF",
       minOrder: "Ksh 199",
@@ -42,7 +43,7 @@ export default function CustomerOutlets() {
       rating: 4.7,
       reviewCount: 189,
       delivery_time: "25-35 min",
-      image: " ",
+      image: "🍕",
       isOpen: true,
       specialOffer: "Buy 1 Get 1 Free",
       minOrder: "299",
@@ -59,7 +60,7 @@ export default function CustomerOutlets() {
       rating: 4.3,
       reviewCount: 167,
       delivery_time: "15-25 min",
-      image: "",
+      image: "🍜",
       isOpen: true,
       specialOffer: null,
       minOrder: "Ksh 249",
@@ -118,9 +119,10 @@ export default function CustomerOutlets() {
 
   if (authLoading || loading) {
     return (
-      <div className="container text-center mt-5 py-5">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading...</span>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Loading...</p>
         </div>
       </div>
     );
@@ -146,41 +148,43 @@ export default function CustomerOutlets() {
 
       <SpecialOffer />
 
-      <div className="container py-4">
-        <div className="row">
-          {searchedOutlets.length > 0 ? (
-            searchedOutlets.map(outlet => (
-              <OutletCard
-                key={outlet.id}
-                outlet={outlet}
-                isFavorite={favorites.includes(outlet.id)}
-                onToggleFavorite={toggleFavorite}
-              />
-            ))
-          ) : (
-            <div className="col-12 text-center py-5">
-              <div className="text-muted mb-3">
-                <i className="bi bi-emoji-frown display-1"></i>
+      <div className="px-4 py-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-wrap -mx-2">
+            {searchedOutlets.length > 0 ? (
+              searchedOutlets.map(outlet => (
+                <OutletCard
+                  key={outlet.id}
+                  outlet={outlet}
+                  isFavorite={favorites.includes(outlet.id)}
+                  onToggleFavorite={toggleFavorite}
+                />
+              ))
+            ) : (
+              <div className="w-full text-center py-12">
+                <div className="text-muted-foreground mb-4">
+                  <FaFrown className="text-6xl mx-auto opacity-50" />
+                </div>
+                <h3 className="text-xl font-semibold text-muted-foreground mb-4">No outlets found</h3>
+                <button 
+                  className="px-6 py-2 border border-primary text-primary rounded-lg font-medium hover:bg-primary/10 transition-colors"
+                  onClick={() => {
+                    setSearchQuery("");
+                    setSelectedCategory("All");
+                  }}
+                >
+                  Show All Outlets
+                </button>
               </div>
-              <h3 className="text-muted">No outlets found</h3>
-              <button 
-                className="btn btn-outline-primary mt-3"
-                onClick={() => {
-                  setSearchQuery("");
-                  setSelectedCategory("All");
-                }}
-              >
-                Show All Outlets
-              </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
 
-      <footer className="bg-light py-4 mt-4 border-top">
-        <div className="container text-center">
-          <p className="mb-0 text-muted">
-            © 2024 Food Court. Enjoy your meal!
+      <footer className="border-t py-8 mt-8">
+        <div className="max-w-7xl mx-auto px-4 text-center">
+          <p className="text-muted-foreground">
+            © 2026 Food Court. Enjoy your meal!
           </p>
         </div>
       </footer>
