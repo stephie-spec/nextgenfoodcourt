@@ -14,8 +14,10 @@
 /coverage
 
 # next.js
-/.next/
-/out/
+/.next/         # Build output and cache
+/out/           # Static export output
+.next/          # Also match without leading slash (optional)
+.next/*         # All contents
 
 # production
 /build
@@ -23,6 +25,7 @@
 # misc
 .DS_Store
 *.pem
+*.log
 
 # debug
 npm-debug.log*
@@ -32,6 +35,10 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
 # vercel
 .vercel
@@ -39,3 +46,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+Thumbs.db
