@@ -100,7 +100,7 @@ export default function Hero() {
                   Login
                 </Link>
                 <Link
-                  href="/signup"
+                  href="/register"
                   className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
                 >
                   Sign Up
