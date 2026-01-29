@@ -6,7 +6,7 @@ from extensions import db, migrate
 from models import *
 
 from routes.owner import OwnerListResource, OwnerResource
-
+from routes.order import order_bp
 
 def create_app():
     app = Flask(__name__)
@@ -24,7 +24,7 @@ def create_app():
     api.add_resource(OwnerListResource, "/owners")
     api.add_resource(OwnerResource, "/owners/<int:owner_id>")
 
-    
+    app.register_blueprint(order_bp)
     return app
 
 
