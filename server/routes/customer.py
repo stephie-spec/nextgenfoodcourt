@@ -1,6 +1,7 @@
 from flask import request
 from flask_restful import Resource
-from server.models import db, Customer, Order, Item, check_password, hash_password, password_hashed, MenuOutletItem as MOI, Outlet
+from server.models import db, Customer, check_password, hash_password, password_hashed
+from ..auth.permissions import require_customer
 # from flask_cors import cross_origin
 
 
@@ -23,20 +24,61 @@ class CustomerSignUp(Resource):
 
             name=data["name"],
             email=data["email"],
-            password_hashed=hash_password(data["password"])
         )
+        customer.set_password(data["password"])
 
         db.session.add(customer)
         db.session.commit()
 
-        return {"message": "Customer created successfully."}, 201
+        # return {"message": "Customer created successfully."}, 201
+
+        # Returning the created customer details for testing purposes
+        return {
+            "id" : customer.id,
+            "name" : customer.name,
+            "email" : customer.email
+        }, 201
 
 
 # Customer login
-class CustomerLogin(Resource):
+class CustomerDetails(Resource):
 
-    pass
+    def get (self) :
 
+        customer = require_customer ()
+
+        if not customer :
+            return { "message" : "Unauthorized" }, 401
+        
+        return {
+            "id" : customer.id,
+            "name" : customer.name,
+            "email" : customer.email
+        }, 200
+    
+    # Updating customer details
+    def put (self) :
+
+        customer = require_customer ()
+
+        if not customer :
+
+            return { "error" : "Unauthorized"}, 401
+        
+        data = request.get_json()
+        customer.name = data.get("name", customer.name)
+        customer.email = data.get("email", customer.email)
+        if data.get("password") :
+            customer.set_password ( data["password"] )
+        
+        db.session.commit()
+
+        # return { "message" : "Details updated successfully"}
+        return {
+            "id" : customer.id,
+            "name" : customer.name,
+            "email" : customer.email
+        }, 200
 
 # View list of all outlets
 class ListOutlets(Resource):
@@ -93,7 +135,8 @@ class CustomerTableBooking(Resource):
 # To be moved to app.py
 
 api.add_resource(CustomerSignUp, "/api/customer/signup")
-api.add_resource(CustomerLogin, "/api/customer/login")
+api.add_resource(CustomerDetails, "/api/customer/login")
+
 api.add_resource(ListOutlets, "/api/customer/outlets")
 api.add_resource(OutletMenu, "/api/customer/outlet/<int:outlet_id>/menu")
 api.add_resource(CreateOrder, "/api/customer/order")
