@@ -8,12 +8,12 @@ export default function CategoryFilter({
       <div className="d-flex flex-wrap gap-2">
         {categories.map(category => (
           <button
-            key={category.name}
+            key={category}  
             type="button"
-            className={`btn ${selectedCategory === category.name ? 'btn-primary' : 'btn-outline-primary'}`}
-            onClick={() => setSelectedCategory(category.name)}
+            className={`btn ${selectedCategory === category ? 'btn-primary' : 'btn-outline-primary'}`} 
+            onClick={() => setSelectedCategory(category)} 
           >
-            {category.name}
+            {category} 
           </button>
         ))}
       </div>
