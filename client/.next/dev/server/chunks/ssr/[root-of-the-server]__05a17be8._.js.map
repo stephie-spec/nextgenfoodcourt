@@ -1,6 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "sections": [
-    {"offset": {"line": 40, "column": 0}, "map": {"version":3,"sources":["file:///home/abiud/Development/code/phase-5/nextgenfoodcourt/client/src/pages/_document.js"],"sourcesContent":["import { Html, Head, Main, NextScript } from \"next/document\";\n\nexport default function Document() {\n  return (\n    <Html lang=\"en\">\n      <Head />\n      <body>\n        <Main />\n        <NextScript />\n      </body>\n    </Html>\n  );\n}\n"],"names":[],"mappings":";;;;;AAAA;;;AAEe,SAAS;IACtB,qBACE,qKAAC,oMAAI;QAAC,MAAK;;0BACT,qKAAC,oMAAI;;;;;0BACL,qKAAC;;kCACC,qKAAC,oMAAI;;;;;kCACL,qKAAC,0MAAU;;;;;;;;;;;;;;;;;AAInB"}}]
-}

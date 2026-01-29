@@ -6,7 +6,6 @@ from extensions import db, migrate
 from models import *
 
 from routes.owner import OwnerListResource, OwnerResource
-from routes.order import OrderListResource, OrderResource
 
 
 def create_app():
@@ -24,8 +23,6 @@ def create_app():
 
     api.add_resource(OwnerListResource, "/owners")
     api.add_resource(OwnerResource, "/owners/<int:owner_id>")
-    api.add_resource(OrderListResource, "/orders")
-    api.add_resource(OrderResource, "/orders/<int:order_id>")
 
     
     return app
