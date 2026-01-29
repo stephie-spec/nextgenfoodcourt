@@ -4,7 +4,9 @@ import enum
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Enum, UniqueConstraint
 
-db = SQLAlchemy()
+# db = SQLAlchemy()
+from extensions import db
+
 class OrderStatus(enum.Enum):
     pending = "pending"
     completed = "completed"
@@ -55,7 +57,7 @@ class Outlet(db.Model):
 
     owner = db.relationship(
         "Owner",
-        back_populates="outlet"
+        back_populates="outlets"
     )
     menu_items = db.relationship(
         "MenuOutletItem",
