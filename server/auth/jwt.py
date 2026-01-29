@@ -4,6 +4,22 @@ from flask import current_app
 from models import Owner, Customer
 
 
+def generate_token(user_id, role):
+    payload = {
+        "id": user_id,
+        "role": role,
+        "exp": datetime.utcnow() + timedelta(hours=24)
+    }
+
+    token = jwt.encode(
+        payload,
+        current_app.config["SECRET_KEY"],
+        algorithm="HS256"
+    )
+
+    return token
+
+
 def decode_token (token) :
     try:
 
