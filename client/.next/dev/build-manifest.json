@@ -1,0 +1,60 @@
+{
+  "pages": {
+    "/": [
+      "static/chunks/a7c5b_next_dist_compiled_e40b9019._.js",
+      "static/chunks/a7c5b_next_dist_shared_lib_af30a3ee._.js",
+      "static/chunks/a7c5b_next_dist_client_9be7e745._.js",
+      "static/chunks/a7c5b_next_dist_41e8c62a._.js",
+      "static/chunks/a7c5b_next_c6c524e5._.js",
+      "static/chunks/a7c5b_react-dom_4c92f00b._.js",
+      "static/chunks/a7c5b_c9aec900._.js",
+      "static/chunks/[root-of-the-server]__b962478a._.js",
+      "static/chunks/[root-of-the-server]__cd79f13a._.css",
+      "static/chunks/Development_code_phase-5_nextgenfoodcourt_client_src_pages_index_2da965e7._.js",
+      "static/chunks/81ae9_code_phase-5_nextgenfoodcourt_client_src_pages_index_58d56a57._.js"
+    ],
+    "/_app": [
+      "static/chunks/a7c5b_next_dist_compiled_cbb4237f._.js",
+      "static/chunks/a7c5b_next_dist_shared_lib_e36f12c9._.js",
+      "static/chunks/a7c5b_next_dist_client_169a04dd._.js",
+      "static/chunks/a7c5b_next_dist_41e8c62a._.js",
+      "static/chunks/a7c5b_react-dom_4c92f00b._.js",
+      "static/chunks/a7c5b_c9aec900._.js",
+      "static/chunks/[root-of-the-server]__5c140d5a._.js",
+      "static/chunks/Development_code_phase-5_nextgenfoodcourt_client_src_styles_globals_242cdc98.css",
+      "static/chunks/Development_code_phase-5_nextgenfoodcourt_client_src_pages__app_2da965e7._.js",
+      "static/chunks/81ae9_code_phase-5_nextgenfoodcourt_client_src_pages__app_bc81ece7._.js"
+    ],
+    "/_error": [
+      "static/chunks/a7c5b_next_dist_compiled_cbb4237f._.js",
+      "static/chunks/a7c5b_next_dist_shared_lib_f66df13a._.js",
+      "static/chunks/a7c5b_next_dist_client_169a04dd._.js",
+      "static/chunks/a7c5b_next_dist_d2cb98cc._.js",
+      "static/chunks/a7c5b_next_error_e078ed38.js",
+      "static/chunks/[next]_entry_page-loader_ts_20974703._.js",
+      "static/chunks/a7c5b_react-dom_4c92f00b._.js",
+      "static/chunks/a7c5b_f2656145._.js",
+      "static/chunks/[root-of-the-server]__d294b233._.js",
+      "static/chunks/Development_code_phase-5_nextgenfoodcourt_client_src_pages__error_2da965e7._.js",
+      "static/chunks/81ae9_code_phase-5_nextgenfoodcourt_client_src_pages__error_e7124f9e._.js"
+    ],
+    "/login": [
+      "static/chunks/a7c5b_next_dist_compiled_cbb4237f._.js",
+      "static/chunks/a7c5b_next_dist_shared_lib_e36f12c9._.js",
+      "static/chunks/a7c5b_next_dist_client_169a04dd._.js",
+      "static/chunks/a7c5b_next_dist_41e8c62a._.js",
+      "static/chunks/a7c5b_react-dom_4c92f00b._.js",
+      "static/chunks/a7c5b_c9aec900._.js",
+      "static/chunks/[root-of-the-server]__785d0f15._.js",
+      "static/chunks/Development_code_phase-5_nextgenfoodcourt_client_src_pages_login_2da965e7._.js",
+      "static/chunks/81ae9_code_phase-5_nextgenfoodcourt_client_src_pages_login_65d6565f._.js"
+    ]
+  },
+  "devFiles": [],
+  "polyfillFiles": [],
+  "lowPriorityFiles": [
+    "static/development/_ssgManifest.js",
+    "static/development/_buildManifest.js"
+  ],
+  "rootMainFiles": []
+}

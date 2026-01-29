@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 12, "column": 0}, "map": {"version":3,"sources":["file:///home/abiud/Development/code/phase-5/nextgenfoodcourt/client/src/pages/_app.js"],"sourcesContent":["import \"@/styles/globals.css\";\nimport { ThemeProvider } from \"next-themes\";\n\nexport default function App({ Component, pageProps }) {\n  return (\n    <ThemeProvider attribute=\"class\" defaultTheme=\"system\" enableSystem>\n      <Component {...pageProps} />\n    </ThemeProvider>\n  );\n}\n"],"names":[],"mappings":";;;;;AACA;;;;;;;;AAEe,SAAS,IAAI,EAAE,SAAS,EAAE,SAAS,EAAE;IAClD,qBACE,qKAAC,qQAAa;QAAC,WAAU;QAAQ,cAAa;QAAS,YAAY;kBACjE,cAAA,qKAAC;YAAW,GAAG,SAAS;;;;;;;;;;;AAG9B"}}]
+}
