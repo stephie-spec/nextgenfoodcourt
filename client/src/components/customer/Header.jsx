@@ -1,6 +1,6 @@
 import { useRouter } from "next/router";
 import { useAuth } from "@/contexts/AuthContext";
-import { FaReceipt, FaStar, FaWallet, FaShop, FaUser } from "react-icons/fa";
+import { FaReceipt, FaStar, FaWallet, FaStore, FaUser } from "react-icons/fa";
 
 export default function CustomerHeader({ stats }) {
   const router = useRouter();
@@ -32,7 +32,7 @@ export default function CustomerHeader({ stats }) {
           
           <div className="flex flex-wrap gap-2">
             <button className="px-4 py-2 bg-white/30 rounded-lg font-medium hover:bg-white/40 transition-colors flex items-center">
-              <FaShop className="mr-2" />
+              <FaStore className="mr-2" />
               Outlets
             </button>
             <button 

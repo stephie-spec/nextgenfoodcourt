@@ -46,66 +46,69 @@ export default function Login() {
   };
 
   return (
-    // <div className="container mt-5">
-    //   <div className="row justify-content-center">
-    //     <div className="col-md-5">
-    //       <div className="card shadow">
-    //         <div className="card-body">
-    //           <h3 className="text-center mb-4">Login</h3>
+    <div>Login</div>
+    /*
+    <div className="container mt-5">
+      <div className="row justify-content-center">
+        <div className="col-md-5">
+          <div className="card shadow">
+            <div className="card-body">
+              <h3 className="text-center mb-4">Login</h3>
 
-    //           <form onSubmit={handleSubmit}>
+              <form onSubmit={handleSubmit}>
                 
-    //             <div className="mb-3">
-    //               <label className="form-label">Login as</label>
-    //               <select
-    //                 className="form-select"
-    //                 name="role"
-    //                 value={formData.role}
-    //                 onChange={handleChange}
-    //               >
-    //                 <option value="customer">Customer</option>
-    //                 <option value="owner">Owner</option>
-    //               </select>
-    //             </div>
+                <div className="mb-3">
+                  <label className="form-label">Login as</label>
+                  <select
+                    className="form-select"
+                    name="role"
+                    value={formData.role}
+                    onChange={handleChange}
+                  >
+                    <option value="customer">Customer</option>
+                    <option value="owner">Owner</option>
+                  </select>
+                </div>
 
               
-    //             <div className="mb-3">
-    //               <label className="form-label">Email</label>
-    //               <input
-    //                 type="email"
-    //                 className="form-control"
-    //                 name="email"
-    //                 value={formData.email}
-    //                 onChange={handleChange}
-    //                 required
-    //               />
-    //             </div>
+                <div className="mb-3">
+                  <label className="form-label">Email</label>
+                  <input
+                    type="email"
+                    className="form-control"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
 
                 
-    //             <div className="mb-3">
-    //               <label className="form-label">Password</label>
-    //               <input
-    //                 type="password"
-    //                 className="form-control"
-    //                 name="password"
-    //                 value={formData.password}
-    //                 onChange={handleChange}
-    //                 required
-    //               />
-    //             </div>
+                <div className="mb-3">
+                  <label className="form-label">Password</label>
+                  <input
+                    type="password"
+                    className="form-control"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
 
-    //             <button type="submit" className="btn btn-primary w-100">
-    //               Login
-    //             </button>
-    //           </form>
+                <button type="submit" className="btn btn-primary w-100">
+                  Login
+                </button>
+              </form>
 
-    //           <p className="text-center mt-3">
-    //             Don't have an account? <a href="/register">Register</a>
-    //           </p>
-    //         </div>
-    //       </div>
-    //     </div>
-    //   </div>
-    // </div>
+              <p className="text-center mt-3">
+                Don't have an account? <a href="/register">Register</a>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    */
   );
 }
