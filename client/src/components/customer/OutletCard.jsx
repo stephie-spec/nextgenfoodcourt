@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import { FaStar, FaClock, FaHeart, FaPercent } from "react-icons/fa";
+import { FaStar, FaClock, FaPercent } from "react-icons/fa";
 
 export default function OutletCard({ outlet, isFavorite, onToggleFavorite }) {
   const router = useRouter();
@@ -20,7 +20,7 @@ export default function OutletCard({ outlet, isFavorite, onToggleFavorite }) {
               className={`btn btn-sm ${isFavorite ? 'btn-danger' : 'btn-outline-danger'}`}
               onClick={() => onToggleFavorite(outlet.id)}
             >
-              <FaHeart />
+              <FaStar />
             </button>
           </div>
         </div>
