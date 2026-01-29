@@ -36,7 +36,7 @@ class OwnerListResource(Resource):
         owner = Owner(
             name=data["name"],
             email=data["email"],
-            password_hashed=data["password_hashed"]
+            password_hashed=hashed_password
         )
 
         db.session.add(owner)
