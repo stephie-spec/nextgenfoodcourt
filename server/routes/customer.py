@@ -7,7 +7,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 # from flask_cors import cross_origin
 
-
+# NOTE: password_hashed is the column name in the Customer model
 
 # Customer registration
 class CustomerSignUp(Resource):
