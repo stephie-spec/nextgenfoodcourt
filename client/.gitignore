@@ -55,3 +55,8 @@ next-env.d.ts
 
 # OS
 Thumbs.db
+
+# Frontend images 
+client/public/static/images/
+client/public/img/
+client/.next/static/media/
