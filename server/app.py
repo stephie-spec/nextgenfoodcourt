@@ -7,9 +7,10 @@ from models import *   # keeping this ONLY to match your original
 
 from routes.owner import OwnerListResource, OwnerResource
 from routes.order import OrderListResource, OrderResource
-from routes.order import OrderListResource, OrderResource
 from routes.item import ItemListResource, ItemResource
 from routes.menu import MenuListResource, MenuResource
+from routes.customer import CustomerLoginResource, CustomerDetails, CustomerSignUp
+from routes.outlet import ListOutlets, OutletResource, OutletMenu
 
 def create_app():
     app = Flask(__name__)
@@ -28,11 +29,17 @@ def create_app():
     api.add_resource(OwnerListResource, "/owners")
     api.add_resource(OwnerResource, "/owners/<int:owner_id>")
     api.add_resource(OrderListResource, "/orders")
-    api.add_resource(OrderResource, "/orders/<int:order_id>")    api.add_resource(OrderListResource, "/orders")
+    api.add_resource(OrderResource, "/orders/<int:order_id>")
     api.add_resource(ItemListResource, "/items")
     api.add_resource(ItemResource, "/items/<int:item_id>")
     api.add_resource(MenuListResource, "/menu")
     api.add_resource(MenuResource, "/menu/<int:menu_id>")
+    api.add_resource(CustomerLoginResource, "/api/customer/login")
+    api.add_resource(CustomerDetails, "/api/customer/details")
+    api.add_resource(CustomerSignUp, "/api/customer/signup")
+    api.add_resource(ListOutlets, "/api/outlets")
+    api.add_resource(OutletResource, "/outlets/<int:outlet_id>")
+    api.add_resource(OutletMenu, "/api/outlet/<int:outlet_id>/menu")
 
 
     return app

@@ -121,7 +121,7 @@ class CustomerLoginResource(Resource) :
         
         customer = Customer.query.filter_by ( email = email ).first()
 
-        if not customer or not customer.check_password_hash(customer.password_hashed, password):
+        if not customer or not check_password_hash(customer.password_hashed, password):
 
             return { "message" : "Wrong email or password."}, 401
         
@@ -135,13 +135,5 @@ class CustomerLoginResource(Resource) :
                 "email": customer.email
             }
         }, 200
-
-
-# To be moved to app.py :
-
-# api.add_resource(CustomerSignUp, "/api/customer/signup")
-# api.add_resource(CustomerDetails, "/api/customer/details")
-# api.add_resource(CustomerLoginResource, "/api/customer/login")
-
 
 
