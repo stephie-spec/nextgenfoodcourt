@@ -121,7 +121,7 @@ class CustomerLoginResource(Resource) :
         
         customer = Customer.query.filter_by ( email = email ).first()
 
-        if not customer or not customer.check_password_hash(customer.password_hashed, password):
+        if not customer or not check_password_hash(customer.password_hashed, password):
 
             return { "message" : "Wrong email or password."}, 401
         

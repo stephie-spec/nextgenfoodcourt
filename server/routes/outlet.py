@@ -17,7 +17,7 @@ class ListOutlets(Resource):
 
         return {"outlets": outlet_list}, 200
     
-    # Create a new outlet - Onwer-only route
+    # Create a new outlet - Owner-only route
     def post (self) :
 
         owner = require_owner()
@@ -44,8 +44,9 @@ class ListOutlets(Resource):
             "category_name" : outlet.category_name,
             "owner_id" : outlet.owner_id
         }, 201
-        
 
+
+# View a specific outlet details
 class OutletResource(Resource):
 
     def get(self, outlet_id):
@@ -79,10 +80,8 @@ class OutletResource(Resource):
 
         data = request.get_json()
 
-        outlet.name = data.get("name", outlet.name)
-        outlet.category_name = data.get(
-            "category_name", outlet.category_name
-        )
+        outlet.name = data.get( "name", outlet.name )
+        outlet.category_name = data.get("category_name", outlet.category_name )
 
         db.session.commit()
 
@@ -127,7 +126,7 @@ class OutletMenu(Resource):
         if not outlet:
             return {"message": "Outlet not found."}, 404
         
-        # MOI -MenuOutletItem
+        # MenuOutletItem entries for this outlet
         menu_links = MenuOutletItem.query.filter_by(outlet_id=outlet.id).all()
         menu = [{
             "item_name": link.item.name,
