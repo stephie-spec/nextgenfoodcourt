@@ -137,11 +137,3 @@ class CustomerLoginResource(Resource) :
         }, 200
 
 
-# To be moved to app.py :
-
-# api.add_resource(CustomerSignUp, "/api/customer/signup")
-# api.add_resource(CustomerDetails, "/api/customer/details")
-# api.add_resource(CustomerLoginResource, "/api/customer/login")
-
-
-

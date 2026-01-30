@@ -3,8 +3,7 @@ from flask import request
 from werkzeug.security import generate_password_hash, check_password_hash
 from models import db, Owner
 
-# owner_bp = Blueprint("owner_bp", __name__)
-# api = Api(owner_bp)
+
 
 class OwnerListResource(Resource):
     def get(self):

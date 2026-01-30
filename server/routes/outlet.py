@@ -136,10 +136,3 @@ class OutletMenu(Resource):
 
         return {"outlet": outlet.name, "menu": menu}, 200
     
-
-
-# To be moved to app.py :
-
-# api.add_resource(ListOutlets, "/api/outlets")
-# api.add_resource(OutletResource, "/outlets/<int:outlet_id>")
-# api.add_resource(OutletMenu, "/api/outlet/<int:outlet_id>/menu")
