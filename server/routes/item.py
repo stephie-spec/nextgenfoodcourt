@@ -1,0 +1,69 @@
+from flask_restful import Resource
+from flask import request
+from models import db, Item
+
+
+class ItemListResource(Resource):
+
+    def get(self):
+        items = Item.query.all()
+        return [
+            {
+                "id": item.id,
+                "name": item.name,
+                "price": item.price
+            }
+            for item in items
+        ], 200
+
+    def post(self):
+        data = request.get_json()
+
+        if not data:
+            return {"error": "Request body required"}, 400
+
+        if "name" not in data or "price" not in data:
+            return {"error": "name and price are required"}, 400
+
+        item = Item(
+            name=data["name"],
+            price=data["price"]
+        )
+
+        db.session.add(item)
+        db.session.commit()
+
+        return {
+            "message": "Item created",
+            "item_id": item.id
+        }, 201
+
+
+class ItemResource(Resource):
+
+    def get(self, item_id):
+        item = Item.query.get_or_404(item_id)
+        return {
+            "id": item.id,
+            "name": item.name,
+            "price": item.price
+        }, 200
+
+    def put(self, item_id):
+        item = Item.query.get_or_404(item_id)
+        data = request.get_json()
+
+        if "name" in data:
+            item.name = data["name"]
+
+        if "price" in data:
+            item.price = data["price"]
+
+        db.session.commit()
+        return {"message": "Item updated"}, 200
+
+    def delete(self, item_id):
+        item = Item.query.get_or_404(item_id)
+        db.session.delete(item)
+        db.session.commit()
+        return {"message": "Item deleted"}, 204
