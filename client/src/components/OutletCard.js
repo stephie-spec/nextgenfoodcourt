@@ -4,14 +4,14 @@ import { Store, MapPin, Star, Tag, Users, CheckCircle } from 'lucide-react';
 import Image from 'next/image';
 
 export default function OutletCard({ outlet, isOwner = false }) {
-  // Sample outlet images
+  // outlet images
   const outletImages = {
-    'Addis Kitchen': '/ethiopian-food.jpg',
-    'Lagos Grill': '/nigerian-food.jpg',
-    'Nairobi Flame': '/kenyan-food.jpg',
-    'Kinshasa Kitchen': '/congolese-food.jpg',
-    'Cairo Oasis': '/egyptian-food.jpg',
-    'Cape Town Grill': '/south-african-food.jpg',
+    'Addis Kitchen': '/img/ethiopian-food.jpg',
+    'Lagos Grill': '/img/nigerian-food.jpg',
+    'Nairobi Flame': '/img/kenyan-food.jpg',
+    'Kinshasa Kitchen': '/img/congolese-food.jpg',
+    'Cairo Oasis': '/img/egyptian-food.jpg',
+    'Cape Town Grill': '/img/south-african-food.jpg',
   };
 
   const imageSrc = outletImages[outlet.name] || '/placeholder-outlet.jpg';
