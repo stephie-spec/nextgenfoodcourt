@@ -14,10 +14,9 @@
 /coverage
 
 # next.js
-/.next/         # Build output and cache
 /out/           # Static export output
 .next/          # Also match without leading slash (optional)
-.next/*         # All contents
+.next/
 
 # production
 /build

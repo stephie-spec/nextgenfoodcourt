@@ -30,7 +30,7 @@ export default function PopularItems() {
   const mockPopularDishes = [
     {
       id: 1,
-      name: 'Ethiopian Injera Platter',
+      name: 'Borewors Oven Pizza',
       outlet: 'Addis Kitchen',
       price: '$12.99',
       rating: 4.8,
@@ -40,7 +40,7 @@ export default function PopularItems() {
     },
     {
       id: 2,
-      name: 'Nigerian Jollof Rice',
+      name: 'Wings & Suya Combo',
       outlet: 'Lagos Grill',
       price: '$11.99',
       rating: 4.9,
@@ -50,7 +50,7 @@ export default function PopularItems() {
     },
     {
       id: 3,
-      name: 'Kenyan Nyama Choma',
+      name: 'Ethiopian Ainjera Platter',
       outlet: 'Nairobi Flame',
       price: '$15.99',
       rating: 4.7,
@@ -60,8 +60,8 @@ export default function PopularItems() {
     },
     {
       id: 4,
-      name: 'Congolese Fufu & Fish',
-      outlet: 'Kinshasa Kitchen',
+      name: 'Biriani Rice Bowl',
+      outlet: 'Watamu Kitchen',
       price: '$13.99',
       rating: 4.6,
       reviews: 128,
