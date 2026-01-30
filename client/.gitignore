@@ -14,10 +14,9 @@
 /coverage
 
 # next.js
-/.next/         # Build output and cache
 /out/           # Static export output
 .next/          # Also match without leading slash (optional)
-.next/*         # All contents
+.next/
 
 # production
 /build
@@ -55,3 +54,8 @@ next-env.d.ts
 
 # OS
 Thumbs.db
+
+# Frontend images 
+client/public/static/images/
+client/public/img/
+client/.next/static/media/
