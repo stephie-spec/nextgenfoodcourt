@@ -14,7 +14,7 @@ export const authOptions = {
         // Determine which endpoint to call based on role
         const endpoint = credentials.role === 'customer' 
           ? 'http://localhost:5555/api/customer/login'
-          : 'http://localhost:5555/owners/login';
+          : 'http://localhost:5555/api/owner/login';
         
         return fetch(endpoint, {
           method: 'POST',
