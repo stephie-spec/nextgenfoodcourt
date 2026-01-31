@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from flask import current_app
 from models import Owner, Customer
 
+DEFAULT_SECRET_KEY = "12345"
 
 def generate_token(user_id, role):
     payload = {

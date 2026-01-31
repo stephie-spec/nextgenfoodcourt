@@ -10,38 +10,54 @@ export const authOptions = {
         password: { label: "Password", type: "password" },
         role: { label: "Role", type: "text" }
       },
-      authorize(credentials) {
-        // Determine which endpoint to call based on role
-        const endpoint = credentials.role === 'customer' 
-          ? 'http://localhost:5555/api/customer/login'
-          : 'http://localhost:5555/api/owner/login';
+      async authorize(credentials) {
+        // Determine endpoint based on role
+        let endpoint;
+        if (credentials.role === 'customer') {
+          endpoint = 'http://localhost:5555/api/customer/login';
+        } else if (credentials.role === 'owner') {
+          endpoint = 'http://localhost:5555/owners/login'; 
+        } else {
+          return null;
+        }
         
-        return fetch(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: credentials.email,
-            password: credentials.password
-          })
-        })
-          .then(response => {
-            if (!response.ok) return null;
-            return response.json();
-          })
-          .then(user => {
-            if (user && (user.id || user.owner?.id)) {
-              const userData = user.owner || user;
-              return {
-                id: userData.id.toString(),
-                email: userData.email,
-                name: userData.name || userData.email,
-                role: credentials.role,
-                token: user.token || userData.token
-              };
-            }
+        try {
+          const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: credentials.email,
+              password: credentials.password
+            })
+          });
+
+          if (!response.ok) {
+            console.error('Login failed:', response.status);
             return null;
-          })
-          .catch(() => null);
+          }
+
+          const data = await response.json();
+          
+          if (data.token) {
+            // Store token in localStorage for API calls
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('auth_token', data.token);
+              localStorage.setItem('user_role', credentials.role);
+            }
+            
+            return {
+              id: data.customer?.id?.toString() || data.owner?.id?.toString(),
+              email: data.customer?.email || data.owner?.email,
+              name: data.customer?.name || data.owner?.name || credentials.email,
+              role: credentials.role,
+              token: data.token
+            };
+          }
+          return null;
+        } catch (error) {
+          console.error('Auth error:', error);
+          return null;
+        }
       }
     })
   ],
@@ -62,11 +78,13 @@ export const authOptions = {
   },
   pages: {
     signIn: '/login',
+    error: '/login'
   },
   session: {
     strategy: 'jwt',
+    maxAge: 24 * 60 * 60 // 24 hours
   },
-  secret: process.env.NEXTAUTH_SECRET || 'your-secret-key',
+  secret: process.env.NEXTAUTH_SECRET || 'your-nextauth-secret-key',
 };
 
 export default NextAuth(authOptions);
