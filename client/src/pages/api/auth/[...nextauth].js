@@ -10,20 +10,30 @@ export const authOptions = {
         password: { label: "Password", type: "password" },
         role: { label: "Role", type: "text" }
       },
-      authorize(credentials) {
-        // user check
-        const users = {
-          'customer@example.com': { password: 'password123', name: 'John Customer', role: 'customer', id: '1' },
-          'owner@example.com': { password: 'password123', name: 'Sarah Owner', role: 'owner', id: '2' },
-        };
+      async authorize(credentials) {
+        try {
+          // Call your Flask backend API
+          const response = await fetch('http://localhost:5000/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(credentials)
+          });
 
-        const user = users[credentials.email];
-        
-        if (user && user.password === credentials.password && user.role === credentials.role) {
-          return { id: user.id, email: credentials.email, name: user.name, role: user.role };
+          const user = await response.json();
+          
+          if (response.ok && user) {
+            return {
+              id: user.id.toString(),
+              email: user.email,
+              name: user.name,
+              role: user.role
+            };
+          }
+          return null;
+        } catch (error) {
+          console.error('Auth error:', error);
+          return null;
         }
-        
-        return null;
       }
     })
   ],
