@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtual environments
+venv/
+server/venv/
+
+# Databases
+*.db
+server/app.db
+server/instance/*.db
+
+# Pipenv
+Pipfile
+Pipfile.lock
+server/Pipfile
+server/Pipfile.lock
+
+# Flask
+instance/
+server/instance/
+
+# Migrations (if you don’t want them tracked)
+server/migrations/versions/
+
+# OS
+.DS_Store
+
