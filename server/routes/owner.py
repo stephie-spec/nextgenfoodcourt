@@ -2,7 +2,8 @@ from flask_restful import Resource
 from flask import request
 from werkzeug.security import generate_password_hash, check_password_hash
 from models import db, Owner
-
+from auth.permissions import require_owner
+from auth.jwt import generate_token
 
 
 class OwnerListResource(Resource):
