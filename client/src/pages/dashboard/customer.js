@@ -24,73 +24,73 @@ export default function CustomerDashboard() {
 
   useEffect(() => {
     const mockOutlets = [
-  { 
-    id: 1, 
-    name: 'Addis Kitchen', 
-    category_name: 'Ethiopian Cuisine',
-    description: 'Authentic Ethiopian dishes with traditional injera bread.',
-    rating: 4.8,
-    reviews: '128',
-    isOpen: true,
-    isFavorite: true,
-    tags: ['ethiopian', 'injera', 'traditional']
-  },
-  { 
-    id: 2, 
-    name: 'Lagos Grill', 
-    category_name: 'Nigerian Cuisine',
-    description: 'Vibrant Nigerian flavors with signature jollof rice.',
-    rating: 4.6,
-    reviews: '89',
-    isOpen: true,
-    isFavorite: false,
-    tags: ['nigerian', 'jollof', 'spicy']
-  },
-  { 
-    id: 3, 
-    name: 'Nairobi Flame', 
-    category_name: 'Kenyan Cuisine',
-    description: 'Traditional Kenyan grilled meats cooked over charcoal.',
-    rating: 4.9,
-    reviews: '156',
-    isOpen: true,
-    isFavorite: true,
-    tags: ['kenyan', 'nyama-choma', 'bbq']
-  },
-  { 
-    id: 4, 
-    name: 'Kinshasa Kitchen', 
-    category_name: 'Congolese Cuisine',
-    description: 'Authentic Congolese dishes featuring traditional methods.',
-    rating: 4.7,
-    reviews: '76',
-    isOpen: true,
-    isFavorite: false,
-    tags: ['congolese', 'fufu', 'fish']
-  },
-  { 
-    id: 5, 
-    name: 'Cairo Oasis', 
-    category_name: 'Egyptian Cuisine',
-    description: 'Traditional Egyptian street food from the heart of Cairo.',
-    rating: 4.5,
-    reviews: '92',
-    isOpen: true,
-    isFavorite: false,
-    tags: ['egyptian', 'koshari', 'street-food']
-  },
-  { 
-    id: 6, 
-    name: 'Cape Town Grill', 
-    category_name: 'South African Cuisine',
-    description: 'Modern South African braai with a contemporary twist.',
-    rating: 4.8,
-    reviews: '104',
-    isOpen: true,
-    isFavorite: true,
-    tags: ['south-african', 'braai', 'modern']
-  },
-];
+      {
+        id: 1,
+        name: 'Addis Kitchen',
+        category_name: 'Ethiopian Cuisine',
+        description: 'Authentic Ethiopian dishes with traditional injera bread.',
+        rating: 4.8,
+        reviews: '128',
+        isOpen: true,
+        isFavorite: true,
+        tags: ['ethiopian', 'injera', 'traditional']
+      },
+      {
+        id: 2,
+        name: 'Lagos Grill',
+        category_name: 'Nigerian Cuisine',
+        description: 'Vibrant Nigerian flavors with signature jollof rice.',
+        rating: 4.6,
+        reviews: '89',
+        isOpen: true,
+        isFavorite: false,
+        tags: ['nigerian', 'jollof', 'spicy']
+      },
+      {
+        id: 3,
+        name: 'Nairobi Flame',
+        category_name: 'Kenyan Cuisine',
+        description: 'Traditional Kenyan grilled meats cooked over charcoal.',
+        rating: 4.9,
+        reviews: '156',
+        isOpen: true,
+        isFavorite: true,
+        tags: ['kenyan', 'nyama-choma', 'bbq']
+      },
+      {
+        id: 4,
+        name: 'Kinshasa Kitchen',
+        category_name: 'Congolese Cuisine',
+        description: 'Authentic Congolese dishes featuring traditional methods.',
+        rating: 4.7,
+        reviews: '76',
+        isOpen: true,
+        isFavorite: false,
+        tags: ['congolese', 'fufu', 'fish']
+      },
+      {
+        id: 5,
+        name: 'Cairo Oasis',
+        category_name: 'Egyptian Cuisine',
+        description: 'Traditional Egyptian street food from the heart of Cairo.',
+        rating: 4.5,
+        reviews: '92',
+        isOpen: true,
+        isFavorite: false,
+        tags: ['egyptian', 'koshari', 'street-food']
+      },
+      {
+        id: 6,
+        name: 'Cape Town Grill',
+        category_name: 'South African Cuisine',
+        description: 'Modern South African braai with a contemporary twist.',
+        rating: 4.8,
+        reviews: '104',
+        isOpen: true,
+        isFavorite: true,
+        tags: ['south-african', 'braai', 'modern']
+      },
+    ];
     const mockOrders = [
       {
         id: 'ORD-001',
@@ -156,36 +156,36 @@ export default function CustomerDashboard() {
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <StatCard
-  title="Active Orders"
-  value={activeOrders.length}
-  icon="pending"
-  description="being prepared"
-  color="orange"
-/>
+            title="Active Orders"
+            value={activeOrders.length}
+            icon="pending"
+            description="being prepared"
+            color="orange"
+          />
 
-<StatCard
-  title="Table Bookings"
-  value="2"
-  icon="users"
-  description="this month"
-  color="green"
-/>
+          <StatCard
+            title="Table Bookings"
+            value="2"
+            icon="users"
+            description="this month"
+            color="green"
+          />
 
-<StatCard
-  title="Your Rating"
-  value="4.7★"
-  icon="star"
-  description="average given"
-  color="yellow"
-/>
+          <StatCard
+            title="Your Rating"
+            value="4.7★"
+            icon="star"
+            description="average given"
+            color="yellow"
+          />
 
-<StatCard
-  title="Total Orders"
-  value={orders.length}
-  icon="orders"
-  description="this month"
-  color="purple"
-/>
+          <StatCard
+            title="Total Orders"
+            value={orders.length}
+            icon="orders"
+            description="this month"
+            color="purple"
+          />
         </div>
 
         {/* Tabs Navigation */}
