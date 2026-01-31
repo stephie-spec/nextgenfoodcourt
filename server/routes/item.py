@@ -1,7 +1,7 @@
 from flask_restful import Resource
 from flask import request
 from models import db, Item
-
+from auth.permissions import require_owner
 
 class ItemListResource(Resource):
 
@@ -50,8 +50,15 @@ class ItemResource(Resource):
         }, 200
 
     def put(self, item_id):
+        owner = require_owner()
+        if not owner:
+            return {"error": "Owner access required"}, 403
+
         item = Item.query.get_or_404(item_id)
         data = request.get_json()
+
+        if not data:
+            return {"error": "Request body required"}, 400
 
         if "name" in data:
             item.name = data["name"]
@@ -63,6 +70,9 @@ class ItemResource(Resource):
         return {"message": "Item updated"}, 200
 
     def delete(self, item_id):
+        owner = require_owner()
+        if not owner:
+            return {"error": "Owner access required"}, 403
         item = Item.query.get_or_404(item_id)
         db.session.delete(item)
         db.session.commit()
