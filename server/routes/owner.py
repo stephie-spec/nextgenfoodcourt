@@ -5,7 +5,33 @@ from models import db, Owner
 from auth.permissions import require_owner
 from auth.jwt import generate_token
 
+class OwnerLoginResource(Resource):
 
+    def post(self):
+        data = request.get_json()
+
+        email = data.get("email")
+        password = data.get("password")
+
+        if not email or not password:
+            return {"message": "Email and password required."}, 400
+
+        owner = Owner.query.filter_by(email=email).first()
+
+        if not owner or not check_password_hash(owner.password_hashed, password):
+            return {"message": "Wrong email or password."}, 401
+
+        token = generate_token(owner.id, "owner")
+
+        return {
+            "token": token,
+            "owner": {
+                "id": owner.id,
+                "name": owner.name,
+                "email": owner.email
+            }
+        }, 200
+        
 class OwnerListResource(Resource):
     def get(self):
         owners = Owner.query.all()
