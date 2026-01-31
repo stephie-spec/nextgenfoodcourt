@@ -31,7 +31,7 @@ class OwnerLoginResource(Resource):
                 "email": owner.email
             }
         }, 200
-        
+
 class OwnerListResource(Resource):
     def get(self):
         owners = Owner.query.all()
@@ -106,3 +106,45 @@ class OwnerResource(Resource):
         db.session.commit()
 
         return {"message": "Owner deleted successfully"}, 204
+class OwnerAccountResource(Resource):
+
+    def get(self):
+        owner = require_owner()
+        if not owner:
+            return {"message": "Unauthorized"}, 401
+
+        return {
+            "id": owner.id,
+            "name": owner.name,
+            "email": owner.email
+        }, 200
+
+    def put(self):
+        owner = require_owner()
+        if not owner:
+            return {"message": "Unauthorized"}, 401
+
+        data = request.get_json()
+        owner.name = data.get("name", owner.name)
+        owner.email = data.get("email", owner.email)
+
+        if "password" in data:
+            owner.password_hashed = generate_password_hash(data["password"])
+
+        db.session.commit()
+
+        return {
+            "id": owner.id,
+            "name": owner.name,
+            "email": owner.email
+        }, 200
+
+    def delete(self):
+        owner = require_owner()
+        if not owner:
+            return {"message": "Unauthorized"}, 401
+
+        db.session.delete(owner)
+        db.session.commit()
+
+        return {"message": "Account deleted successfully"}, 200
