@@ -121,7 +121,7 @@ export default function MenuPage() {
                          outlet.items.some(item => item.name.toLowerCase().includes(searchQuery.toLowerCase()));
     return matchesCuisine && matchesSearch;
   });
-  
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20">
       {/* Hero Section */}
@@ -259,5 +259,113 @@ export default function MenuPage() {
                   </div>
                 </div>
               </div>
+ {/* Menu Items Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+                {outlet.items.map((item, index) => (
+                  <div
+                    key={index}
+                    className="group bg-card rounded-2xl overflow-hidden border border-border hover:border-primary/50 hover:shadow-2xl hover:shadow-primary/10 transition-all duration-300"
+                  >
+                    {/* Food Image */}
+                    <div className="relative h-44 overflow-hidden">
+                      <Image
+                        src={item.image}
+                        alt={item.name}
+                        fill
+                        className="object-cover group-hover:scale-110 transition-transform duration-500"
+                      />
+                      <div className="absolute top-3 left-3 bg-primary/90 text-primary-foreground text-sm font-bold px-3 py-1 rounded-full shadow-lg">
+                        ${item.price.toFixed(2)}
+                      </div>
+                      <div className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-lg">
+                        {item.calories} cal
+                      </div>
+                    </div>
+
+                    {/* Card Content */}
+                    <div className="p-4 space-y-3">
+                      <h3 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors">
+                        {item.name}
+                      </h3>
+                      <p className="text-sm text-muted-foreground line-clamp-2">
+                        {item.description}
+                      </p>
+
+                      <div className="flex items-center gap-2 pt-2">
+                        <button 
+                          onClick={() => setCartCount(prev => prev + 1)}
+                          className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground text-sm font-semibold rounded-xl hover:bg-primary/90 transition-all hover:shadow-lg hover:shadow-primary/25"
+                        >
+                          <ShoppingCart className="w-4 h-4" />
+                          Add to Cart
+                        </button>
+                        <button className="p-2.5 bg-secondary hover:bg-secondary/80 rounded-xl transition-colors">
+                          <Heart className="w-5 h-5 text-muted-foreground group-hover:text-red-500 transition-colors" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          ))}
+
+          {/* No Results */}
+          {filteredOutlets.length === 0 && (
+            <div className="text-center py-20">
+              <div className="w-24 h-24 mx-auto mb-6 bg-secondary rounded-full flex items-center justify-center">
+                <Search className="w-12 h-12 text-muted-foreground" />
+              </div>
+              <h3 className="text-xl font-semibold text-foreground mb-2">No results found</h3>
+              <p className="text-muted-foreground">Try adjusting your search or filter</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Floating Cart Button */}
+      {cartCount > 0 && (
+        <div className="fixed bottom-8 right-8 z-50">
+          <button className="flex items-center gap-3 px-6 py-4 bg-primary text-primary-foreground font-bold rounded-full shadow-2xl shadow-primary/40 hover:scale-110 transition-transform animate-bounce">
+            <ShoppingCart className="w-5 h-5" />
+            <span>{cartCount} Items</span>
+            <span className="px-2 py-0.5 bg-primary-foreground text-primary rounded-full text-sm">
+              ${(cartCount * 12).toFixed(2)}
+            </span>
+          </button>
+        </div>
+      )}
+    </main>
+  );
+}
+
+// Custom icons
+function ShoppingCart(props) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+    </svg>
+  );
+}
+
+function Heart(props) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+    </svg>
+  );
+}
 
 
