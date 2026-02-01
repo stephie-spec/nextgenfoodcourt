@@ -2,9 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image'; // Optimized image handling
+import Link from 'next/link'; // Client-side navigation
 import { ShoppingCart, Heart, Plus, Minus } from 'lucide-react'; // UI icons
 
 export default function FeaturedItems() {
+  const [MenuPage, setMenuPage] = useState(null);
   // Tracks item quantities in cart (keyed by item ID)
   const [cartItems, setCartItems] = useState({});
   // Tracks wishlist state per item
@@ -179,10 +181,10 @@ export default function FeaturedItems() {
 
         {/* View full menu CTA */}
         <div className="mt-12 text-center">
-          <button className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-bold rounded-xl hover:bg-primary/90 transition-all duration-300 transform hover:scale-105">
+          <Link href="/dashboard/menu" className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-bold rounded-xl hover:bg-primary/90 transition-all duration-300 transform hover:scale-105">
             View Full Menu
             <ChevronRight className="w-5 h-5" />
-          </button>
+          </Link>
         </div>
       </div>
     </section>
