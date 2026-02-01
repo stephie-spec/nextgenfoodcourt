@@ -16,7 +16,7 @@ export const authOptions = {
         if (credentials.role === 'customer') {
           endpoint = 'http://localhost:5555/api/customer/login';
         } else if (credentials.role === 'owner') {
-          endpoint = 'http://localhost:5555/owners/login'; 
+          endpoint = 'http://localhost:5555/api/owner/login'; 
         } else {
           return null;
         }
