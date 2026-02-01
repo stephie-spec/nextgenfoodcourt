@@ -19,6 +19,11 @@ def serialize_order(order):
 
 class OrderListResource(Resource):
     def get(self):
+        owner=require_owner()
+        
+        if not owner:
+            return {"error":"Unauthorized"},401
+
         orders = Order.query.all()
         return [serialize_order(o) for o in orders], 200
 

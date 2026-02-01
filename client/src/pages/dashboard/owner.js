@@ -8,6 +8,7 @@ import OrderCard from '@/components/OrderCard';
 import Tabs from '@/components/Tabs';
 import AuthGuard from '@/components/AuthGuard';
 import { Search, Filter, Plus, Package, DollarSign, Users, TrendingUp, Store } from 'lucide-react';
+import { apiHelper } from '@/lib/apiHelper'; 
 
 export default function OwnerDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
@@ -23,111 +24,137 @@ export default function OwnerDashboard() {
     { id: 'menu', label: 'Menu Items' },
   ];
 
-  useEffect(() => {
-    const mockOutlets = [
-      { 
-        id: 1, 
-        name: 'Addis Kitchen', 
-        category_name: 'Ethiopian Cuisine',
-        description: 'Authentic Ethiopian dishes with traditional injera bread. Family recipes passed down for generations.',
-        rating: 4.8,
-        today_orders: 24,
-        today_revenue: 1248.50,
-        total_orders: 128,
-        reviews: 89,
-        status: 'active',
-        minOrder: 15,
-        deliveryTime: '25-35',
-        tags: ['ethiopian', 'injera', 'vegetarian', 'traditional']
-      },
-      { 
-        id: 2, 
-        name: 'Lagos Grill', 
-        category_name: 'Nigerian Cuisine',
-        description: 'Vibrant Nigerian flavors with signature jollof rice and grilled specialties.',
-        rating: 4.6,
-        today_orders: 18,
-        today_revenue: 876.25,
-        total_orders: 96,
-        reviews: 67,
-        status: 'active',
-        minOrder: 18,
-        deliveryTime: '30-40',
-        tags: ['nigerian', 'jollof', 'spicy', 'party']
-      },
-      { 
-        id: 3, 
-        name: 'Nairobi Flame', 
-        category_name: 'Kenyan Cuisine',
-        description: 'Traditional Kenyan grilled meats cooked over charcoal, served fresh and smoky.',
-        rating: 4.9,
-        today_orders: 12,
-        today_revenue: 642.75,
-        total_orders: 72,
-        reviews: 52,
-        status: 'active',
-        minOrder: 22,
-        deliveryTime: '35-45',
-        tags: ['kenyan', 'nyama-choma', 'bbq', 'grilled']
-      },
-    ];
-    
-    const mockOrders = [
-      { 
-        id: 1,
-        customer_name: 'Michael Chen',
-        created_at: new Date().toISOString(),
-        estimated_status: 'pending',
-        total: 45.99,
-        outlet_name: 'Addis Kitchen',
-        outlet: { name: 'Addis Kitchen' },
-        items: [
-          { name: 'Injera Platter', quantity: 1, price: 22.99 },
-          { name: 'Doro Wat', quantity: 1, price: 18.99 }
-        ],
-        table_booking: null
-      },
-      { 
-        id: 2,
-        customer_name: 'Sarah Johnson',
-        created_at: new Date().toISOString(),
-        estimated_status: 'preparing',
-        total: 29.50,
-        outlet_name: 'Lagos Grill',
-        outlet: { name: 'Lagos Grill' },
-        items: [
-          { name: 'Jollof Rice Combo', quantity: 1, price: 16.99 },
-          { name: 'Fried Plantains', quantity: 1, price: 7.99 }
-        ],
-        table_booking: { table_number: 5, capacity: 4 }
-      },
-      { 
-        id: 3,
-        customer_name: 'David Kim',
-        created_at: new Date().toISOString(),
-        estimated_status: 'ready',
-        total: 67.25,
-        outlet_name: 'Nairobi Flame',
-        outlet: { name: 'Nairobi Flame' },
-        items: [
-          { name: 'Nyama Choma Feast', quantity: 1, price: 32.99 },
-          { name: 'Ugali', quantity: 2, price: 17.98 }
-        ],
-        table_booking: null
-      },
-    ];
 
-    const mockMenuItems = [
-      { id: 1, name: 'Injera Platter', price: 22.99, isAvailable: true, outlet: 'Addis Kitchen', category: 'Main' },
-      { id: 2, name: 'Doro Wat', price: 18.99, isAvailable: true, outlet: 'Addis Kitchen', category: 'Main' },
-      { id: 3, name: 'Jollof Rice', price: 16.99, isAvailable: true, outlet: 'Lagos Grill', category: 'Main' },
-      { id: 4, name: 'Fried Plantains', price: 7.99, isAvailable: false, outlet: 'Lagos Grill', category: 'Side' },
-      { id: 5, name: 'Nyama Choma', price: 32.99, isAvailable: true, outlet: 'Nairobi Flame', category: 'Main' },
-    ];
+  const mockOutlets = [
+    {
+      id: 1,
+      name: 'Addis Kitchen',
+      category_name: 'Ethiopian Cuisine',
+      description: 'Authentic Ethiopian dishes with traditional injera bread. Family recipes passed down for generations.',
+      rating: 4.8,
+      today_orders: 24,
+      today_revenue: 1248.50,
+      total_orders: 128,
+      reviews: 89,
+      status: 'active',
+      minOrder: 15,
+      deliveryTime: '25-35',
+      tags: ['ethiopian', 'injera', 'vegetarian', 'traditional']
+    },
+    {
+      id: 2,
+      name: 'Lagos Grill',
+      category_name: 'Nigerian Cuisine',
+      description: 'Vibrant Nigerian flavors with signature jollof rice and grilled specialties.',
+      rating: 4.6,
+      today_orders: 18,
+      today_revenue: 876.25,
+      total_orders: 96,
+      reviews: 67,
+      status: 'active',
+      minOrder: 18,
+      deliveryTime: '30-40',
+      tags: ['nigerian', 'jollof', 'spicy', 'party']
+    },
+    {
+      id: 3,
+      name: 'Nairobi Flame',
+      category_name: 'Kenyan Cuisine',
+      description: 'Traditional Kenyan grilled meats cooked over charcoal, served fresh and smoky.',
+      rating: 4.9,
+      today_orders: 12,
+      today_revenue: 642.75,
+      total_orders: 72,
+      reviews: 52,
+      status: 'active',
+      minOrder: 22,
+      deliveryTime: '35-45',
+      tags: ['kenyan', 'nyama-choma', 'bbq', 'grilled']
+    },
+  ];
 
-    setOutlets(mockOutlets);
-    setOrders(mockOrders);
-    setMenuItems(mockMenuItems);
+  const mockOrders = [
+    {
+      id: 1,
+      customer_name: 'Michael Chen',
+      created_at: new Date().toISOString(),
+      estimated_status: 'pending',
+      total: 45.99,
+      outlet_name: 'Addis Kitchen',
+      outlet: { name: 'Addis Kitchen' },
+      items: [
+        { name: 'Injera Platter', quantity: 1, price: 22.99 },
+        { name: 'Doro Wat', quantity: 1, price: 18.99 }
+      ],
+      table_booking: null
+    },
+    {
+      id: 2,
+      customer_name: 'Sarah Johnson',
+      created_at: new Date().toISOString(),
+      estimated_status: 'preparing',
+      total: 29.50,
+      outlet_name: 'Lagos Grill',
+      outlet: { name: 'Lagos Grill' },
+      items: [
+        { name: 'Jollof Rice Combo', quantity: 1, price: 16.99 },
+        { name: 'Fried Plantains', quantity: 1, price: 7.99 }
+      ],
+      table_booking: { table_number: 5, capacity: 4 }
+    },
+    {
+      id: 3,
+      customer_name: 'David Kim',
+      created_at: new Date().toISOString(),
+      estimated_status: 'ready',
+      total: 67.25,
+      outlet_name: 'Nairobi Flame',
+      outlet: { name: 'Nairobi Flame' },
+      items: [
+        { name: 'Nyama Choma Feast', quantity: 1, price: 32.99 },
+        { name: 'Ugali', quantity: 2, price: 17.98 }
+      ],
+      table_booking: null
+    },
+  ];
+
+  const mockMenuItems = [
+    { id: 1, name: 'Injera Platter', price: 22.99, isAvailable: true, outlet: 'Addis Kitchen', category: 'Main' },
+    { id: 2, name: 'Doro Wat', price: 18.99, isAvailable: true, outlet: 'Addis Kitchen', category: 'Main' },
+    { id: 3, name: 'Jollof Rice', price: 16.99, isAvailable: true, outlet: 'Lagos Grill', category: 'Main' },
+    { id: 4, name: 'Fried Plantains', price: 7.99, isAvailable: false, outlet: 'Lagos Grill', category: 'Side' },
+    { id: 5, name: 'Nyama Choma', price: 32.99, isAvailable: true, outlet: 'Nairobi Flame', category: 'Main' },
+  ];
+
+useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      const token = localStorage.getItem('auth_token');
+      
+      try {
+        // Use apiHelper for outlets and orders
+        const outletsData = await apiHelper.getOutlets();
+        const ordersData = await apiHelper.getOrders();
+        
+        // For menu items
+        const menuResponse = await fetch('http://localhost:5555/menu');
+        const menuData = menuResponse.ok ? await menuResponse.json() : [];
+        
+        setOutlets(outletsData);
+        setOrders(ordersData);
+        setMenuItems(menuData);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        // Fallback to mock data
+        setOutlets(mockOutlets);
+        setOrders(mockOrders);
+        setMenuItems(mockMenuItems);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
 
   const totalRevenueToday = outlets.reduce((sum, outlet) => sum + outlet.today_revenue, 0);
@@ -143,7 +170,7 @@ export default function OwnerDashboard() {
   return (
     <AuthGuard requiredRole="owner">
       <DashboardLayout title="Owner Dashboard">
-        {/* Stats Grid - Always visible */}
+        {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <StatCard
             title="Today's Revenue"
@@ -153,7 +180,7 @@ export default function OwnerDashboard() {
             description="vs yesterday"
             color="green"
           />
-          
+
           <StatCard
             title="Today's Orders"
             value={totalOrdersToday}
@@ -162,7 +189,7 @@ export default function OwnerDashboard() {
             description="from yesterday"
             color="primary"
           />
-          
+
           <StatCard
             title="Pending Orders"
             value={pendingOrders}
@@ -170,7 +197,7 @@ export default function OwnerDashboard() {
             description="need attention"
             color="orange"
           />
-          
+
           <StatCard
             title="Avg Rating"
             value={`${avgRating}★`}
@@ -194,13 +221,13 @@ export default function OwnerDashboard() {
                   <p className="text-3xl font-bold mb-1">Addis Kitchen</p>
                   <p className="text-primary-foreground/80">$1,248 today</p>
                 </div>
-                
+
                 <div className="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-2xl p-6">
                   <h3 className="text-lg font-bold mb-2">Most Ordered</h3>
                   <p className="text-3xl font-bold mb-1">Jollof Rice</p>
                   <p className="text-white/80">42 orders today</p>
                 </div>
-                
+
                 <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-2xl p-6">
                   <h3 className="text-lg font-bold mb-2">Table Bookings</h3>
                   <p className="text-3xl font-bold mb-1">8</p>
@@ -212,14 +239,14 @@ export default function OwnerDashboard() {
               <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-xl font-bold text-gray-900">Recent Orders</h2>
-                  <button 
+                  <button
                     onClick={() => setActiveTab('orders')}
                     className="text-primary font-medium hover:text-primary/80"
                   >
                     View All →
                   </button>
                 </div>
-                
+
                 <div className="space-y-4">
                   {orders.slice(0, 3).map(order => (
                     <OrderCard key={order.id} order={order} isOwner={true} />
@@ -318,7 +345,7 @@ export default function OwnerDashboard() {
                     </button>
                   </div>
                 </div>
-                
+
                 <div className="space-y-4">
                   {orders.map(order => (
                     <OrderCard key={order.id} order={order} isOwner={true} />
@@ -338,7 +365,7 @@ export default function OwnerDashboard() {
                     Add Item
                   </button>
                 </div>
-                
+
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
@@ -369,11 +396,10 @@ export default function OwnerDashboard() {
                             <p className="font-bold">${item.price}</p>
                           </td>
                           <td className="py-4 px-4">
-                            <span className={`px-2 py-1 rounded text-xs ${
-                              item.isAvailable 
-                                ? 'bg-green-100 text-green-800' 
-                                : 'bg-red-100 text-red-800'
-                            }`}>
+                            <span className={`px-2 py-1 rounded text-xs ${item.isAvailable
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-red-100 text-red-800'
+                              }`}>
                               {item.isAvailable ? 'Available' : 'Out of Stock'}
                             </span>
                           </td>
