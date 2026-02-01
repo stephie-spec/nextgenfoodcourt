@@ -44,10 +44,10 @@ export default function Navbar() {
 
           {/* Desktop navigation links */}
           <div className="hidden lg:flex items-center gap-6">
-            <Link href="#outlets" className="text-foreground hover:text-primary transition-colors text-sm font-medium">
+            <Link href="/outlets" className="text-foreground hover:text-primary transition-colors text-sm font-medium">
               Outlets
             </Link>
-            <Link href="#menu" className="text-foreground hover:text-primary transition-colors text-sm font-medium">
+            <Link href="/dashboard/menu" className="text-foreground hover:text-primary transition-colors text-sm font-medium">
               Menu
             </Link>
             <Link href="#special" className="text-foreground hover:text-primary transition-colors text-sm font-medium">
