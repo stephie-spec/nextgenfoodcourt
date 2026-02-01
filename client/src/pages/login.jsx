@@ -15,7 +15,7 @@ export default function LoginPage() {
   const handleSubmit = (e) => {
     e.preventDefault();
     setError('');
-    
+
     signIn('credentials', {
       email,
       password,
@@ -25,6 +25,14 @@ export default function LoginPage() {
       if (result.error) {
         setError('Invalid email or password');
       } else {
+        // Store token in localStorage for API calls
+        const token = result.url?.match(/token=([^&]*)/)?.[1];
+        if (token) {
+          localStorage.setItem('auth_token', token);
+          localStorage.setItem('user_role', role);
+        }
+        
+        // Redirect based on role
         if (role === 'owner') {
           router.push('/dashboard/owner');
         } else {

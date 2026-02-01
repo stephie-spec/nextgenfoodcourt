@@ -11,29 +11,37 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('customer');
   const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setError('');
     setMessage('');
     
-    // store in localStorage for demo
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    // Determine endpoint based on role
+    const endpoint = role === 'customer' 
+      ? 'http://localhost:5555/api/customer/signup'
+      : 'http://localhost:5555/api/owner/signup';
     
-    // Check if user exists
-    if (users.find(u => u.email === email)) {
-      setMessage('User already exists');
-      return;
-    }
-    
-    const newUser = { id: Date.now(), name, email, password, role };
-    users.push(newUser);
-    localStorage.setItem('users', JSON.stringify(users));
-    
-    setMessage('Account created! Redirecting to login...');
-    
-    setTimeout(() => {
-      router.push('/login');
-    }, 1500);
+    fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password })
+    })
+      .then(response => {
+        if (!response.ok) throw new Error('Registration failed');
+        return response.json();
+      })
+      .then(data => {
+        setMessage(`${role === 'customer' ? 'Customer' : 'Owner'} account created! Redirecting to login...`);
+        
+        setTimeout(() => {
+          router.push('/login');
+        }, 1500);
+      })
+      .catch(() => {
+        setError(`${role === 'customer' ? 'Customer' : 'Owner'} registration failed. Email may already exist.`);
+      });
   };
 
   return (
@@ -106,6 +114,10 @@ export default function RegisterPage() {
                 required
               />
             </div>
+
+            {error && (
+              <div className="text-red-500 text-sm">{error}</div>
+            )}
 
             {message && (
               <div className="text-green-500 text-sm">{message}</div>
