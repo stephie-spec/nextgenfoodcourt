@@ -120,4 +120,144 @@ export default function MenuPage() {
     const matchesSearch = outlet.outletName.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          outlet.items.some(item => item.name.toLowerCase().includes(searchQuery.toLowerCase()));
     return matchesCuisine && matchesSearch;
-  })
+  });
+  
+  return (
+    <main className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20">
+      {/* Hero Section */}
+      <div className="relative bg-gradient-to-r from-primary/10 via-primary/5 to-background pt-28 pb-16 px-4 sm:px-8 lg:px-12">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
+            <div className="space-y-4">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-medium">
+                <span className="w-2 h-2 bg-primary rounded-full animate-pulse"></span>
+                {outletsData.length} Outlets • {outletsData.reduce((acc, o) => acc + o.items.length, 0)} Items
+              </div>
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground">
+                Our <span className="text-primary">Menu</span>
+              </h1>
+              <p className="text-lg text-muted-foreground max-w-xl">
+                Discover authentic African cuisine from {outletsData.length} unique outlets. 
+                From Ethiopian injera to South African bobotie, taste the continent's finest flavors.
+              </p>
+            </div>
+            
+            {/* Search & Filter */}
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                <input
+                  type="text"
+                  placeholder="Search dishes or outlets..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full sm:w-72 pl-10 pr-4 py-3 bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary transition-all"
+                />
+              </div>
+              <div className="relative">
+                <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                <select
+                  value={selectedCuisine}
+                  onChange={(e) => setSelectedCuisine(e.target.value)}
+                  className="w-full sm:w-48 pl-10 pr-8 py-3 bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer"
+                >
+                  {cuisineTypes.map((cuisine) => (
+                    <option key={cuisine} value={cuisine}>{cuisine}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Decorative elements */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-accent/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
+      </div>
+
+      {/* Cuisine Filter Pills */}
+      <div className="sticky top-16 z-40 bg-background/95 backdrop-blur-md border-b border-border py-4 px-4 sm:px-8 lg:px-12">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+            {cuisineTypes.map((cuisine) => (
+              <button
+                key={cuisine}
+                onClick={() => setSelectedCuisine(cuisine)}
+                className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+                  selectedCuisine === cuisine
+                    ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25'
+                    : 'bg-secondary text-foreground hover:bg-secondary/80'
+                }`}
+              >
+                {cuisine}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Outlets Grid */}
+      <div className="w-full px-4 sm:px-8 lg:px-12 py-12">
+        <div className="max-w-7xl mx-auto space-y-16">
+          {filteredOutlets.map((outlet) => (
+            <section key={outlet.outletId} className="relative">
+              {/* Outlet Header Card */}
+              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-card to-card/50 border border-border mb-8">
+                {/* Cover Image */}
+                <div className="absolute inset-0 h-48 lg:h-64">
+                  <Image
+                    src={outlet.coverImage}
+                    alt={outlet.outletName}
+                    fill
+                    className="object-cover opacity-30"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-card via-card/80 to-transparent"></div>
+                </div>
+                
+                <div className="relative p-6 lg:p-8 flex flex-col lg:flex-row lg:items-end gap-6">
+                  {/* Outlet Info */}
+                  <div className="flex items-start gap-4 lg:gap-6">
+                    <div className="relative w-16 h-16 lg:w-20 lg:h-20 rounded-xl overflow-hidden border-2 border-primary shadow-xl">
+                      <Image
+                        src={outlet.image}
+                        alt={outlet.outletName}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <h2 className="text-2xl lg:text-3xl font-bold text-foreground">
+                        {outlet.outletName}
+                      </h2>
+                      <div className="flex flex-wrap items-center gap-4 text-sm">
+                        <div className="flex items-center gap-1 text-muted-foreground">
+                          <MapPin className="w-4 h-4 text-primary" />
+                          {outlet.location}
+                        </div>
+                        <div className="flex items-center gap-1 text-amber-500">
+                          <Star className="w-4 h-4 fill-current" />
+                          <span className="font-semibold">{outlet.rating}</span>
+                        </div>
+                        <div className="flex items-center gap-1 text-muted-foreground">
+                          <Clock className="w-4 h-4 text-primary" />
+                          {outlet.deliveryTime}
+                        </div>
+                        <div className="flex items-center gap-1 px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-medium">
+                          <Flame className="w-3 h-3" />
+                          {outlet.cuisine}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* View Outlet Button */}
+                  <div className="lg:ml-auto">
+                    <button className="flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition-all hover:scale-105 shadow-lg shadow-primary/25">
+                      View Outlet
+                      <ChevronRight className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+
