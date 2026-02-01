@@ -3,9 +3,14 @@ from flask_restful import Api
 from flask_migrate import Migrate
 
 from extensions import db
-from models import *   # keeping this ONLY to match your original
+from models import *   
 
-from routes.owner import OwnerListResource, OwnerResource
+from routes.owner import (
+    OwnerListResource,
+    OwnerResource,
+    OwnerLoginResource,
+    OwnerAccountResource
+)
 from routes.order import OrderListResource, OrderResource
 from routes.item import ItemListResource, ItemResource
 from routes.menu import MenuListResource, MenuResource
@@ -16,6 +21,7 @@ def create_app():
     app = Flask(__name__)
 
     # CONFIG
+    app.config["SECRET_KEY"] = "super-secret-key-change-me"
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///app.db"
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
@@ -28,6 +34,8 @@ def create_app():
     # ROUTES
     api.add_resource(OwnerListResource, "/owners")
     api.add_resource(OwnerResource, "/owners/<int:owner_id>")
+    api.add_resource(OwnerLoginResource, "/owners/login")
+    api.add_resource(OwnerAccountResource, "/owners/me")
     api.add_resource(OrderListResource, "/orders")
     api.add_resource(OrderResource, "/orders/<int:order_id>")
     api.add_resource(ItemListResource, "/items")
