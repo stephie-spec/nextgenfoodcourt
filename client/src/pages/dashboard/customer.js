@@ -8,6 +8,7 @@ import OutletCard from '@/components/OutletCard';
 import Tabs from '@/components/Tabs';
 import AuthGuard from '@/components/AuthGuard';
 import { Search, Filter, ShoppingBag, Star, Clock, Heart, Store } from 'lucide-react';
+import { apiHelper } from '@/lib/apiHelper'; 
 
 export default function CustomerDashboard() {
   const [activeTab, setActiveTab] = useState('outlets');
@@ -15,6 +16,8 @@ export default function CustomerDashboard() {
   const [orders, setOrders] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   const tabs = [
     { id: 'outlets', label: 'Outlets' },
@@ -22,133 +25,245 @@ export default function CustomerDashboard() {
     { id: 'history', label: 'Order History' },
   ];
 
+
+  // const mockOutlets = [
+  //   {
+  //     id: 1,
+  //     name: 'Addis Kitchen',
+  //     category_name: 'Ethiopian Cuisine',
+  //     description: 'Authentic Ethiopian dishes with traditional injera bread.',
+  //     rating: 4.8,
+  //     reviews: '128',
+  //     isOpen: true,
+  //     isFavorite: true,
+  //     tags: ['ethiopian', 'injera', 'traditional']
+  //   },
+  //   {
+  //     id: 2,
+  //     name: 'Lagos Grill',
+  //     category_name: 'Nigerian Cuisine',
+  //     description: 'Vibrant Nigerian flavors with signature jollof rice.',
+  //     rating: 4.6,
+  //     reviews: '89',
+  //     isOpen: true,
+  //     isFavorite: false,
+  //     tags: ['nigerian', 'jollof', 'spicy']
+  //   },
+  //   {
+  //     id: 3,
+  //     name: 'Nairobi Flame',
+  //     category_name: 'Kenyan Cuisine',
+  //     description: 'Traditional Kenyan grilled meats cooked over charcoal.',
+  //     rating: 4.9,
+  //     reviews: '156',
+  //     isOpen: true,
+  //     isFavorite: true,
+  //     tags: ['kenyan', 'nyama-choma', 'bbq']
+  //   },
+  //   {
+  //     id: 4,
+  //     name: 'Kinshasa Kitchen',
+  //     category_name: 'Congolese Cuisine',
+  //     description: 'Authentic Congolese dishes featuring traditional methods.',
+  //     rating: 4.7,
+  //     reviews: '76',
+  //     isOpen: true,
+  //     isFavorite: false,
+  //     tags: ['congolese', 'fufu', 'fish']
+  //   },
+  //   {
+  //     id: 5,
+  //     name: 'Cairo Oasis',
+  //     category_name: 'Egyptian Cuisine',
+  //     description: 'Traditional Egyptian street food from the heart of Cairo.',
+  //     rating: 4.5,
+  //     reviews: '92',
+  //     isOpen: true,
+  //     isFavorite: false,
+  //     tags: ['egyptian', 'koshari', 'street-food']
+  //   },
+  //   {
+  //     id: 6,
+  //     name: 'Cape Town Grill',
+  //     category_name: 'South African Cuisine',
+  //     description: 'Modern South African braai with a contemporary twist.',
+  //     rating: 4.8,
+  //     reviews: '104',
+  //     isOpen: true,
+  //     isFavorite: true,
+  //     tags: ['south-african', 'braai', 'modern']
+  //   },
+  // ];
+  // const mockOrders = [
+  //   {
+  //     id: 'ORD-001',
+  //     created_at: new Date().toISOString(),
+  //     estimated_status: 'preparing',
+  //     total: 45.99,
+  //     items: [
+  //       { name: 'Injera Platter', quantity: 1, price: 22.99 },
+  //       { name: 'Doro Wat', quantity: 1, price: 18.99 }
+  //     ],
+  //     outlet: {
+  //       id: 1,
+  //       name: 'Addis Kitchen',
+  //       category_name: 'Ethiopian'
+  //     },
+  //     delivery_time: '25 mins',
+  //     customer_name: 'You'
+  //   },
+  //   {
+  //     id: 'ORD-002',
+  //     created_at: '2024-01-15T18:30:00Z',
+  //     estimated_status: 'delivered',
+  //     total: 29.50,
+  //     items: [
+  //       { name: 'Jollof Rice Combo', quantity: 1, price: 16.99 },
+  //       { name: 'Fried Plantains', quantity: 1, price: 7.99 }
+  //     ],
+  //     outlet: {
+  //       id: 2,
+  //       name: 'Lagos Grill',
+  //       category_name: 'Nigerian'
+  //     },
+  //     delivery_time: '35 mins',
+  //     customer_name: 'You'
+  //   },
+  // ];
+
+
   useEffect(() => {
-    const mockOutlets = [
-      {
-        id: 1,
-        name: 'Addis Kitchen',
-        category_name: 'Ethiopian Cuisine',
-        description: 'Authentic Ethiopian dishes with traditional injera bread.',
-        rating: 4.8,
-        reviews: '128',
-        isOpen: true,
-        isFavorite: true,
-        tags: ['ethiopian', 'injera', 'traditional']
-      },
-      {
-        id: 2,
-        name: 'Lagos Grill',
-        category_name: 'Nigerian Cuisine',
-        description: 'Vibrant Nigerian flavors with signature jollof rice.',
-        rating: 4.6,
-        reviews: '89',
-        isOpen: true,
-        isFavorite: false,
-        tags: ['nigerian', 'jollof', 'spicy']
-      },
-      {
-        id: 3,
-        name: 'Nairobi Flame',
-        category_name: 'Kenyan Cuisine',
-        description: 'Traditional Kenyan grilled meats cooked over charcoal.',
-        rating: 4.9,
-        reviews: '156',
-        isOpen: true,
-        isFavorite: true,
-        tags: ['kenyan', 'nyama-choma', 'bbq']
-      },
-      {
-        id: 4,
-        name: 'Kinshasa Kitchen',
-        category_name: 'Congolese Cuisine',
-        description: 'Authentic Congolese dishes featuring traditional methods.',
-        rating: 4.7,
-        reviews: '76',
-        isOpen: true,
-        isFavorite: false,
-        tags: ['congolese', 'fufu', 'fish']
-      },
-      {
-        id: 5,
-        name: 'Cairo Oasis',
-        category_name: 'Egyptian Cuisine',
-        description: 'Traditional Egyptian street food from the heart of Cairo.',
-        rating: 4.5,
-        reviews: '92',
-        isOpen: true,
-        isFavorite: false,
-        tags: ['egyptian', 'koshari', 'street-food']
-      },
-      {
-        id: 6,
-        name: 'Cape Town Grill',
-        category_name: 'South African Cuisine',
-        description: 'Modern South African braai with a contemporary twist.',
-        rating: 4.8,
-        reviews: '104',
-        isOpen: true,
-        isFavorite: true,
-        tags: ['south-african', 'braai', 'modern']
-      },
-    ];
-    const mockOrders = [
-      {
-        id: 'ORD-001',
-        created_at: new Date().toISOString(),
-        estimated_status: 'preparing',
-        total: 45.99,
-        items: [
-          { name: 'Injera Platter', quantity: 1, price: 22.99 },
-          { name: 'Doro Wat', quantity: 1, price: 18.99 }
-        ],
-        outlet: {
-          id: 1,
-          name: 'Addis Kitchen',
-          category_name: 'Ethiopian'
-        },
-        delivery_time: '25 mins',
-        customer_name: 'You'
-      },
-      {
-        id: 'ORD-002',
-        created_at: '2024-01-15T18:30:00Z',
-        estimated_status: 'delivered',
-        total: 29.50,
-        items: [
-          { name: 'Jollof Rice Combo', quantity: 1, price: 16.99 },
-          { name: 'Fried Plantains', quantity: 1, price: 7.99 }
-        ],
-        outlet: {
-          id: 2,
-          name: 'Lagos Grill',
-          category_name: 'Nigerian'
-        },
-        delivery_time: '35 mins',
-        customer_name: 'You'
-      },
-    ];
+    const fetchData = async () => {
+      setLoading(true);
+      setError('');
+      
+      try {
+        // Use apiHelper to fetch data
+        const [outletsData, ordersData] = await Promise.all([
+          apiHelper.getOutlets(),
+          apiHelper.getOrders()
+        ]);
+        
+        setOutlets(outletsData);
+        setOrders(ordersData);
+      } catch (err) {
+        console.error('Error fetching data:', err);
+        setError('Failed to load data. Using sample data instead.');
+        
+        // Fallback to mock data
+        const mockOutlets = [
+          { 
+            id: 1, 
+            name: 'Addis Kitchen', 
+            category_name: 'Ethiopian Cuisine',
+            description: 'Authentic Ethiopian dishes with traditional injera bread.',
+            rating: 4.8,
+            reviews: '128',
+            isOpen: true,
+            isFavorite: true,
+            tags: ['ethiopian', 'injera', 'traditional']
+          },
+          { 
+            id: 2, 
+            name: 'Lagos Grill', 
+            category_name: 'Nigerian Cuisine',
+            description: 'Vibrant Nigerian flavors with signature jollof rice.',
+            rating: 4.6,
+            reviews: '89',
+            isOpen: true,
+            isFavorite: false,
+            tags: ['nigerian', 'jollof', 'spicy']
+          },
+          { 
+            id: 3, 
+            name: 'Nairobi Flame', 
+            category_name: 'Kenyan Cuisine',
+            description: 'Traditional Kenyan grilled meats cooked over charcoal.',
+            rating: 4.9,
+            reviews: '156',
+            isOpen: true,
+            isFavorite: true,
+            tags: ['kenyan', 'nyama-choma', 'bbq']
+          },
+        ];
 
-    setOutlets(mockOutlets);
-    setOrders(mockOrders);
+        
+        const mockOrders = [
+          { 
+            id: 'ORD-001', 
+            created_at: new Date().toISOString(),
+            estimated_status: 'preparing',
+            total: 45.99,
+            items: [
+              { name: 'Injera Platter', quantity: 1, price: 22.99 },
+              { name: 'Doro Wat', quantity: 1, price: 18.99 }
+            ],
+            outlet: {
+              id: 1,
+              name: 'Addis Kitchen',
+              category_name: 'Ethiopian'
+            },
+            delivery_time: '25 mins',
+            customer_name: 'You'
+          },
+          { 
+            id: 'ORD-002', 
+            created_at: '2024-01-15T18:30:00Z',
+            estimated_status: 'delivered',
+            total: 29.50,
+            items: [
+              { name: 'Jollof Rice Combo', quantity: 1, price: 16.99 },
+              { name: 'Fried Plantains', quantity: 1, price: 7.99 }
+            ],
+            outlet: {
+              id: 2,
+              name: 'Lagos Grill',
+              category_name: 'Nigerian'
+            },
+            delivery_time: '35 mins',
+            customer_name: 'You'
+          },
+        ];        
+        setOutlets(mockOutlets);
+        setOrders(mockOrders);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
+  // Ensure outlets is always an array before filtering
+  const filteredOutlets = Array.isArray(outlets) 
+    ? outlets.filter(outlet => {
+        if (!outlet) return false;
+        
+        const matchesSearch = outlet.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                             outlet.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                             (Array.isArray(outlet.tags) && outlet.tags.some(tag => 
+                               tag?.toLowerCase().includes(searchTerm.toLowerCase())
+                             ));
+        
+        const matchesCategory = selectedCategory === 'all' || 
+                               outlet.category_name?.toLowerCase().includes(selectedCategory.toLowerCase()) ||
+                               (Array.isArray(outlet.tags) && outlet.tags.some(tag => 
+                                 tag?.toLowerCase() === selectedCategory.toLowerCase()
+                               ));
+        
+        return matchesSearch && matchesCategory;
+      })
+    : [];
 
-  const activeOrders = orders.filter(o => o.estimated_status !== 'delivered');
-  const pastOrders = orders.filter(o => o.estimated_status === 'delivered');
-
-  // Filter outlets based on search and category
-  const filteredOutlets = outlets.filter(outlet => {
-    const matchesSearch = outlet.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      outlet.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      outlet.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
-
-    const matchesCategory = selectedCategory === 'all' ||
-      outlet.category_name.toLowerCase().includes(selectedCategory.toLowerCase()) ||
-      outlet.tags.some(tag => tag.toLowerCase() === selectedCategory.toLowerCase());
-
-    return matchesSearch && matchesCategory;
-  });
+  const activeOrders = Array.isArray(orders) 
+    ? orders.filter(o => o.estimated_status !== 'delivered')
+    : [];
+    
+  const pastOrders = Array.isArray(orders) 
+    ? orders.filter(o => o.estimated_status === 'delivered')
+    : [];
 
   const categories = ['all', 'ethiopian', 'nigerian', 'kenyan', 'congolese', 'egyptian', 'south-african'];
+
 
   return (
     <AuthGuard requiredRole="customer">
