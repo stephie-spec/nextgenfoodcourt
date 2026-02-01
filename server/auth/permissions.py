@@ -1,15 +1,16 @@
 
 from flask import request
-
+from auth.jwt import decode_token
+from models import Owner, Customer
 
 def get_current_user () :
 
-    token = request.headers.get ( "Authorization" )
+    bearer = request.headers.get ( "Authorization" )
 
-    if not token :
+    if not bearer or not bearer.startswith ( "Bearer " ) :
         return None
     
-    from auth.jwt import decode_token
+    token = bearer.split ( " " )[ 1 ]
 
     return decode_token ( token )
 
@@ -18,7 +19,7 @@ def require_owner () :
 
     user = get_current_user ()
 
-    if not user or user.__class__.__name__ != "Owner" :
+    if not isinstance ( user, Owner ) :
         return None
     
     return user
@@ -27,7 +28,7 @@ def require_customer() :
 
     user = get_current_user ()
 
-    if not user or user.__class__.__name__ != "Customer" :
+    if not isinstance ( user, Customer ) :
         return None
     
     return user
