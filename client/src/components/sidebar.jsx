@@ -1,12 +1,21 @@
 'use client'; // Marks this as a Client Component (uses state & interactivity)
 
 import React, { useState } from 'react';
-import { ChevronRight, Home, Utensils, Star, Info, Phone, X } from 'lucide-react'; // Sidebar icons
-import Image from 'next/image'; // Optimized image component
+import { ChevronRight, Home, Utensils, Star, Info, Phone, X, LayoutDashboard, Store, ShoppingBag } from 'lucide-react';
+import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 
 export default function Sidebar() {
   // Controls whether the sidebar is open or closed
   const [isOpen, setIsOpen] = useState(false);
+  const pathname = usePathname();
+
+  // Sidebar not on dashboard pages
+  const isDashboardPage = pathname?.startsWith('/dashboard');
+  if (isDashboardPage) {
+    return null;
+  }
+
 
   // Sidebar navigation items
   const menuItems = [
@@ -15,6 +24,13 @@ export default function Sidebar() {
     { icon: Utensils, label: 'All Outlets', href: '#outlets' },
     { icon: Info, label: 'About Us', href: '#about' },
     { icon: Phone, label: 'Contact', href: '#contact' },
+  ];
+
+  // Dashboard menu items for quick access
+  const dashboardItems = [
+    { icon: LayoutDashboard, label: 'Customer Dashboard', href: '/dashboard/customer' },
+    { icon: Store, label: 'Owner Dashboard', href: '/dashboard/owner' },
+    { icon: ShoppingBag, label: 'My Orders', href: '#' },
   ];
 
   return (
@@ -41,6 +57,28 @@ export default function Sidebar() {
             <div className="w-12 h-12 bg-gradient-to-br from-primary to-accent rounded-lg flex items-center justify-center">
               <span className="text-white text-xl">🍽️</span>
             </div>
+          </div>
+
+          {/* Dashboard Quick Links */}
+          <div className="mb-6">
+            <h3 className="text-xs text-muted-foreground font-medium mb-3 px-2">Dashboard Access</h3>
+            <ul className="space-y-2">
+              {dashboardItems.map((item, index) => {
+                const Icon = item.icon;
+                return (
+                  <li key={index}>
+                    <a
+                      href={item.href}
+                      onClick={() => setIsOpen(false)}
+                      className="flex items-center gap-3 px-3 py-2 text-sm text-foreground hover:bg-secondary rounded-lg transition-colors border border-border"
+                    >
+                      <Icon className="w-4 h-4 text-primary" />
+                      <span className="font-medium">{item.label}</span>
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
           </div>
 
           {/* Navigation links */}

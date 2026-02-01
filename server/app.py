@@ -1,15 +1,14 @@
 from flask import Flask
 from flask_restful import Api
 from flask_migrate import Migrate
+from flask_cors import CORS
 
 from extensions import db
 from models import *   
-
 from routes.owner import (
-    OwnerListResource,
-    OwnerResource,
     OwnerLoginResource,
-    OwnerAccountResource
+    OwnerSignUp,
+    OwnerDetails
 )
 from routes.order import OrderListResource, OrderResource
 from routes.item import ItemListResource, ItemResource
@@ -24,6 +23,9 @@ def create_app():
     app.config["SECRET_KEY"] = "super-secret-key-change-me"
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///app.db"
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    app.config["SECRET_KEY"] = "12345"
+
+    CORS(app)
 
     # INIT EXTENSIONS
     db.init_app(app)
@@ -32,10 +34,9 @@ def create_app():
     api = Api(app)
 
     # ROUTES
-    api.add_resource(OwnerListResource, "/owners")
-    api.add_resource(OwnerResource, "/owners/<int:owner_id>")
-    api.add_resource(OwnerLoginResource, "/owners/login")
-    api.add_resource(OwnerAccountResource, "/owners/me")
+    api.add_resource(OwnerSignUp, '/api/owner/signup')
+    api.add_resource(OwnerLoginResource, '/api/owner/login')
+    api.add_resource(OwnerDetails, '/api/owner/details')
     api.add_resource(OrderListResource, "/orders")
     api.add_resource(OrderResource, "/orders/<int:order_id>")
     api.add_resource(ItemListResource, "/items")
