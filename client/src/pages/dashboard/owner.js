@@ -16,6 +16,7 @@ export default function OwnerDashboard() {
   const [orders, setOrders] = useState([]);
   const [menuItems, setMenuItems] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(true);
 
   const tabs = [
     { id: 'overview', label: 'Overview' },
