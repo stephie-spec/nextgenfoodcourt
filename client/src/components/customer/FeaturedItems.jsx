@@ -3,12 +3,13 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image'; // Optimized image handling
 import Link from 'next/link'; // Client-side navigation
-import { ShoppingCart, Heart, Plus, Minus } from 'lucide-react'; // UI icons
+import { ShoppingCart, Heart, Plus, Minus, Check } from 'lucide-react'; // UI icons
+import { useCart } from '@/lib/CartContext'; // Cart context for shared state
 
 export default function FeaturedItems() {
-  const [MenuPage, setMenuPage] = useState(null);
-  // Tracks item quantities in cart (keyed by item ID)
-  const [cartItems, setCartItems] = useState({});
+  // Use CartContext instead of local state
+  const { cartItems, addToCart, removeFromCart, getItemQuantity } = useCart();
+  
   // Tracks wishlist state per item
   const [wishlist, setWishlist] = useState({});
   // Featured menu items
@@ -37,33 +38,17 @@ export default function FeaturedItems() {
     fetchItems();
   }, []);
 
-  // Increase quantity of an item in cart
-  const addToCart = (itemId) => {
-    setCartItems((prev) => ({
-      ...prev,
-      [itemId]: (prev[itemId] || 0) + 1,
-    }));
-  };
-
-  // Decrease quantity or remove item from cart
-  const removeFromCart = (itemId) => {
-    setCartItems((prev) => {
-      const newCart = { ...prev };
-      if (newCart[itemId] > 1) {
-        newCart[itemId]--;
-      } else {
-        delete newCart[itemId];
-      }
-      return newCart;
-    });
-  };
-
   // Toggle wishlist status for an item
   const toggleWishlist = (itemId) => {
     setWishlist((prev) => ({
       ...prev,
       [itemId]: !prev[itemId],
     }));
+  };
+
+  // Handle add to cart with feedback
+  const handleAddToCart = (item) => {
+    addToCart(item.id);
   };
 
   return (
@@ -93,90 +78,96 @@ export default function FeaturedItems() {
 
         {/* Items grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-          {items.map((item) => (
-            <div
-              key={item.id}
-              className="bg-background rounded-xl overflow-hidden border border-border hover:border-primary transition-all duration-300 group shadow-md hover:shadow-xl"
-            >
-              {/* Item image and actions */}
-              <div className="relative h-32 sm:h-40 overflow-hidden bg-muted">
-                <Image
-                  src={item.image || "/placeholder.svg"}
-                  alt={item.name}
-                  fill
-                  className="object-cover group-hover:scale-110 transition-transform duration-300"
-                />
-
-                {/* Category label */}
-                <div className="absolute top-3 left-3 bg-primary/90 text-primary-foreground text-xs font-bold px-3 py-1 rounded-full">
-                  {item.category}
-                </div>
-
-                {/* Wishlist toggle */}
-                <button
-                  onClick={() => toggleWishlist(item.id)}
-                  className="absolute top-3 right-3 p-2 bg-white/90 rounded-full hover:bg-white transition-colors"
-                  aria-label="Add to wishlist"
-                >
-                  <Heart
-                    className={`w-5 h-5 ${
-                      wishlist[item.id]
-                        ? 'fill-red-500 text-red-500'
-                        : 'text-muted-foreground'
-                    }`}
+          {items.map((item) => {
+            const quantity = getItemQuantity(item.id);
+            
+            return (
+              <div
+                key={item.id}
+                className="bg-background rounded-xl overflow-hidden border border-border hover:border-primary transition-all duration-300 group shadow-md hover:shadow-xl"
+              >
+                {/* Item image and actions */}
+                <div className="relative h-32 sm:h-40 overflow-hidden bg-muted">
+                  <Image
+                    src={item.image || "/placeholder.svg"}
+                    alt={item.name}
+                    fill
+                    className="object-cover group-hover:scale-110 transition-transform duration-300"
                   />
-                </button>
-              </div>
 
-              {/* Item details */}
-              <div className="p-4 space-y-3">
-                <h4 className="font-bold text-foreground">
-                  {item.name}
-                </h4>
+                  {/* Category label */}
+                  <div className="absolute top-3 left-3 bg-primary/90 text-primary-foreground text-xs font-bold px-3 py-1 rounded-full">
+                    {item.category}
+                  </div>
 
-                <p className="text-sm text-muted-foreground line-clamp-2">
-                  {item.description}
-                </p>
+                  {/* Wishlist toggle */}
+                  <button
+                    onClick={() => toggleWishlist(item.id)}
+                    className="absolute top-3 right-3 p-2 bg-white/90 rounded-full hover:bg-white transition-colors"
+                    aria-label="Add to wishlist"
+                  >
+                    <Heart
+                      className={`w-5 h-5 ${
+                        wishlist[item.id]
+                          ? 'fill-red-500 text-red-500'
+                          : 'text-muted-foreground'
+                      }`}
+                    />
+                  </button>
+                </div>
 
-                {/* Price and cart controls */}
-                <div className="flex items-end justify-between pt-2 border-t border-border">
-                  <span className="text-xl font-bold text-primary">
-                    ${item.price.toFixed(2)}
-                  </span>
+                {/* Item details */}
+                <div className="p-4 space-y-3">
+                  <h4 className="font-bold text-foreground">
+                    {item.name}
+                  </h4>
 
-                  {cartItems[item.id] ? (
-                    // Quantity controls if item is in cart
-                    <div className="flex items-center gap-2 bg-secondary rounded-lg">
+                  <p className="text-sm text-muted-foreground line-clamp-2">
+                    {item.description}
+                  </p>
+
+                  {/* Price and cart controls */}
+                  <div className="flex items-end justify-between pt-2 border-t border-border">
+                    <span className="text-xl font-bold text-primary">
+                      ${item.price.toFixed(2)}
+                    </span>
+
+                    {quantity > 0 ? (
+                      // Quantity controls if item is in cart
+                      <div className="flex items-center gap-2 bg-secondary rounded-lg p-1">
+                        <button
+                          onClick={() => removeFromCart(item.id)}
+                          className="p-1.5 hover:text-primary hover:bg-background rounded-md transition-colors"
+                          aria-label="Decrease quantity"
+                        >
+                          <Minus className="w-4 h-4" />
+                        </button>
+                        <span className="w-6 text-center text-sm font-semibold">
+                          {quantity}
+                        </span>
+                        <button
+                          onClick={() => handleAddToCart(item)}
+                          className="p-1.5 hover:text-primary hover:bg-background rounded-md transition-colors"
+                          aria-label="Increase quantity"
+                        >
+                          <Plus className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      // Add-to-cart button
                       <button
-                        onClick={() => removeFromCart(item.id)}
-                        className="p-1 hover:text-primary transition-colors"
+                        onClick={() => handleAddToCart(item)}
+                        className="flex items-center gap-1.5 px-3 py-2 bg-primary text-primary-foreground text-sm font-semibold rounded-lg hover:bg-primary/90 transition-all active:scale-95"
                       >
-                        <Minus className="w-4 h-4" />
+                        <ShoppingCart className="w-4 h-4" />
+                        Add
                       </button>
-                      <span className="w-5 text-center text-sm font-semibold">
-                        {cartItems[item.id]}
-                      </span>
-                      <button
-                        onClick={() => addToCart(item.id)}
-                        className="p-1 hover:text-primary transition-colors"
-                      >
-                        <Plus className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ) : (
-                    // Add-to-cart button
-                    <button
-                      onClick={() => addToCart(item.id)}
-                      className="flex items-center gap-1 px-3 py-2 bg-primary text-primary-foreground text-sm font-semibold rounded-lg hover:bg-primary/90 transition-colors"
-                    >
-                      <ShoppingCart className="w-4 h-4" />
-                      Add
-                    </button>
-                  )}
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* View full menu CTA */}
