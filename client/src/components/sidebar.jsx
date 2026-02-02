@@ -30,7 +30,7 @@ export default function Sidebar() {
   const dashboardItems = [
     { icon: LayoutDashboard, label: 'Customer Dashboard', href: '/dashboard/customer' },
     { icon: Store, label: 'Owner Dashboard', href: '/dashboard/owner' },
-    { icon: ShoppingBag, label: 'My Orders', href: '#' },
+    { icon: ShoppingBag, label: 'My Orders', href: '/cart' },
   ];
 
   return (
