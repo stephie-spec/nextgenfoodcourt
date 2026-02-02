@@ -1,66 +1,19 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import Image from 'next/image';
 import { MapPin, Clock, Phone, ChevronRight } from 'lucide-react';
-
-const makeMockOutlets = () => {
-  const templates = [
-    {
-      name: 'Addis Kitchen',
-      cuisine: 'Ethiopian',
-      image: '/outlet-showcase-1.jpg',
-      location: 'Level 2 - Court A',
-      hours: '10:00 AM - 10:00 PM',
-      phone: '+1 (555) 123-4501',
-      description: 'Authentic Ethiopian cuisine with traditional injera and aromatic spices.',
-    },
-    {
-      name: 'Lagos Grill',
-      cuisine: 'Nigerian',
-      image: '/outlet-showcase-2.jpg',
-      location: 'Level 2 - Court B',
-      hours: '10:00 AM - 10:00 PM',
-      phone: '+1 (555) 123-4502',
-      description: 'Vibrant Nigerian flavors with signature jollof and grilled specialties.',
-    },
-    {
-      name: 'Nairobi Flame',
-      cuisine: 'Kenyan',
-      image: '/outlet-showcase-3.jpg',
-      location: 'Level 2 - Court C',
-      hours: '10:00 AM - 10:00 PM',
-      phone: '+1 (555) 123-4503',
-      description: 'Traditional Kenyan grilled meats cooked over charcoal, fresh and smoky.',
-    },
-    {
-      name: 'Kinshasa Kitchen',
-      cuisine: 'Congolese',
-      image: '/outlet-showcase-4.jpg',
-      location: 'Level 2 - Court D',
-      hours: '10:00 AM - 10:00 PM',
-      phone: '+1 (555) 123-4504',
-      description: 'Authentic Congolese dishes featuring traditional cooking methods.',
-    },
-  ];
-
-  const outlets = [];
-  for (let i = 0; i < 20; i++) {
-    const t = templates[i % templates.length];
-    outlets.push({
-      id: i + 1,
-      name: `${t.name} ${i + 1}`,
-      cuisine: t.cuisine,
-      image: t.image,
-      location: t.location,
-      hours: t.hours,
-      phone: t.phone,
-      description: t.description,
-    });
-  }
-  return outlets;
-};
-
+import { useRouter } from 'next/router';
+import { getMockOutlets } from '@/lib/outletsData';
 export default function OutletsPage() {
-  const outlets = makeMockOutlets();
+  const router = useRouter();
+  const outlets = useMemo(() => getMockOutlets(), []);
+  const searchQuery = typeof router.query.search === 'string' ? router.query.search : '';
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+  const filteredOutlets = normalizedQuery
+    ? outlets.filter((outlet) =>
+        outlet.name.toLowerCase().includes(normalizedQuery) ||
+        outlet.cuisine.toLowerCase().includes(normalizedQuery)
+      )
+    : outlets;
 
   return (
     <main className="min-h-screen bg-background py-12 pt-24">
@@ -71,7 +24,7 @@ export default function OutletsPage() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {outlets.map((outlet) => (
+          {filteredOutlets.map((outlet) => (
             <div key={outlet.id} className="group bg-card rounded-xl overflow-hidden border border-border hover:border-primary transition-all duration-300 hover:shadow-xl">
               <div className="relative h-40 overflow-hidden bg-muted">
                 <Image src={outlet.image} alt={outlet.name} fill className="object-cover group-hover:scale-110 transition-transform duration-300" />
