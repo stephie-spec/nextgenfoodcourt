@@ -1,8 +1,8 @@
-"""Initial tables for owners, outlets, items, menu, orders, table bookings
+"""Add image_path to Outlet table
 
-Revision ID: 7f5245174b0b
+Revision ID: 77bfef6f8876
 Revises: 
-Create Date: 2026-01-29 16:17:09.569146
+Create Date: 2026-02-02 18:13:04.389736
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '7f5245174b0b'
+revision = '77bfef6f8876'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -51,6 +51,7 @@ def upgrade():
     sa.Column('name', sa.String(length=120), nullable=False),
     sa.Column('category_name', sa.String(length=120), nullable=True),
     sa.Column('owner_id', sa.Integer(), nullable=False),
+    sa.Column('image_path', sa.String(length=255), nullable=True),
     sa.ForeignKeyConstraint(['owner_id'], ['owner.id'], ),
     sa.PrimaryKeyConstraint('id')
     )

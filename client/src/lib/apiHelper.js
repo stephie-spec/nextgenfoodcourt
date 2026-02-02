@@ -23,7 +23,8 @@ export const apiHelper = {
             today_orders: outlet.today_orders || Math.floor(Math.random() * 30) + 5,
             today_revenue: outlet.today_revenue || (Math.random() * 1000) + 500,
             total_orders: outlet.total_orders || Math.floor(Math.random() * 200) + 50,
-            tags: outlet.tags || [outlet.category_name || 'African', 'Traditional', 'Authentic']
+            tags: outlet.tags || [outlet.category_name || 'African', 'Traditional', 'Authentic'],
+            image_path: outlet.image_path || 'default-outlet.jpg'
           }));
         }
         return [];

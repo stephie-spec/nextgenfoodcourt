@@ -55,17 +55,21 @@ if __name__ == "__main__":
         outlet1 = Outlet(
             name="Taj Express",
             category_name="Indian",
-            owner_id=owner1.id
+            owner_id=owner1.id,
+            image_path = "taj1.jpg"
+        
         )
         outlet2 = Outlet(
             name="El Sabor",
             category_name="Mexican",
-            owner_id=owner2.id
+            owner_id=owner2.id,
+            image_path = "taj2.jpg"
         )
         outlet3 = Outlet(
             name="Dragon Palace",
             category_name="Chinese",
-            owner_id=owner3.id
+            owner_id=owner3.id,
+            image_path = "taj3.jpg"
         )
         
         db.session.add_all([outlet1, outlet2, outlet3])
@@ -78,32 +82,39 @@ if __name__ == "__main__":
         outlet4 = Outlet(
             name="Burger Barn",
             category_name="American",
-            owner_id=owner1.id
+            owner_id=owner1.id,
+            image_path = "taj4.jpg"
         )
         outlet5 = Outlet(
             name="Pasta Primo",
             category_name="Italian",
-            owner_id=owner2.id
+            owner_id=owner2.id,
+            image_path = "taj5.jpg"
         )
         outlet6 = Outlet(
             name="Sushi Sensation",
             category_name="Japanese",
-            owner_id=owner3.id
+            owner_id=owner3.id,
+            image_path = "taj6.jpg"
         )
         outlet7 = Outlet(
             name="Pita Palace",
             category_name="Mediterranean",
-            owner_id=owner1.id
+            owner_id=owner1.id,
+            image_path = "taj7.jpg"
         )
         outlet8 = Outlet(
             name="Thai Kitchen",
             category_name="Thai",
-            owner_id=owner2.id
+            owner_id=owner2.id,
+            image_path = "taj8.jpg"
         )
         outlet9 = Outlet(
             name="Korean BBQ House",
             category_name="Korean",
-            owner_id=owner3.id
+            owner_id=owner3.id,
+            image_path = "taj9.jpg"
+        
         )
         
         db.session.add_all([outlet4, outlet5, outlet6, outlet7, outlet8, outlet9])
