@@ -53,7 +53,7 @@ export default function Navbar() {
             <Link href="/dashboard/menu" className="text-foreground hover:text-primary transition-colors text-sm font-medium">
               Menu
             </Link>
-            <Link href="#special" className="text-foreground hover:text-primary transition-colors text-sm font-medium">
+            <Link href="/special-offers" className="text-foreground hover:text-primary transition-colors text-sm font-medium">
               Special Offers
             </Link>
           </div>
