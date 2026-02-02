@@ -16,7 +16,7 @@ export const apiHelper = {
             name: outlet.name || `Outlet ${index + 1}`,
             category_name: outlet.category_name || outlet.cuisine || 'African Cuisine',
             description: outlet.description || `Authentic ${outlet.category_name || outlet.cuisine || 'African'} cuisine prepared by expert chefs.`,
-            rating: outlet.rating || 4.5 + (Math.random() * 0.5),
+            rating: outlet.rating || (4.5 + (Math.random() * 0.5)).toFixed(1), // Nilitafuta karibu nilie, smh
             reviews: outlet.reviews || Math.floor(Math.random() * 150) + 50,
             isOpen: outlet.isOpen !== undefined ? outlet.isOpen : true,
             isFavorite: Math.random() > 0.5,
