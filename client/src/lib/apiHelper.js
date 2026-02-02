@@ -35,43 +35,61 @@ export const apiHelper = {
   },
 
   // Get all orders with transformed data
-  getOrders: () => {
-    return fetch(`${API_BASE}/orders`)
-      .then(res => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-      })
-      .then(data => {
-        console.log('Orders API Response:', data); // Debug log
-        if (Array.isArray(data)) {
-          return data.map(order => ({
-            id: order.id || `ORD-${Math.random().toString(36).substr(2, 9)}`,
-            created_at: order.created_at || new Date().toISOString(),
-            estimated_status: order.status || 'pending',
-            total: order.total || (order.quantity || 1) * 12.99,
-            items: order.items || [{ 
-              name: order.item_name || 'Menu Item', 
-              quantity: order.quantity || 1, 
-              price: 12.99 
-            }],
-            outlet: {
-              id: order.outlet_id || 1,
-              name: order.outlet_name || 'Food Court Outlet',
-              category_name: order.outlet_category || 'Cuisine'
-            },
-            outlet_name: order.outlet_name || 'Food Court Outlet',
-            customer_name: order.customer_name || 'Customer',
-            delivery_time: '25-35 mins'
-          }));
-        }
+// Get all orders with transformed data
+getOrders: () => {
+  return fetch(`${API_BASE}/orders`)
+    .then(res => {
+      if (!res.ok) {
+        console.log('Orders API failed:', res.status);
         return [];
-      })
-      .catch(error => {
-        console.error('Error fetching orders:', error);
-        return [];
-      });
-  },
-
+      }
+      return res.json();
+    })
+    .then(data => {
+      console.log('Orders API Response:', data);
+      
+      // If data is an array, transform it
+      if (Array.isArray(data)) {
+        return data.map(order => ({
+          id: order.id || `ORD-${Math.random().toString(36).substr(2, 9)}`,
+          created_at: order.created_at || new Date().toISOString(),
+          estimated_status: order.status || 'pending',
+          total: order.total || (order.quantity || 1) * 12.99,
+          items: order.items || [{ 
+            name: 'Menu Item', 
+            quantity: order.quantity || 1, 
+            price: 12.99 
+          }],
+          outlet: {
+            id: order.outlet_id || 1,
+            name: order.outlet_name || 'Food Court Outlet',
+            category_name: order.outlet_category || 'Cuisine'
+          },
+          outlet_name: order.outlet_name || 'Food Court Outlet',
+          customer_name: order.customer_name || 'Customer',
+          delivery_time: '25-35 mins'
+        }));
+      }
+      
+      if (data && Array.isArray(data.orders)) {
+        return data.orders.map(order => ({
+          id: order.id,
+          created_at: order.created_at,
+          estimated_status: order.status,
+          total: order.total || 0,
+          items: order.items || [],
+          outlet: order.outlet || {},
+          customer_name: order.customer_name,
+        }));
+      }
+      
+      return [];
+    })
+    .catch(error => {
+      console.error('Error fetching orders:', error);
+      return []; 
+    });
+},
   // Get orders for current customer
   getCustomerOrders: (token) => {
     return fetch(`${API_BASE}/orders`, {
