@@ -451,7 +451,7 @@ export default function SpecialOffersPage() {
       <footer className="bg-card border-t border-border py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center text-muted-foreground">
-            <p>© 2024 Nextgen Food Court. All rights reserved.</p>
+            <p>© 2026 Nextgen Food Court. All rights reserved.</p>
             <p className="text-sm mt-2">Offers are valid while supplies last. Terms and conditions apply.</p>
           </div>
         </div>
