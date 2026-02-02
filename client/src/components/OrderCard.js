@@ -41,21 +41,6 @@ export default function OrderCard({ order, isOwner = false }) {
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
       <div className="p-5">
         <div className="flex flex-col md:flex-row md:items-start gap-5">
-          {/* Order Image */}
-          <div className="relative h-40 w-40 rounded-lg overflow-hidden flex-shrink-0">
-            <Image
-              src={imageSrc}
-              alt={outletName || "Food Order"}
-              fill
-              className="object-cover"
-            />
-            <div className="absolute top-3 left-3">
-              <span className={`px-3 py-1.5 rounded-full text-xs font-medium ${statusBg} ${statusColor}`}>
-                {statusLabel}
-              </span>
-            </div>
-          </div>
-
           {/* Order Details */}
           <div className="flex-1">
             <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
@@ -73,7 +58,7 @@ export default function OrderCard({ order, isOwner = false }) {
                   <>
                     <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
                       <User className="w-4 h-4" />
-                      <span>Customer: {order.customer_name}</span>
+                      <span>Order ID: {order.id}</span>
                     </div>
                     <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
                       <MapPin className="w-4 h-4" />
@@ -119,12 +104,12 @@ export default function OrderCard({ order, isOwner = false }) {
                 <>
                   {order.estimated_status === 'pending' && (
                     <button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium">
-                      Start Preparing
+                      Start Order
                     </button>
                   )}
                   {order.estimated_status === 'preparing' && (
                     <button className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm font-medium">
-                      Mark as Ready
+                      Start Order
                     </button>
                   )}
                   <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium">
