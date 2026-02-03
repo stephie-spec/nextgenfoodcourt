@@ -2,9 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image'; // Optimized image handling
-import { Star, TrendingUp } from 'lucide-react'; // Icons for UI accents
+import { Star, TrendingUp, Plus, Minus, ShoppingCart } from 'lucide-react'; // Icons for UI accents
+import { useCart } from '@/lib/CartContext'; // Cart context for shared state
 
 export default function PopularItems() {
+  // Use CartContext instead of local state
+  const { cartItems, addToCart, removeFromCart, getItemQuantity } = useCart();
+  
   // State for popular dishes data
   const [popularDishes, setPopularDishes] = useState([]);
   // Loading state while fetching data
@@ -29,46 +33,51 @@ export default function PopularItems() {
   // Temporary mock data for popular dishes
   const mockPopularDishes = [
     {
-      id: 1,
+      id: 101,
       name: 'Borewors Oven Pizza',
       outlet: 'Addis Kitchen',
-      price: '$12.99',
+      price: 12.99,
       rating: 4.8,
       reviews: 234,
       image: '/food-1.jpg',
       tag: 'Best Seller',
     },
     {
-      id: 2,
+      id: 102,
       name: 'Wings & Suya Combo',
       outlet: 'Lagos Grill',
-      price: '$11.99',
+      price: 11.99,
       rating: 4.9,
       reviews: 189,
       image: '/food-2.jpg',
       tag: 'Top Rated',
     },
     {
-      id: 3,
+      id: 103,
       name: 'Ethiopian Ainjera Platter',
       outlet: 'Nairobi Flame',
-      price: '$15.99',
+      price: 15.99,
       rating: 4.7,
       reviews: 156,
       image: '/food-3.jpg',
       tag: 'Most Ordered',
     },
     {
-      id: 4,
+      id: 104,
       name: 'Biriani Rice Bowl',
       outlet: 'Watamu Kitchen',
-      price: '$13.99',
+      price: 13.99,
       rating: 4.6,
       reviews: 128,
       image: '/food-4.jpg',
       tag: 'Customer Favorite',
     },
   ];
+
+  // Handle add to cart
+  const handleAddToCart = (dish) => {
+    addToCart(dish.id);
+  };
 
   return (
     // Popular items section
@@ -100,65 +109,103 @@ export default function PopularItems() {
 
         {/* Popular items grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-          {popularDishes.map((dish) => (
-            <div
-              key={dish.id}
-              className="group bg-background rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2"
-            >
-              {/* Dish image */}
-              <div className="relative h-48 overflow-hidden bg-muted">
-                <Image
-                  src={dish.image || "/placeholder.svg"}
-                  alt={dish.name}
-                  fill
-                  className="object-cover group-hover:scale-110 transition-transform duration-300"
-                />
-                {/* Tag badge */}
-                <div className="absolute top-3 right-3 bg-primary/90 backdrop-blur text-primary-foreground text-xs font-bold px-3 py-1 rounded-full">
-                  {dish.tag}
-                </div>
-              </div>
-
-              {/* Dish details */}
-              <div className="p-4 space-y-3">
-                <h4 className="font-semibold text-foreground group-hover:text-primary transition-colors">
-                  {dish.name}
-                </h4>
-
-                {/* Rating display */}
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-1">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`w-4 h-4 ${
-                          i < Math.floor(dish.rating)
-                            ? 'fill-accent text-accent'
-                            : 'text-muted-foreground'
-                        }`}
-                      />
-                    ))}
+          {popularDishes.map((dish) => {
+            const quantity = getItemQuantity(dish.id);
+            
+            return (
+              <div
+                key={dish.id}
+                className="group bg-background rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2"
+              >
+                {/* Dish image */}
+                <div className="relative h-48 overflow-hidden bg-muted">
+                  <Image
+                    src={dish.image || "/placeholder.svg"}
+                    alt={dish.name}
+                    fill
+                    className="object-cover group-hover:scale-110 transition-transform duration-300"
+                  />
+                  {/* Tag badge */}
+                  <div className="absolute top-3 right-3 bg-primary/90 backdrop-blur text-primary-foreground text-xs font-bold px-3 py-1 rounded-full">
+                    {dish.tag}
                   </div>
-                  <span className="text-sm font-semibold text-foreground">
-                    {dish.rating}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    ({dish.reviews})
-                  </span>
                 </div>
 
-                {/* Price and action */}
-                <div className="flex items-center justify-between pt-2 border-t border-border">
-                  <span className="text-lg font-bold text-primary">
-                    {dish.price}
-                  </span>
-                  <button className="px-4 py-2 bg-primary text-primary-foreground text-sm font-semibold rounded-lg hover:bg-primary/90 transition-colors">
-                    Add to Cart
-                  </button>
+                {/* Dish details */}
+                <div className="p-4 space-y-3">
+                  <h4 className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                    {dish.name}
+                  </h4>
+
+                  {/* Outlet name */}
+                  <p className="text-sm text-muted-foreground">
+                    {dish.outlet}
+                  </p>
+
+                  {/* Rating display */}
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1">
+                      {[...Array(5)].map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`w-4 h-4 ${
+                            i < Math.floor(dish.rating)
+                              ? 'fill-accent text-accent'
+                              : 'text-muted-foreground'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <span className="text-sm font-semibold text-foreground">
+                      {dish.rating}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      ({dish.reviews})
+                    </span>
+                  </div>
+
+                  {/* Price and cart controls */}
+                  <div className="flex items-center justify-between pt-2 border-t border-border">
+                    <span className="text-lg font-bold text-primary">
+                      ${dish.price.toFixed(2)}
+                    </span>
+
+                    {quantity > 0 ? (
+                      // Quantity controls if item is in cart
+                      <div className="flex items-center gap-2 bg-secondary rounded-lg p-1">
+                        <button
+                          onClick={() => removeFromCart(dish.id)}
+                          className="p-1.5 hover:text-primary hover:bg-background rounded-md transition-colors"
+                          aria-label="Decrease quantity"
+                        >
+                          <Minus className="w-4 h-4" />
+                        </button>
+                        <span className="w-6 text-center text-sm font-semibold">
+                          {quantity}
+                        </span>
+                        <button
+                          onClick={() => handleAddToCart(dish)}
+                          className="p-1.5 hover:text-primary hover:bg-background rounded-md transition-colors"
+                          aria-label="Increase quantity"
+                        >
+                          <Plus className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      // Add-to-cart button
+                      <button
+                        onClick={() => handleAddToCart(dish)}
+                        className="flex items-center gap-1.5 px-3 py-2 bg-primary text-primary-foreground text-sm font-semibold rounded-lg hover:bg-primary/90 transition-all active:scale-95"
+                      >
+                        <ShoppingCart className="w-4 h-4" />
+                        Add
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

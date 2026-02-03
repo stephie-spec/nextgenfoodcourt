@@ -3,15 +3,18 @@ import React, { useState, useEffect } from 'react';
 import { Moon, Sun, Search, LogIn, UserPlus, ShoppingCart, X } from 'lucide-react'; // Icon set
 import { useTheme } from 'next-themes'; //  (dark/light)
 import Link from 'next/link'; // Client-side navigation
+import { useRouter } from 'next/navigation'; // Router for navigation
+import { useCart } from '@/lib/CartContext'; // Cart context
 
 export default function Navbar() {
   // Theme state from next-themes
   const { theme, setTheme } = useTheme();
+  const router = useRouter(); // Router instance for navigation
+  const { cartTotalItems } = useCart(); // Get cart total items
 
   // Local UI state
   const [searchOpen, setSearchOpen] = useState(false); // Toggle search input
   const [searchQuery, setSearchQuery] = useState(''); // Search text
-  const [cartCount, setCartCount] = useState(0); // Cart item count
   const [mounted, setMounted] = useState(false); // Track client-side mount
 
   // Ensure component only renders theme toggle after client mount
@@ -33,21 +36,21 @@ export default function Navbar() {
         <div className="flex justify-between items-center h-16 gap-4">
           
           {/* Logo */}
-          <div className="flex items-center gap-2 group cursor-pointer flex-shrink-0">
+          <Link href="/" className="flex items-center gap-2 group cursor-pointer flex-shrink-0">
             <div className="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-br from-primary to-accent rounded-lg flex items-center justify-center transform group-hover:scale-110 transition-transform">
               <span className="text-white font-bold text-base sm:text-lg">🍽️</span>
             </div>
             <span className="font-bold text-sm sm:text-xl text-foreground hidden sm:block group-hover:text-primary transition-colors">
               Nextgen Food Court
             </span>
-          </div>
+          </Link>
 
           {/* Desktop navigation links */}
           <div className="hidden lg:flex items-center gap-6">
-            <Link href="#outlets" className="text-foreground hover:text-primary transition-colors text-sm font-medium">
+            <Link href="/outlets" className="text-foreground hover:text-primary transition-colors text-sm font-medium">
               Outlets
             </Link>
-            <Link href="#menu" className="text-foreground hover:text-primary transition-colors text-sm font-medium">
+            <Link href="/dashboard/menu" className="text-foreground hover:text-primary transition-colors text-sm font-medium">
               Menu
             </Link>
             <Link href="#special" className="text-foreground hover:text-primary transition-colors text-sm font-medium">
@@ -93,16 +96,14 @@ export default function Navbar() {
 
             {/* Cart button with badge */}
             <button
-              onClick={() => {
-                // TODO: Navigate to cart or open cart sidebar
-              }}
+              onClick={() => router.push('/cart')}
               className="relative p-2 sm:p-2.5 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full transition-colors shadow-md hover:shadow-lg"
               aria-label="Shopping cart"
             >
               <ShoppingCart className="w-4 sm:w-5 h-4 sm:h-5" />
-              {cartCount > 0 && (
+              {mounted && cartTotalItems > 0 && (
                 <span className="absolute top-0 right-0 w-5 h-5 bg-accent text-white text-xs font-bold rounded-full flex items-center justify-center">
-                  {cartCount}
+                  {cartTotalItems}
                 </span>
               )}
             </button>

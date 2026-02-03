@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image'; // Optimized image loading
 import { MapPin, Clock, Phone, ChevronRight } from 'lucide-react'; // UI icons
+import Link from 'next/link';
 
 export default function OutletsShowcase() {
   // State for outlets data
@@ -150,10 +151,10 @@ export default function OutletsShowcase() {
 
         {/* View all outlets button */}
         <div className="mt-12 text-center">
-          <button className="inline-flex items-center gap-2 px-8 py-4 border-2 border-primary text-primary font-bold rounded-xl hover:bg-primary hover:text-primary-foreground transition-all duration-300">
+          <Link href="/outlets" className="inline-flex items-center gap-2 px-8 py-4 border-2 border-primary text-primary font-bold rounded-xl hover:bg-primary hover:text-primary-foreground transition-all duration-300">
             View All 20+ Outlets
             <ChevronRight className="w-5 h-5" />
-          </button>
+          </Link>
         </div>
       </div>
     </section>
