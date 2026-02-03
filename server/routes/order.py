@@ -7,6 +7,13 @@ from auth.permissions import require_owner
 
 
 def serialize_order(order):
+    
+    item = order.menu_outlet_item.item
+    outlet = order.menu_outlet_item.outlet
+
+    item_price = order.menu_outlet_item.price
+    total_price = item_price * order.quantity
+
     return {
         "id": order.id,
         "customer_id": order.customer_id,
@@ -14,7 +21,18 @@ def serialize_order(order):
         "quantity": order.quantity,
         "status": order.status.value,
         "created_at": order.created_at.isoformat() if order.created_at else None,
-        "estimated": order.estimated.isoformat() if order.estimated else None
+        "estimated": order.estimated.isoformat() if order.estimated else None,
+
+        "outlet_name": outlet.name,
+        "items": [
+        {
+            "item_id": item.id,
+            "item_name": item.name,
+            "price": item_price
+        }
+    ],
+    "total_price": total_price
+
     }
 
 
