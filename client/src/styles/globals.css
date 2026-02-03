@@ -120,6 +120,12 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html,
+  body,
+  #__next {
+    width: 100%;
+    overflow-x: hidden;
+  }
   body {
     @apply bg-background text-foreground;
   }
