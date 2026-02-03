@@ -35,7 +35,7 @@ useEffect(() => {
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/20 to-background"></div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center py-16 md:py-24">
           {/* Left - Image Carousel */}
           <div className="relative h-96 md:h-[500px] order-2 lg:order-1">

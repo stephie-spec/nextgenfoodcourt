@@ -1,10 +1,12 @@
 'use client'; // Marks this component as a Client Component in Next.js (App Router)
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Moon, Sun, Search, LogIn, UserPlus, ShoppingCart, X } from 'lucide-react'; // Icon set
 import { useTheme } from 'next-themes'; //  (dark/light)
 import Link from 'next/link'; // Client-side navigation
 import { useRouter } from 'next/navigation'; // Router for navigation
 import { useCart } from '@/lib/CartContext'; // Cart context
+import { getCuisineList, getMockOutlets } from '@/lib/outletsData';
+import { getMenuItems } from '@/lib/menuData';
 
 export default function Navbar() {
   // Theme state from next-themes
@@ -16,6 +18,9 @@ export default function Navbar() {
   const [searchOpen, setSearchOpen] = useState(false); // Toggle search input
   const [searchQuery, setSearchQuery] = useState(''); // Search text
   const [mounted, setMounted] = useState(false); // Track client-side mount
+  const outlets = useMemo(() => getMockOutlets(), []);
+  const cuisines = useMemo(() => getCuisineList(), []);
+  const menuItems = useMemo(() => getMenuItems(), []);
 
   // Ensure component only renders theme toggle after client mount
   useEffect(() => {
@@ -27,6 +32,25 @@ export default function Navbar() {
     const query = e.target.value;
     setSearchQuery(query);
     // TODO: Fetch search results from backend API
+  };
+
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+  const outletMatches = normalizedQuery
+    ? outlets.filter((outlet) => outlet.name.toLowerCase().includes(normalizedQuery)).slice(0, 6)
+    : [];
+  const cuisineMatches = normalizedQuery
+    ? cuisines.filter((cuisine) => cuisine.toLowerCase().includes(normalizedQuery)).slice(0, 6)
+    : [];
+  const menuItemMatches = normalizedQuery
+    ? menuItems.filter((item) => item.name.toLowerCase().includes(normalizedQuery)).slice(0, 6)
+    : [];
+
+  const goToSearch = (value, target = 'outlets') => {
+    if (!value) return;
+    const path = target === 'menu' ? '/dashboard/menu' : '/outlets';
+    router.push(`${path}?search=${encodeURIComponent(value)}`);
+    setSearchQuery('');
+    setSearchOpen(false);
   };
 
   return (
@@ -53,7 +77,7 @@ export default function Navbar() {
             <Link href="/dashboard/menu" className="text-foreground hover:text-primary transition-colors text-sm font-medium">
               Menu
             </Link>
-            <Link href="#special" className="text-foreground hover:text-primary transition-colors text-sm font-medium">
+            <Link href="/special-offers" className="text-foreground hover:text-primary transition-colors text-sm font-medium">
               Special Offers
             </Link>
           </div>
@@ -70,6 +94,14 @@ export default function Navbar() {
                     placeholder="Search dishes, outlets..."
                     value={searchQuery}
                     onChange={handleSearch}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') {
+                        const trimmedQuery = searchQuery.trim();
+                        if (!trimmedQuery) return;
+                        const hasMenuMatch = cuisineMatches.length > 0 || menuItemMatches.length > 0;
+                        goToSearch(trimmedQuery, hasMenuMatch ? 'menu' : 'outlets');
+                      }
+                    }}
                     className="w-full px-4 py-2 bg-secondary text-foreground placeholder-foreground/60 border-2 border-primary rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-accent transition-all"
                     autoFocus
                   />
@@ -91,6 +123,59 @@ export default function Navbar() {
                 >
                   <Search className="w-4 sm:w-5 h-4 sm:h-5" />
                 </button>
+              )}
+              {searchOpen && normalizedQuery && (cuisineMatches.length > 0 || menuItemMatches.length > 0 || outletMatches.length > 0) && (
+                <div className="absolute left-0 right-0 mt-2 bg-background border border-border rounded-xl shadow-xl z-50 overflow-hidden">
+                  {cuisineMatches.length > 0 && (
+                    <div className="px-3 py-2 border-b border-border">
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Cuisines</p>
+                      <div className="mt-2 space-y-1">
+                        {cuisineMatches.map((cuisine) => (
+                          <button
+                            key={cuisine}
+                            onClick={() => goToSearch(cuisine, 'menu')}
+                            className="w-full text-left px-3 py-2 rounded-lg hover:bg-secondary text-sm"
+                          >
+                            {cuisine}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {menuItemMatches.length > 0 && (
+                    <div className="px-3 py-2 border-b border-border">
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Menu Items</p>
+                      <div className="mt-2 space-y-1">
+                        {menuItemMatches.map((item) => (
+                          <button
+                            key={`${item.outletName}-${item.name}`}
+                            onClick={() => goToSearch(item.name, 'menu')}
+                            className="w-full text-left px-3 py-2 rounded-lg hover:bg-secondary text-sm"
+                          >
+                            {item.name}
+                            <span className="ml-2 text-xs text-muted-foreground">{item.outletName}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {outletMatches.length > 0 && (
+                    <div className="px-3 py-2">
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Outlets</p>
+                      <div className="mt-2 space-y-1">
+                        {outletMatches.map((outlet) => (
+                          <button
+                            key={outlet.id}
+                            onClick={() => goToSearch(outlet.name, 'outlets')}
+                            className="w-full text-left px-3 py-2 rounded-lg hover:bg-secondary text-sm"
+                          >
+                            {outlet.name}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
 
