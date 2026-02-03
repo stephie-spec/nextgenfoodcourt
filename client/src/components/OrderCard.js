@@ -67,7 +67,7 @@ export default function OrderCard({ order, isOwner = false }) {
               </div>
 
               <div className="flex flex-col items-end gap-2 pl-2">
-                <p className="text-xl font-bold text-gray-900">${order.total.toFixed(2)}</p>
+                <p className="text-xl font-bold text-gray-900">Ksh {order.total.toFixed(2)}</p>
                 {isOwner && order.estimated_status === 'pending' && (
                   <button className="px-3 py-1 bg-blue-500 text-white rounded text-xs font-medium hover:bg-blue-600 transition-colors whitespace-nowrap">
                     Start Prep
@@ -81,14 +81,12 @@ export default function OrderCard({ order, isOwner = false }) {
               </div>
             </div>
 
-            {/* Items List amounts */}
+            {/* Items List */}
             <div className="mb-3">
               <div className="space-y-1">
                 {order.items?.slice(0, 2).map((item, index) => (
                   <div key={item.id || item.item_id || index} className="flex items-center gap-2 text-sm">
-                    <span className="w-5 h-5 bg-gray-100 rounded flex items-center justify-center text-xs font-semibold">
-                      {item.quantity}
-                    </span>
+                      {item.quantity} x
                     <span className="text-gray-700 truncate">{item.name}</span>
                   </div>
                 ))}
@@ -117,11 +115,9 @@ export default function OrderCard({ order, isOwner = false }) {
                     Reorder
                   </button>
                 )}
-                <button className="px-3 py-1.5 border border-gray-300 rounded text-xs font-medium hover:bg-gray-50 transition-colors">
-                  {order.estimated_status === 'delivered' ? 'Details' : 'Track'}
-                </button>
               </div>
             )}
+
           </div>
         </div>
       </div>

@@ -35,7 +35,7 @@ export const apiHelper = {
       });
   },
 
-  // Get all orders (requires owner token)
+  // Get all orders (for owners - all orders)
   getOrders: () => {
     const token = localStorage.getItem('auth_token');
     
@@ -48,7 +48,7 @@ export const apiHelper = {
         if (!res.ok) {
           console.log('Orders API failed:', res.status);
           if (res.status === 401) {
-            console.error('Unauthorized: Owner token required');
+            console.error('Unauthorized: Please log in');
           }
           return [];
         }
@@ -75,7 +75,8 @@ export const apiHelper = {
             },
             outlet_name: order.outlet_name || 'Food Court Outlet',
             customer_name: order.customer_name || 'Customer',
-            delivery_time: '25-35 mins'
+            delivery_time: '25-35 mins',
+            customer_id: order.customer_id  // Keep for filtering
           }));
         }
         
@@ -88,6 +89,7 @@ export const apiHelper = {
             items: order.items || [],
             outlet: order.outlet || {},
             customer_name: order.customer_name,
+            customer_id: order.customer_id
           }));
         }
         
@@ -111,9 +113,6 @@ export const apiHelper = {
       .then(res => {
         if (!res.ok) {
           console.log('Customer Orders API failed:', res.status);
-          if (res.status === 401) {
-            console.error('Unauthorized: Customer not logged in');
-          }
           return [];
         }
         return res.json();
@@ -121,8 +120,45 @@ export const apiHelper = {
       .then(data => {
         console.log('Customer Orders API Response:', data);
         
+        // Filter for current customer
+        const customerId = localStorage.getItem('user_id');
+        const userRole = localStorage.getItem('user_role');
+        
         let ordersArray = Array.isArray(data) ? data : (data.orders || []);
         
+        console.log('Filtering orders for:', { customerId, userRole, totalOrders: ordersArray.length });
+        
+        if (userRole === 'customer' && customerId) {
+          // Return only this customer's orders
+          const filteredOrders = ordersArray.filter(order => 
+            String(order.customer_id) === String(customerId)
+          );
+          
+          console.log('Filtered to:', filteredOrders.length, 'orders');
+          
+          return filteredOrders.map(order => ({
+            id: order.id || `ORD-${Math.random().toString(36).substr(2, 9)}`,
+            created_at: order.created_at || new Date().toISOString(),
+            estimated_status: order.status || 'pending',
+            total: order.total || (order.quantity || 1) * 12.99,
+            items: order.items || [{ 
+              name: 'Menu Item', 
+              quantity: order.quantity || 1, 
+              price: 12.99 
+            }],
+            outlet: {
+              id: order.outlet_id || 1,
+              name: order.outlet_name || 'Food Court Outlet',
+              category_name: order.outlet_category || 'Cuisine'
+            },
+            outlet_name: order.outlet_name || 'Food Court Outlet',
+            customer_name: order.customer_name || 'Customer',
+            delivery_time: '25-35 mins',
+            customer_id: order.customer_id
+          }));
+        }
+        
+        // If owner or no filtering, return all
         return ordersArray.map(order => ({
           id: order.id || `ORD-${Math.random().toString(36).substr(2, 9)}`,
           created_at: order.created_at || new Date().toISOString(),
@@ -140,7 +176,8 @@ export const apiHelper = {
           },
           outlet_name: order.outlet_name || 'Food Court Outlet',
           customer_name: order.customer_name || 'Customer',
-          delivery_time: '25-35 mins'
+          delivery_time: '25-35 mins',
+          customer_id: order.customer_id
         }));
       })
       .catch(error => {
@@ -149,7 +186,7 @@ export const apiHelper = {
       });
   },
 
-  // Get owner's outlets (OWNER ONLY)
+  // Get owner's outlets
   getOwnerOutlets: () => {
     const token = localStorage.getItem('auth_token');
     
@@ -165,22 +202,19 @@ export const apiHelper = {
         }
         return res.json();
       })
-      .then(data => {
-        return data; 
-      })
       .catch(error => {
         console.error('Error fetching owner outlets:', error);
         return [];
       });
   },
 
-  // Get current user role
+  // Helper functions
   getUserRole: () => {
     return localStorage.getItem('user_role');
   },
 
-  // Get auth token
   getToken: () => {
     return localStorage.getItem('auth_token');
-  }
+  },
+
 };
