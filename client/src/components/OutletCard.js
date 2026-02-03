@@ -4,17 +4,13 @@ import { Store, MapPin, Star, Tag, Users, CheckCircle } from 'lucide-react';
 import Image from 'next/image';
 
 export default function OutletCard({ outlet, isOwner = false }) {
-  // outlet images
-  const outletImages = {
-    'Addis Kitchen': '/img/ethiopian-food.jpg',
-    'Lagos Grill': '/img/nigerian-food.jpg',
-    'Nairobi Flame': '/img/kenyan-food.jpg',
-    'Kinshasa Kitchen': '/img/congolese-food.jpg',
-    'Cairo Oasis': '/img/egyptian-food.jpg',
-    'Cape Town Grill': '/img/south-african-food.jpg',
+  // outlet images url path
+  const getOutletImage = (imagePath) => {
+    const finalImage = imagePath || 'default-outlet.jpg';
+    return `http://localhost:5555/uploads/${finalImage.replace(/^\/+/, '')}`;
   };
 
-  const imageSrc = outletImages[outlet.name] || '/placeholder-outlet.jpg';
+  const imageSrc = getOutletImage(outlet.image_path);
 
   // Tags based on cuisine type
   const getTags = (category) => {
@@ -41,6 +37,7 @@ export default function OutletCard({ outlet, isOwner = false }) {
           alt={outlet.name}
           fill
           className="object-cover"
+          unoptimized
         />
         <div className="absolute top-3 left-3">
           <span className={`px-3 py-1.5 rounded-full text-xs font-medium ${

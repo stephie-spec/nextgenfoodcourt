@@ -54,7 +54,8 @@ class Outlet(db.Model):
     name = db.Column(db.String(120), nullable=False)
     category_name = db.Column(db.String(120))
     owner_id = db.Column(db.Integer, db.ForeignKey("owner.id"), nullable=False)
-
+    image_path = db.Column(db.String(255), nullable=True)
+    
     owner = db.relationship(
         "Owner",
         back_populates="outlets"

@@ -1,3 +1,4 @@
+import os
 from flask import Flask
 from flask_restful import Api
 from flask_migrate import Migrate
@@ -17,7 +18,7 @@ from routes.customer import CustomerLoginResource, CustomerDetails, CustomerSign
 from routes.outlet import ListOutlets, OutletResource, OutletMenu
 
 def create_app():
-    app = Flask(__name__)
+    app = Flask(__name__, static_url_path='/uploads', static_folder=os.path.abspath('../photos'))
 
     # CONFIG
     app.config["SECRET_KEY"] = "super-secret-key-change-me"

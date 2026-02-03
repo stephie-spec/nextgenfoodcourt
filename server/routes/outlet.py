@@ -11,8 +11,10 @@ class ListOutlets(Resource):
 
         outlets = Outlet.query.all()
         outlet_list = [{
+            "id": outlet.id,
             "name": outlet.name,
-            "cuisine": outlet.category_name
+            "category_name": outlet.category_name,
+            "image_path": outlet.image_path if outlet.image_path and outlet.image_path.strip() else 'default-outlet.jpg'
         } for outlet in outlets]
 
         return {"outlets": outlet_list}, 200
@@ -31,7 +33,8 @@ class ListOutlets(Resource):
         outlet = Outlet (
             name = data["name"],
             category_name = data["category_name"],
-            owner_id = owner.id
+            owner_id = owner.id,
+            image_path=data.get("image_path")
         )
 
         db.session.add ( outlet )
@@ -42,7 +45,8 @@ class ListOutlets(Resource):
             "id" : outlet.id,
             "name" : outlet.name,
             "category_name" : outlet.category_name,
-            "owner_id" : outlet.owner_id
+            "owner_id" : outlet.owner_id,
+            "image_path": outlet.image_path if outlet.image_path else 'default-outlet.jpg'
         }, 201
 
 
@@ -59,7 +63,8 @@ class OutletResource(Resource):
             "id": outlet.id,
             "name": outlet.name,
             "category_name": outlet.category_name,
-            "owner_id": outlet.owner_id
+            "owner_id": outlet.owner_id,
+            "image_path": outlet.image_path if outlet.image_path and outlet.image_path.strip() else 'default-outlet.jpg'
         }, 200
     
 
@@ -82,14 +87,15 @@ class OutletResource(Resource):
 
         outlet.name = data.get( "name", outlet.name )
         outlet.category_name = data.get("category_name", outlet.category_name )
-
+        outlet.image_path = data.get("image_path", outlet.image_path) 
         db.session.commit()
 
         # return { "message" : "Outlet updated successfully." }, 200
         return {
             "id" : outlet.id,
             "name" : outlet.name,
-            "category_name" : outlet.category_name
+            "category_name" : outlet.category_name,
+            "image_path": outlet.image_path if outlet.image_path else 'default-outlet.jpg'
         }, 200
 
 
