@@ -3,6 +3,7 @@ from flask import request
 from datetime import datetime
 
 from models import db, Order, OrderStatus, Customer, MenuOutletItem
+from auth.permissions import require_owner
 
 
 def serialize_order(order):
