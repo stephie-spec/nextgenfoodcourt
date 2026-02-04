@@ -1,20 +1,39 @@
 from flask_restful import Resource
 from flask import request
-from models import db, Item
-from auth.permissions import require_owner
+from models import db, Item, CustomerFavourite
+from auth.permissions import require_owner, get_current_user
+
 
 class ItemListResource(Resource):
 
     def get(self):
+
+        user = get_current_user()
+
         items = Item.query.all()
-        return [
-            {
+        response = []
+
+        for item in items :
+
+            is_favourite = False
+
+            if user and user.role == 'customer' :
+
+                is_favourite = CustomerFavourite.query.filter_by (
+                    customer_id = user.id,
+                    item_id = item.id
+                ).first() is not None
+            
+            response.append({
                 "id": item.id,
                 "name": item.name,
-                "price": item.price
-            }
-            for item in items
-        ], 200
+                "price": item.price,
+                "favourite_count": item.favourite_count,
+                "isFavourite": is_favourite
+            })
+
+        return response, 200
+
 
     def post(self):
         data = request.get_json()

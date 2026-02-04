@@ -8,6 +8,9 @@ import Navbar from '@/components/navbar';
 import { useCart } from '@/lib/CartContext';
 import { cuisineTypes, outletsData } from '@/lib/menuData';
 import { toggleFavourite } from '@/lib/favourites';
+// import { useAuth } from ... 
+
+// const { token } = useAuth();
 
 /* ---------------- PAGE ---------------- */
 
@@ -18,7 +21,7 @@ export default function MenuPage() {
   const [selectedCuisine, setSelectedCuisine] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [mounted, setMounted] = useState(false);
-  const [ favourited, setFavourited ] = useState ( item.isFavourite );
+  const [ favourited, setFavourited ] = useState (Boolean ( item.isFavourite ) );
   const [ count, setCount ] = useState ( item.favourite_count );
 
 
@@ -279,7 +282,7 @@ export default function MenuPage() {
                                 Add to Cart
                               </button>
                             )}
-                            <button onClick = { handleFavourite } className="p-2.5 bg-secondary rounded-xl transition-colors" aria-label='Toggle Favourite' >
+                            <button disabled={ !token } onClick = { handleFavourite } className="p-2.5 bg-secondary rounded-xl transition-colors" aria-label='Toggle Favourite' >
                               <Heart className = {`w-5 h-5 transition-colors ${
                                 favourited
                                   ? "text-red-500 fill-red-500"
