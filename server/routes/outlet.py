@@ -135,6 +135,8 @@ class OutletMenu(Resource):
         # MenuOutletItem entries for this outlet
         menu_links = MenuOutletItem.query.filter_by(outlet_id=outlet.id).all()
         menu = [{
+            "id": link.id,  # MenuOutletItem ID needed for bookings
+            "item_id": link.item_id,
             "item_name": link.item.name,
             "price": link.item.price,
             "image": link.item.image

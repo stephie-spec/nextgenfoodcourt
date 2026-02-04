@@ -1,8 +1,8 @@
-"""Add image_path to Outlet table
+"""empty message
 
-Revision ID: 77bfef6f8876
+Revision ID: ebdf98f67c1b
 Revises: 
-Create Date: 2026-02-02 18:13:04.389736
+Create Date: 2026-02-04 22:08:29.505747
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '77bfef6f8876'
+revision = 'ebdf98f67c1b'
 down_revision = None
 branch_labels = None
 depends_on = None
