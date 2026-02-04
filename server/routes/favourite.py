@@ -1,0 +1,68 @@
+
+from flask import request
+from flask_restful import Resource
+from models import db, Item, CustomerFavourite
+from auth.permissions import require_customer
+
+
+class CustomerFavourites ( Resource ) :
+
+    # Get all favourite items for the customer logged in
+    def get ( self) :
+
+        customer = require_customer ()
+
+        if not customer :
+            return { "message" : "Unauthorized" }, 401
+        
+        favourites = CustomerFavourite.query.filter_by ( customer_id = customer.id ).all()
+
+        favourite_items = [
+            {
+                "id" : fav.item.id,
+                "name" : fav.item.name,
+                "description" : fav.item.description,
+                "image" : fav.item.image,
+                "price" : fav.item.price,
+                "is_available" : fav.item.is_available,
+                "favourites_count" : fav.item.favourites
+            }
+            for fav in favourites ]
+            
+        return { "Your Favourites" : favourite_items }, 200
+
+
+class FavouriteButton ( Resource ) :
+
+    # Customer-only route to (un)favourite an item
+    def post ( self, item_id ) :
+
+        customer = require_customer ()
+
+        if not customer :
+            return { "message" : "Unauthorized" }, 401
+        
+        item = Item.query.get ( item_id )
+
+        if not item :
+            return { "message" : "Item not found" }, 404
+        
+        current_fav = CustomerFavourite.query.filter_by ( customer_id = customer.id, item_id = item_id ).first()
+
+        # Removing a favourite
+        if current_fav :
+
+            db.session.delete ( current_fav )
+            item.favourites = Item.favourites - 1 if item.favourites > 0 else 0
+            db.session.commit()
+
+            return { "message" : f"Removed {item.name} from favourites" }, 200
+        
+        # Adding a new favourite
+        new_fav = CustomerFavourite ( customer_id = customer.id, item_id = item_id )
+        db.session.add ( new_fav )
+        item.favourites = item.favourites + 1
+        db.session.commit()
+
+        return { "message" : f"Added {item.name} to favourites" }, 201
+    
