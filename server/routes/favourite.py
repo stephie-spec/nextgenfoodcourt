@@ -3,6 +3,8 @@ from flask import request
 from flask_restful import Resource
 from models import db, Item, CustomerFavourite
 from auth.permissions import require_customer
+from sqlalchemy import func # SQLAlchemy function imports - to be removed later
+
 
 
 class CustomerFavourites ( Resource ) :
@@ -65,4 +67,33 @@ class FavouriteButton ( Resource ) :
         db.session.commit()
 
         return { "message" : f"Added {item.name} to favourites" }, 201
+
+
+
+# Get the top 4 favourited items by customers
+class TopFavourites(Resource):
+
+    def get(self):
+        top_items = (
+            db.session.query(
+                Item,
+                func.count(CustomerFavourite.id).label("favourite_count")
+            )
+            .join(CustomerFavourite)
+            .group_by(Item.id)
+            .order_by(func.count(CustomerFavourite.id).desc())
+            .limit(4) # Only four top items to show in homepage
+            .all()
+        )
+
+        return [
+            {
+                "id": item.id,
+                "name": item.name,
+                "price": item.price,
+                "favourite_count": favourite_count
+            }
+            for item, favourite_count in top_items
+        ], 200
+
     
