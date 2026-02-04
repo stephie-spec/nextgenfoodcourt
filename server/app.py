@@ -16,6 +16,11 @@ from routes.item import ItemListResource, ItemResource
 from routes.menu import MenuListResource, MenuResource
 from routes.customer import CustomerLoginResource, CustomerDetails, CustomerSignUp
 from routes.outlet import ListOutlets, OutletResource, OutletMenu
+from routes.table_booking import (
+    TableBookingListResource,
+    TableBookingResource,
+    AvailableTablesResource
+)
 
 def create_app():
     app = Flask(__name__, static_url_path='/uploads', static_folder=os.path.abspath('../photos'))
@@ -50,7 +55,9 @@ def create_app():
     api.add_resource(ListOutlets, "/api/outlets")
     api.add_resource(OutletResource, "/outlets/<int:outlet_id>")
     api.add_resource(OutletMenu, "/api/outlet/<int:outlet_id>/menu")
-
+    api.add_resource(TableBookingListResource, "/api/table-bookings")
+    api.add_resource(TableBookingResource, "/api/table-bookings/<int:booking_id>")
+    api.add_resource(AvailableTablesResource, "/api/table-bookings/available-tables")
 
     return app
 
