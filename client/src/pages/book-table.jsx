@@ -301,3 +301,144 @@ if (success) {
                   </div>
                 </div>
               )}
+
+              {/* Step 2: Choose Food */}
+              {step === 2 && (
+                <div className="bg-card border border-border rounded-xl p-6 space-y-6">
+                  <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
+                    <Users className="w-6 h-6 text-primary" />
+                    Pre-order Your Meal
+                  </h2>
+
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-foreground mb-2">
+                        Select Outlet
+                      </label>
+                      <select
+                        name="outlet_id"
+                        value={formData.outlet_id}
+                        onChange={handleChange}
+                        className="w-full px-4 py-3 rounded-lg border border-border bg-background text-foreground"
+                        required
+                      >
+                        <option value="">Choose an outlet...</option>
+                        {outlets.map(outlet => (
+                          <option key={outlet.id} value={outlet.id}>
+                            {outlet.name} - {outlet.category_name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {formData.outlet_id && (
+                      <div>
+                        <label className="block text-sm font-semibold text-foreground mb-2">
+                          Select Dish
+                        </label>
+                        <select
+                          name="menu_outlet_item_id"
+                          value={formData.menu_outlet_item_id}
+                          onChange={handleChange}
+                          className="w-full px-4 py-3 rounded-lg border border-border bg-background text-foreground"
+                          required
+                        >
+                          <option value="">Choose a dish...</option>
+                          {menuItems.map(item => (
+                            <option key={item.id} value={item.id}>
+                              {item.item_name} - ${item.price}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
+                    <div>
+                      <label className="block text-sm font-semibold text-foreground mb-2">
+                        Quantity
+                      </label>
+                      <input
+                        type="number"
+                        name="quantity"
+                        value={formData.quantity}
+                        onChange={handleChange}
+                        min="1"
+                        max="20"
+                        className="w-full px-4 py-3 rounded-lg border border-border bg-background text-foreground"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 3: Confirm */}
+              {step === 3 && (
+                <div className="bg-card border border-border rounded-xl p-6 space-y-6">
+                  <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
+                    <CheckCircle className="w-6 h-6 text-primary" />
+                    Confirm Your Booking
+                  </h2>
+
+                  <div className="bg-secondary/30 rounded-lg p-6 space-y-4">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Table Number:</span>
+                      <span className="font-bold text-foreground">{formData.table_number}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Guests:</span>
+                      <span className="font-bold text-foreground">{formData.capacity} people</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Duration:</span>
+                      <span className="font-bold text-foreground">{formData.duration_hours} hour{formData.duration_hours > 1 ? 's' : ''}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Date & Time:</span>
+                      <span className="font-bold text-foreground">{formData.booking_date} at {formData.booking_time}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Quantity:</span>
+                      <span className="font-bold text-foreground">{formData.quantity}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Navigation Buttons */}
+              <div className="flex gap-4">
+                {step > 1 && (
+                  <button
+                    type="button"
+                    onClick={prevStep}
+                    className="px-8 py-3 border-2 border-primary text-primary font-semibold rounded-xl hover:bg-primary/10 transition-colors"
+                  >
+                    Back
+                  </button>
+                )}
+                
+                {step < 3 ? (
+                  <button
+                    type="button"
+                    onClick={nextStep}
+                    className="flex-1 flex items-center justify-center gap-2 px-8 py-3 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition-colors"
+                  >
+                    Next
+                    <ArrowRight className="w-5 h-5" />
+                  </button>
+                ) : (
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="flex-1 px-8 py-3 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition-colors disabled:opacity-50"
+                  >
+                    {loading ? 'Booking...' : 'Confirm Booking'}
+                  </button>
+                )}
+              </div>
+            </form>
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}
