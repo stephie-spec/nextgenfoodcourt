@@ -166,3 +166,138 @@ if (success) {
       </div>
     );
   }
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Navbar />
+      <Sidebar />
+      <div className="flex w-full pt-16">
+        <div className="hidden md:block w-20 flex-shrink-0" />
+        <main className="flex-1 min-w-0">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            {/* Header */}
+            <div className="mb-8">
+              <h1 className="text-4xl font-bold text-foreground mb-2">Book a Table</h1>
+              <p className="text-lg text-muted-foreground">Reserve your spot and pre-order your favorite dishes</p>
+            </div>
+
+            {/* Progress Steps */}
+            <div className="mb-12">
+              <div className="flex items-center justify-between">
+                {[1, 2, 3].map((s) => (
+                  <div key={s} className="flex items-center flex-1">
+                    <div className={`flex items-center justify-center w-10 h-10 rounded-full ${
+                      step >= s ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground'
+                    }`}>
+                      {s}
+                    </div>
+                    {s < 3 && (
+                      <div className={`flex-1 h-1 mx-2 ${
+                        step > s ? 'bg-primary' : 'bg-secondary'
+                      }`} />
+                    )}
+                  </div>
+                ))}
+              </div>
+              <div className="flex justify-between mt-2">
+                <span className="text-xs text-muted-foreground">Select Table</span>
+                <span className="text-xs text-muted-foreground">Choose Food</span>
+                <span className="text-xs text-muted-foreground">Confirm</span>
+              </div>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-8">
+              {/* Step 1: Select Table */}
+              {step === 1 && (
+                <div className="bg-card border border-border rounded-xl p-6 space-y-6">
+                  <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
+                    <MapPin className="w-6 h-6 text-primary" />
+                    Select Your Table
+                  </h2>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-semibold text-foreground mb-2">
+                        Number of Guests
+                      </label>
+                      <select
+                        name="capacity"
+                        value={formData.capacity}
+                        onChange={handleChange}
+                        className="w-full px-4 py-3 rounded-lg border border-border bg-background text-foreground"
+                      >
+                        {[2, 4, 6, 8, 10].map(num => (
+                          <option key={num} value={num}>{num} guests</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-foreground mb-2">
+                        Duration (hours)
+                      </label>
+                      <select
+                        name="duration_hours"
+                        value={formData.duration_hours}
+                        onChange={handleChange}
+                        className="w-full px-4 py-3 rounded-lg border border-border bg-background text-foreground"
+                      >
+                        {[1, 2, 3, 4].map(hours => (
+                          <option key={hours} value={hours}>{hours} hour{hours > 1 ? 's' : ''}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-foreground mb-2">
+                        <Calendar className="w-4 h-4 inline mr-2" />
+                        Date
+                      </label>
+                      <input
+                        type="date"
+                        name="booking_date"
+                        value={formData.booking_date}
+                        onChange={handleChange}
+                        min={new Date().toISOString().split('T')[0]}
+                        className="w-full px-4 py-3 rounded-lg border border-border bg-background text-foreground"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-foreground mb-2">
+                        <Clock className="w-4 h-4 inline mr-2" />
+                        Time
+                      </label>
+                      <input
+                        type="time"
+                        name="booking_time"
+                        value={formData.booking_time}
+                        onChange={handleChange}
+                        className="w-full px-4 py-3 rounded-lg border border-border bg-background text-foreground"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-foreground mb-3">
+                      Available Tables
+                    </label>
+                    <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3">
+                      {availableTables.map(table => (
+                        <button
+                          key={table}
+                          type="button"
+                          onClick={() => setFormData(prev => ({ ...prev, table_number: table.toString() }))}
+                          className={`p-4 rounded-lg border-2 font-semibold transition-all ${
+                            formData.table_number === table.toString()
+                              ? 'border-primary bg-primary text-primary-foreground'
+                              : 'border-border bg-background text-foreground hover:border-primary'
+                          }`}
+                        >
+                          {table}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
