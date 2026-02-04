@@ -1,0 +1,28 @@
+from datetime import datetime, timedelta
+
+from flask import request
+from flask_restful import Resource
+
+from extensions import db
+from models import TableBooking, Order, Customer, MenuOutletItem
+
+
+class TableBookingListResource(Resource):
+    """List and create table bookings"""
+
+    def get(self):
+        try:
+            bookings = TableBooking.query.all()
+            return [
+                {
+                    'id': booking.id,
+                    'order_id': booking.order_id,
+                    'table_number': booking.table_number,
+                    'capacity': booking.capacity,
+                    'created_at': booking.created_at.isoformat() if booking.created_at else None,
+                    'duration': str(booking.duration) if booking.duration else None
+                }
+                for booking in bookings
+            ], 200
+        except Exception as e:
+            return {'error': str(e)}, 500
