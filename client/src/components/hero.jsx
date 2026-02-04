@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { ChevronRight, Utensils, Calendar } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export default function HeroSection() {
 // State to track which image is currently being shown
 const [currentImageIndex, setCurrentImageIndex] = useState(0);
+const router = useRouter();
 
 //  Array of image paths used in the hero section slideshow
 const heroImages = ['/food-1.jpg', '/food-2.jpg', '/food-3.jpg', '/food-4.jpg'];
@@ -109,12 +111,18 @@ useEffect(() => {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4">
-              <button className="group flex items-center justify-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition-all duration-300 transform hover:scale-105">
+              <button 
+                onClick={() => router.push('/dashboard/menu')}
+                className="group flex items-center justify-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition-all duration-300 transform hover:scale-105"
+              >
                 <Utensils className="w-5 h-5" />
                 Order Now
                 <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </button>
-              <button className="flex items-center justify-center gap-2 px-8 py-4 border-2 border-primary text-primary font-semibold rounded-xl hover:bg-primary/10 transition-colors">
+              <button 
+                onClick={() => router.push('/book-table')}
+                className="flex items-center justify-center gap-2 px-8 py-4 border-2 border-primary text-primary font-semibold rounded-xl hover:bg-primary/10 transition-colors"
+              >
                 <Calendar className="w-5 h-5" />
                 Book a Table
               </button>
