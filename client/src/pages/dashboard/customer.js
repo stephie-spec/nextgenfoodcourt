@@ -7,8 +7,8 @@ import OrderCard from '@/components/OrderCard';
 import OutletCard from '@/components/OutletCard';
 import Tabs from '@/components/Tabs';
 import AuthGuard from '@/components/AuthGuard';
-import { Search, Filter, ShoppingBag, Star, Clock, Heart, Store , ArrowRight} from 'lucide-react';
-import { apiHelper } from '@/lib/apiHelper'; 
+import { Search, Filter, ShoppingBag, Star, Clock, Heart, Store, ArrowRight } from 'lucide-react';
+import { apiHelper } from '@/lib/apiHelper';
 
 export default function CustomerDashboard() {
   const [activeTab, setActiveTab] = useState('orders');
@@ -27,11 +27,11 @@ export default function CustomerDashboard() {
   ];
 
 
-useEffect(() => {
+  useEffect(() => {
     setLoading(true);
-    
+
     // Fetch from backend using apiHelper
-    apiHelper.getOrders()
+    apiHelper.getCustomerOrders()
       .then(data => {
         setOrders(data);
         setLoading(false);
@@ -45,11 +45,11 @@ useEffect(() => {
   }, []);
 
 
-  const activeOrders = Array.isArray(orders) 
+  const activeOrders = Array.isArray(orders)
     ? orders.filter(o => o.estimated_status !== 'delivered')
     : [];
-    
-  const pastOrders = Array.isArray(orders) 
+
+  const pastOrders = Array.isArray(orders)
     ? orders.filter(o => o.estimated_status === 'delivered')
     : [];
 
@@ -92,8 +92,8 @@ useEffect(() => {
               <h3 className="font-bold text-lg text-blue-900">Want to order?</h3>
               <p className="text-blue-700">Browse all food court outlets</p>
             </div>
-            <a 
-              href="/outlets" 
+            <a
+              href="/outlets"
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
             >
               View Outlets <ArrowRight className="w-4 h-4" />
@@ -106,68 +106,69 @@ useEffect(() => {
 
         {/* Tab Content */}
         <div className="mt-6">
-{activeTab === 'orders' && (
-  <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-    <div className="mb-6">
-      <div className="flex flex-col md:flex-row gap-4">
-        <div className="flex-1">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <input
-              type="text"
-              placeholder="Search your orders..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg"
-            />
-          </div>
-        </div>
-        <select className="px-4 py-2 border border-gray-300 rounded-lg">
-          <option>All Status</option>
-          <option>Pending</option>
-          <option>Preparing</option>
-          <option>Delivered</option>
-        </select>
-      </div>
-    </div>
-    
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      {activeOrders.map(order => (
-        <OrderCard key={order.id} order={order} isOwner={false} />
-      ))}
-    </div>
-  </div>
-)}
+          {activeTab === 'orders' && (
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+              <div className="mb-6">
+                <div className="flex flex-col md:flex-row gap-4">
+                  <div className="flex-1">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                      <input
+                        type="text"
+                        placeholder="Search your orders..."
+                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg"
+                      />
+                    </div>
+                  </div>
+                  <select className="px-4 py-2 border border-gray-300 rounded-lg">
+                    <option>All Status</option>
+                    <option>Pending</option>
+                    <option>Preparing</option>
+                    <option>Ready</option>
+                    <option>Delivered</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                {activeOrders.map(order => (
+                  <OrderCard key={order.id} order={order} isOwner={false} />
+                ))}
+              </div>
+            </div>
+          )}
 
 
-{activeTab === 'history' && (
-  <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-    {/* Add Search/Filter */}
-    <div className="mb-6">
-      <div className="flex items-center gap-4">
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-          <input
-            type="text"
-            placeholder="Search order history..."
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg"
-          />
-        </div>
-        <select className="px-4 py-2 border border-gray-300 rounded-lg">
-          <option>Sort by: Newest</option>
-          <option>Sort by: Oldest</option>
-          <option>Sort by: Price High</option>
-          <option>Sort by: Price Low</option>
-        </select>
-      </div>
-    </div>
-    
-    {/* Two-column grid for history */}
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      {pastOrders.map(order => (
-        <OrderCard key={order.id} order={order} isOwner={false} />
-      ))}
-    </div>
-  </div>
-)}
+          {activeTab === 'history' && (
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+              {/* Add Search/Filter */}
+              <div className="mb-6">
+                <div className="flex items-center gap-4">
+                  <div className="flex-1 relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <input
+                      type="text"
+                      placeholder="Search order history..."
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg"
+                    />
+                  </div>
+                  <select className="px-4 py-2 border border-gray-300 rounded-lg">
+                    <option>Sort by: Newest</option>
+                    <option>Sort by: Oldest</option>
+                    <option>Sort by: Price High</option>
+                    <option>Sort by: Price Low</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Two-column grid for history */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {pastOrders.map(order => (
+                  <OrderCard key={order.id} order={order} isOwner={false} />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
       </DashboardLayout>
