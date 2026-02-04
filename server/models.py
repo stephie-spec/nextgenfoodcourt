@@ -69,6 +69,7 @@ class Outlet(db.Model):
 
     def __repr__(self):
         return f"<Outlet {self.name}>"
+
 class Item(db.Model):
     __tablename__ = "items"
 
@@ -77,6 +78,7 @@ class Item(db.Model):
     image = db.Column(db.String(255))
     price = db.Column(db.Integer, nullable=False)
     is_available = db.Column(db.Boolean, default=True)
+    favourites = db.Column (db.Integer, default=0, nullable=False)
 
     menu_links = db.relationship(
         "MenuOutletItem",
