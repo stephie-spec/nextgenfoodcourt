@@ -128,31 +128,31 @@ if __name__ == "__main__":
         indian_items = [
             Item(
                 name="Butter Chicken",
-                image="butter_chicken.jpg",
+                image="food-butter-chicken.jpg",
                 price=350,
                 is_available=True
             ),
             Item(
                 name="Biryani",
-                image="biryani.jpg",
+                image="food-biryani.jpg",
                 price=300,
                 is_available=True
             ),
             Item(
                 name="Naan",
-                image="naan.jpg",
+                image="food-naan.jpg",
                 price=50,
                 is_available=True
             ),
             Item(
                 name="Samosa",
-                image="samosa.jpg",
+                image="food-samosa.jpg",
                 price=40,
                 is_available=True
             ),
             Item(
                 name="Mango Lassi",
-                image="mango_lassi.jpg",
+                image="food-mango-lassi.jpg",
                 price=80,
                 is_available=True
             ),
@@ -162,31 +162,31 @@ if __name__ == "__main__":
         mexican_items = [
             Item(
                 name="Burrito",
-                image="burrito.jpg",
+                image="food-burrito.jpg",
                 price=250,
                 is_available=True
             ),
             Item(
                 name="Tacos",
-                image="tacos.jpg",
+                image="food-tacos.jpg",
                 price=200,
                 is_available=True
             ),
             Item(
                 name="Enchiladas",
-                image="enchiladas.jpg",
+                image="food-enchiladas.jpg",
                 price=280,
                 is_available=True
             ),
             Item(
                 name="Guacamole",
-                image="guacamole.jpg",
+                image="food-guacamole.jpg",
                 price=120,
                 is_available=True
             ),
             Item(
                 name="Churros",
-                image="churros.jpg",
+                image="food-churros.jpg",
                 price=100,
                 is_available=True
             ),
@@ -197,31 +197,31 @@ if __name__ == "__main__":
         chinese_items = [
             Item(
                 name="Fried Rice",
-                image="fried_rice.jpg",
+                image="food-fried-rice.jpg",
                 price=200,
                 is_available=True
             ),
             Item(
                 name="Kung Pao Chicken",
-                image="kung_pao.jpg",
+                image="food-kung-pao.jpg",
                 price=320,
                 is_available=True
             ),
             Item(
                 name="Spring Rolls",
-                image="spring_rolls.jpg",
+                image="food-spring-rolls.jpg",
                 price=120,
                 is_available=True
             ),
             Item(
                 name="Chow Mein",
-                image="chow_mein.jpg",
+                image="food-chow-mein.jpg",
                 price=240,
                 is_available=True
             ),
             Item(
                 name="Green Tea",
-                image="green_tea.jpg",
+                image="food-green-tea.jpg",
                 price=60,
                 is_available=True
             ),
@@ -237,31 +237,31 @@ if __name__ == "__main__":
         american_items = [
             Item(
                 name="Classic Burger",
-                image="burger.jpg",
+                image="food-burger.jpg",
                 price=280,
                 is_available=True
             ),
             Item(
                 name="Cheese Fries",
-                image="fries.jpg",
+                image="food-fries.jpg",
                 price=120,
                 is_available=True
             ),
             Item(
                 name="Hot Dog",
-                image="hotdog.jpg",
+                image="food-hotdog.jpg",
                 price=150,
                 is_available=True
             ),
             Item(
                 name="Chicken Sandwich",
-                image="chicken_sandwich.jpg",
+                image="food-chicken-sandwich.jpg",
                 price=260,
                 is_available=True
             ),
             Item(
                 name="Milkshake",
-                image="milkshake.jpg",
+                image="food-milkshake.jpg",
                 price=100,
                 is_available=True
             ),
@@ -272,31 +272,31 @@ if __name__ == "__main__":
         italian_items = [
             Item(
                 name="Spaghetti Carbonara",
-                image="carbonara.jpg",
+                image="food-carbonara.jpg",
                 price=350,
                 is_available=True
             ),
             Item(
                 name="Lasagna",
-                image="lasagna.jpg",
+                image="food-lasagna.jpg",
                 price=380,
                 is_available=True
             ),
             Item(
                 name="Fettuccine Alfredo",
-                image="alfredo.jpg",
+                image="food-alfredo.jpg",
                 price=340,
                 is_available=True
             ),
             Item(
                 name="Penne Arrabbiata",
-                image="arrabbiata.jpg",
+                image="food-arrabbiata.jpg",
                 price=320,
                 is_available=True
             ),
             Item(
                 name="Tiramisu",
-                image="tiramisu.jpg",
+                image="food-tiramisu.jpg",
                 price=140,
                 is_available=True
             ),
@@ -307,31 +307,31 @@ if __name__ == "__main__":
         japanese_items = [
             Item(
                 name="California Roll",
-                image="california_roll.jpg",
+                image="food-california-roll.jpg",
                 price=280,
                 is_available=True
             ),
             Item(
                 name="Spicy Tuna Roll",
-                image="spicy_tuna.jpg",
+                image="food-spicy-tuna.jpg",
                 price=320,
                 is_available=True
             ),
             Item(
                 name="Tempura",
-                image="tempura.jpg",
+                image="food-tempura.jpg",
                 price=300,
                 is_available=True
             ),
             Item(
                 name="Edamame",
-                image="edamame.jpg",
+                image="food-edamame.jpg",
                 price=100,
                 is_available=True
             ),
             Item(
                 name="Miso Soup",
-                image="miso_soup.jpg",
+                image="food-miso-soup.jpg",
                 price=80,
                 is_available=True
             ),
@@ -342,31 +342,31 @@ if __name__ == "__main__":
         mediterranean_items = [
             Item(
                 name="Falafel Wrap",
-                image="falafel_wrap.jpg",
+                image="food-falafel-wrap.jpg",
                 price=200,
                 is_available=True
             ),
             Item(
                 name="Hummus & Pita",
-                image="hummus_pita.jpg",
+                image="food-hummus-pita.jpg",
                 price=120,
                 is_available=True
             ),
             Item(
                 name="Greek Salad",
-                image="greek_salad.jpg",
+                image="food-greek-salad.jpg",
                 price=180,
                 is_available=True
             ),
             Item(
                 name="Shawarma",
-                image="shawarma.jpg",
+                image="food-shawarma.jpg",
                 price=220,
                 is_available=True
             ),
             Item(
                 name="Baklava",
-                image="baklava.jpg",
+                image="food-baklava.jpg",
                 price=90,
                 is_available=True
             ),
@@ -377,31 +377,31 @@ if __name__ == "__main__":
         thai_items = [
             Item(
                 name="Pad Thai",
-                image="pad_thai.jpg",
+                image="food-pad-thai.jpg",
                 price=280,
                 is_available=True
             ),
             Item(
                 name="Green Curry",
-                image="green_curry.jpg",
+                image="food-green-curry.jpg",
                 price=320,
                 is_available=True
             ),
             Item(
                 name="Tom Yum Soup",
-                image="tom_yum.jpg",
+                image="food-tom-yum.jpg",
                 price=200,
                 is_available=True
             ),
             Item(
                 name="Satay Chicken",
-                image="satay.jpg",
+                image="food-satay-chicken.jpg",
                 price=240,
                 is_available=True
             ),
             Item(
                 name="Mango Sticky Rice",
-                image="mango_sticky.jpg",
+                image="food-mango-sticky.jpg",
                 price=120,
                 is_available=True
             ),
@@ -412,31 +412,31 @@ if __name__ == "__main__":
         korean_items = [
             Item(
                 name="Bulgogi",
-                image="bulgogi.jpg",
+                image="food-bulgogi.jpg",
                 price=340,
                 is_available=True
             ),
             Item(
                 name="Bibimbap",
-                image="bibimbap.jpg",
+                image="food-bibimbap.jpg",
                 price=300,
                 is_available=True
             ),
             Item(
                 name="Korean Fried Chicken",
-                image="korean_fried_chicken.jpg",
+                image="food-korean-fried-chicken.jpg",
                 price=360,
                 is_available=True
             ),
             Item(
                 name="Kimchi",
-                image="kimchi.jpg",
+                image="food-kimchi.jpg",
                 price=80,
                 is_available=True
             ),
             Item(
                 name="Tteokbokki",
-                image="tteokbokki.jpg",
+                image="food-tteokbokki.jpg",
                 price=150,
                 is_available=True
             ),
