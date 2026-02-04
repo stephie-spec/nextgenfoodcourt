@@ -16,8 +16,7 @@ instance/
 server/instance/
 
 # Migrations (auto-generated)
-server/migrations/versions/7f5245174b0b_initial_tables_for_owners_outlets_items_.py
-server/migrations/versions/8d90850bad6d_.py
+server/migrations/versions/e4929e4b1e57_initial_migration.py
 
 # OS
 .DS_Store
