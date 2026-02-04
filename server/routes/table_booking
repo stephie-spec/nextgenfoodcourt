@@ -131,5 +131,16 @@ class TableBookingListResource(Resource):
             except Exception as e:
                 db.session.rollback()
                 return {'error': str(e)}, 500
+            
+                def delete(self, booking_id):
+                    try:
+                        booking = TableBooking.query.get_or_404(booking_id)
+                        db.session.delete(booking)
+                        db.session.commit()
+                        return {'message': 'Booking cancelled successfully'}, 200
+                    
+                    except Exception as e:
+                       db.session.rollback()
+                       return {'error': str(e)}, 500
 
         
