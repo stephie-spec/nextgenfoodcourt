@@ -142,4 +142,27 @@ export default function BookTablePage() {
 
   const prevStep = () => setStep(step - 1);
 
-  if (success) 
+if (success) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <Sidebar />
+        <div className="flex w-full pt-16">
+          <div className="hidden md:block w-20 flex-shrink-0" />
+          <main className="flex-1 min-w-0">
+            <div className="flex items-center justify-center min-h-screen">
+              <div className="text-center space-y-6 p-8">
+                <CheckCircle className="w-24 h-24 text-green-500 mx-auto" />
+                <h1 className="text-4xl font-bold text-foreground">Booking Confirmed!</h1>
+                <p className="text-lg text-muted-foreground">
+                  Your table has been successfully booked. <br />
+                  Table Number: <span className="font-bold text-primary">{formData.table_number}</span>
+                </p>
+                <p className="text-sm text-muted-foreground">Redirecting to home...</p>
+              </div>
+            </div>
+          </main>
+        </div>
+      </div>
+    );
+  }
