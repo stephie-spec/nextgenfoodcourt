@@ -25,7 +25,7 @@ export default function LoginPage() {
       redirect: false
     }).then((result) => {
       if (result.error) {
-        setError('Invalid email or password');
+        setError('Invalid credentials. Please try again.');
       } else {
         // Store token in localStorage for API calls
         const token = result.url?.match(/token=([^&]*)/)?.[1];
