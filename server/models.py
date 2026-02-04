@@ -180,3 +180,18 @@ class TableBooking(db.Model):
 
     def __repr__(self):
         return f"<TableBooking table={self.table_number}>"
+
+class CustomerFavourite(db.Model):
+
+    __tablename__ = "customer_favourites"
+
+    id = db.Column ( db.Integer, primary_key=True )
+    customer_id = db.Column ( db.Integer, db.ForeignKey("customer.id"), nullable=False )
+    item_id = db.Column ( db.Integer, db.ForeignKey("items.id"), nullable=False )
+
+    __table_args__ = (
+        UniqueConstraint("customer_id", "item_id", name="unique_customer_item_favourite"),
+    )
+
+    def __repr__(self):
+        return f"<CustomerFavourite customer={self.customer_id} item={self.item_id}>"
