@@ -24,11 +24,13 @@ def serialize_order(order):
         "estimated": order.estimated.isoformat() if order.estimated else None,
 
         "outlet_name": outlet.name,
+        "outlet_category": outlet.category_name,
         "items": [
         {
             "name": item.name,
             "quantity":order.quantity,
-            "price": item_price
+            "price": item_price,
+            "image_path": item.image if item.image and item.image.strip() else 'default-food.jpg'
         }
     ],
     "total": total_price
