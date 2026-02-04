@@ -52,7 +52,7 @@ def create_app():
     api.add_resource(OutletResource, "/outlets/<int:outlet_id>")
     api.add_resource(OutletMenu, "/api/outlet/<int:outlet_id>/menu")
     api.add_resource(CustomerFavourites, "/api/customer/favourites")
-    api.add_resource(FavouriteButton, "/api/items/<int:item_id>")
+    api.add_resource(FavouriteButton, "/api/items/<int:item_id>/favourite")
 
 
     return app

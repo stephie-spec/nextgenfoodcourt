@@ -21,8 +21,8 @@ export default function MenuPage() {
   const [selectedCuisine, setSelectedCuisine] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [mounted, setMounted] = useState(false);
-  const [ favourited, setFavourited ] = useState (Boolean ( item.isFavourite ) );
-  const [ count, setCount ] = useState ( item.favourite_count );
+  const [favourited, setFavourited] = useState(!!item.isFavourite);
+  const [count, setCount] = useState(item.favourite_count ?? 0);
 
 
   // Initialize search from URL parameter on mount
@@ -63,12 +63,28 @@ export default function MenuPage() {
   // Function to handle favourite toggle - heart button
   const handleFavourite = async () => {
 
+    if ( !token ) {
+      console.error ( "User not authenticated", error );
+      return;
+    }
+
+    const prevFavourited = favourited;
+    const prevCount = count;
+
+    setFavourited ( !prevFavourited );
+    setCount ( prevFavourited ? prevCount - 1 : prevCount + 1 );
+
     try {
+      
       const res = await toggleFavourite ( item.id, token );
       setFavourited ( res.favourited );
       setCount ( res.favourite_count );
     }
     catch ( error) {
+
+      setFavourited ( prevFavourited );
+      setCount ( prevCount );
+
       console.error ( error );
     }
   };
