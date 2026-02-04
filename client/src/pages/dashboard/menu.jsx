@@ -7,6 +7,7 @@ import { useSearchParams } from 'next/navigation';
 import Navbar from '@/components/navbar';
 import { useCart } from '@/lib/CartContext';
 import { cuisineTypes, outletsData } from '@/lib/menuData';
+import { toggleFavourite } from '@/lib/favourites';
 
 /* ---------------- PAGE ---------------- */
 
@@ -17,6 +18,9 @@ export default function MenuPage() {
   const [selectedCuisine, setSelectedCuisine] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [mounted, setMounted] = useState(false);
+  const [ favourited, setFavourited ] = useState ( item.isFavourite );
+  const [ count, setCount ] = useState ( item.favourite_count );
+
 
   // Initialize search from URL parameter on mount
   useEffect(() => {
@@ -52,6 +56,20 @@ export default function MenuPage() {
     const itemId = `${outlet.outletId}-${item.name}`;
     addToCart(itemId);
   };
+
+  // Function to handle favourite toggle - heart button
+  const handleFavourite = async () => {
+
+    try {
+      const res = await toggleFavourite ( item.id, token );
+      setFavourited ( res.favourited );
+      setCount ( res.favourite_count );
+    }
+    catch ( error) {
+      console.error ( error );
+    }
+  };
+
 
   if (!mounted) {
     return null; // Prevent hydration mismatch
@@ -261,8 +279,13 @@ export default function MenuPage() {
                                 Add to Cart
                               </button>
                             )}
-                            <button className="p-2.5 bg-secondary hover:bg-secondary/80 rounded-xl transition-colors">
-                              <Heart className="w-5 h-5 text-muted-foreground group-hover:text-red-500 transition-colors" />
+                            <button onClick = { handleFavourite } className="p-2.5 bg-secondary rounded-xl transition-colors" aria-label='Toggle Favourite' >
+                              <Heart className = {`w-5 h-5 transition-colors ${
+                                favourited
+                                  ? "text-red-500 fill-red-500"
+                                  : "text-muted-foreground hover:text-red-500"
+                              }`
+                              } />
                             </button>
                           </div>
                         </div>

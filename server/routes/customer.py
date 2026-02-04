@@ -5,6 +5,7 @@ from models import db, Customer
 from auth.permissions import require_customer
 from auth.jwt import generate_token
 from werkzeug.security import generate_password_hash, check_password_hash
+from models import CustomerFavourite, Item
 
 # from flask_cors import cross_origin
 
@@ -55,6 +56,9 @@ class CustomerDetails(Resource):
 
         if not customer :
             return { "message" : "Unauthorized" }, 401
+        
+        id_favourited = CustomerFavourite.query.filter_by ( customer_id = customer.id, item_id = item.id ).first() is not None
+
         
         return {
             "id" : customer.id,
