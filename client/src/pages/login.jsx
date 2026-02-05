@@ -11,10 +11,12 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('customer');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     setError('');
+    setIsLoading(true);
 
     signIn('credentials', {
       email,
@@ -23,7 +25,7 @@ export default function LoginPage() {
       redirect: false
     }).then((result) => {
       if (result.error) {
-        setError('Invalid email or password');
+        setError('Invalid credentials. Please try again.');
       } else {
         // Store token in localStorage for API calls
         const token = result.url?.match(/token=([^&]*)/)?.[1];
@@ -31,7 +33,7 @@ export default function LoginPage() {
           localStorage.setItem('auth_token', token);
           localStorage.setItem('user_role', role);
         }
-        
+
         // Redirect based on role
         if (role === 'owner') {
           router.push('/dashboard/owner');
@@ -39,6 +41,8 @@ export default function LoginPage() {
           router.push('/dashboard/customer');
         }
       }
+    }).finally(() => {
+      setIsLoading(false);
     });
   };
 
@@ -84,6 +88,7 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full p-3 border border-border rounded-lg"
                 required
+                disabled={isLoading}
               />
             </div>
 
@@ -97,6 +102,7 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full p-3 border border-border rounded-lg"
                 required
+                disabled={isLoading}
               />
             </div>
 
@@ -106,9 +112,10 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              className="w-full py-3 bg-primary text-white rounded-lg font-medium hover:bg-primary/90"
+              disabled={isLoading}
+              className="w-full py-3 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 disabled:opacity-100 disabled:cursor-not-allowed"
             >
-              Sign In
+              {isLoading ? 'Signing In...' : 'Sign In'}
             </button>
 
             <div className="text-center">

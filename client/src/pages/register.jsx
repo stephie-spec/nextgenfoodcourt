@@ -12,17 +12,19 @@ export default function RegisterPage() {
   const [role, setRole] = useState('customer');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     setError('');
     setMessage('');
-    
+    setIsLoading(true);
+
     // Determine endpoint based on role
-    const endpoint = role === 'customer' 
+    const endpoint = role === 'customer'
       ? 'http://localhost:5555/api/customer/signup'
       : 'http://localhost:5555/api/owner/signup';
-    
+
     fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -34,13 +36,15 @@ export default function RegisterPage() {
       })
       .then(data => {
         setMessage(`${role === 'customer' ? 'Customer' : 'Owner'} account created! Redirecting to login...`);
-        
+
         setTimeout(() => {
           router.push('/login');
         }, 1500);
       })
       .catch(() => {
         setError(`${role === 'customer' ? 'Customer' : 'Owner'} registration failed. Email may already exist.`);
+      }).finally(() => {
+        setIsLoading(false);
       });
   };
 
@@ -86,6 +90,7 @@ export default function RegisterPage() {
                 onChange={(e) => setName(e.target.value)}
                 className="w-full p-3 border border-border rounded-lg"
                 required
+                disabled={isLoading}
               />
             </div>
 
@@ -99,6 +104,7 @@ export default function RegisterPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full p-3 border border-border rounded-lg"
                 required
+                disabled={isLoading}
               />
             </div>
 
@@ -112,6 +118,7 @@ export default function RegisterPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full p-3 border border-border rounded-lg"
                 required
+                disabled={isLoading}
               />
             </div>
 
@@ -120,14 +127,17 @@ export default function RegisterPage() {
             )}
 
             {message && (
-              <div className="text-green-500 text-sm">{message}</div>
+              <div className="text-green-600 text-sm text-center p-2 border border-green-200 rounded bg-green-50">
+                {message}
+              </div>
             )}
 
             <button
               type="submit"
-              className="w-full py-3 bg-primary text-white rounded-lg font-medium hover:bg-primary/90"
+              disabled={isLoading}
+              className="w-full py-3 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 disabled:opacity-100 disabled:cursor-not-allowed"
             >
-              Create Account
+              {isLoading ? 'Creating Account...' : 'Create Account'}
             </button>
 
             <div className="text-center">

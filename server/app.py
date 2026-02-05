@@ -11,11 +11,17 @@ from routes.owner import (
     OwnerSignUp,
     OwnerDetails
 )
-from routes.order import OrderListResource, OrderResource
+from routes.order import OrderListResource, OrderResource, CustomerOrderResource, OwnerOrderResource
 from routes.item import ItemListResource, ItemResource
 from routes.menu import MenuListResource, MenuResource
 from routes.customer import CustomerLoginResource, CustomerDetails, CustomerSignUp
 from routes.outlet import ListOutlets, OutletResource, OutletMenu
+from routes.testimonial import TestimonialListResource, TestimonialResource
+from routes.table_booking import (
+    TableBookingListResource,
+    TableBookingResource,
+    AvailableTablesResource
+)
 from routes.favourite import CustomerFavourites, FavouriteButton, TopFavourites
 
 def create_app():
@@ -41,6 +47,8 @@ def create_app():
     api.add_resource(OwnerDetails, '/api/owner/details')
     api.add_resource(OrderListResource, "/api/orders")
     api.add_resource(OrderResource, "/api/orders/<int:order_id>")
+    api.add_resource(CustomerOrderResource, "/api/orders/customer/<int:customer_id>")
+    api.add_resource(OwnerOrderResource, "/api/orders/owner/<int:owner_id>")
     api.add_resource(ItemListResource, "/items")
     api.add_resource(ItemResource, "/items/<int:item_id>")
     api.add_resource(MenuListResource, "/api/menu")
@@ -51,10 +59,15 @@ def create_app():
     api.add_resource(ListOutlets, "/api/outlets")
     api.add_resource(OutletResource, "/outlets/<int:outlet_id>")
     api.add_resource(OutletMenu, "/api/outlet/<int:outlet_id>/menu")
+    api.add_resource(TestimonialListResource, '/api/testimonials')
+    api.add_resource(TestimonialResource, '/api/testimonials/<string:testimonial_id>')
     api.add_resource(CustomerFavourites, "/api/customer/favourites")
     api.add_resource(FavouriteButton, "/api/items/<int:item_id>/favourite")
     api.add_resource(TopFavourites, "/api/items/top_favourites")
 
+    api.add_resource(TableBookingListResource, "/api/table-bookings")
+    api.add_resource(TableBookingResource, "/api/table-bookings/<int:booking_id>")
+    api.add_resource(AvailableTablesResource, "/api/table-bookings/available-tables")
 
     return app
 
