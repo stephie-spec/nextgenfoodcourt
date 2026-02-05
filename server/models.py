@@ -1,6 +1,6 @@
 from datetime import datetime
 import enum
-
+import uuid
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Enum, UniqueConstraint
 
@@ -11,7 +11,23 @@ class OrderStatus(enum.Enum):
     pending = "pending"
     completed = "completed"
 
-
+class Testimonial(db.Model):
+    __tablename__ = "testimonials"
+    
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    outlet_id = db.Column(db.Integer, db.ForeignKey("outlets.id"), nullable=False)
+    customer_name = db.Column(db.String(120), nullable=False)
+    avatar = db.Column(db.String(255))  # Avatar image path
+    rating = db.Column(db.Integer, nullable=False)  # 1-5 stars
+    review_text = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationship
+    outlet = db.relationship("Outlet", back_populates="testimonials")
+    
+    def __repr__(self):
+        return f"<Testimonial {self.customer_name} - {self.rating}★>"
 
 class Owner(db.Model):
     __tablename__ = "owner"
@@ -59,6 +75,13 @@ class Outlet(db.Model):
     owner = db.relationship(
         "Owner",
         back_populates="outlets"
+        
+    )
+    testimonials = db.relationship(
+        "Testimonial",
+        back_populates="outlet",
+        cascade="all, delete-orphan",
+        lazy=True
     )
     menu_items = db.relationship(
         "MenuOutletItem",
