@@ -1,7 +1,7 @@
 
 # Seed file to populate the database with sample data.
 
-
+import uuid
 from datetime import datetime, timedelta
 from werkzeug.security import generate_password_hash
 
@@ -11,7 +11,7 @@ if __name__ == "__main__":
     # Import app and dependencies
     from app import app
     from extensions import db
-    from models import Owner, Customer, Outlet, Item, MenuOutletItem, Order, TableBooking, OrderStatus
+    from models import Owner, Customer, Outlet, Item, MenuOutletItem, Order, TableBooking, OrderStatus, Testimonial
     
 
     with app.app_context():
@@ -584,6 +584,88 @@ if __name__ == "__main__":
         
         db.session.add_all([booking1, booking2])
         db.session.commit()
+
+        # Create sample testimonials
+        print("Creating testimonials...")
+        
+        testimonials = [
+            Testimonial(
+                id=str(uuid.uuid4()),
+                outlet_id=outlet1.id,
+                customer_name="Emily Chen",
+                avatar="avatar-emily.jpg",
+                rating=5,
+                review_text="Absolutely amazing! The Butter Chicken was incredible and the service was top-notch. Will definitely be coming back!",
+                created_at=now - timedelta(days=5)
+            ),
+            Testimonial(
+                id=str(uuid.uuid4()),
+                outlet_id=outlet1.id,
+                customer_name="Michael Brown",
+                avatar="avatar-michael.jpg",
+                rating=4,
+                review_text="Great Indian food. The Biryani was flavorful and authentic. Only wish the portions were a bit larger.",
+                created_at=now - timedelta(days=3)
+            ),
+            Testimonial(
+                id=str(uuid.uuid4()),
+                outlet_id=outlet2.id,
+                customer_name="Sofia Rodriguez",
+                avatar="avatar-sofia.jpg",
+                rating=5,
+                review_text="Best Mexican food I've had in years! The tacos are to die for and the guacamole is fresh every time.",
+                created_at=now - timedelta(days=7)
+            ),
+            Testimonial(
+                id=str(uuid.uuid4()),
+                outlet_id=outlet2.id,
+                customer_name="David Kim",
+                avatar="avatar-david.jpg",
+                rating=5,
+                review_text="Love this place! The burritos are huge and packed with flavor. Great value for money.",
+                created_at=now - timedelta(days=2)
+            ),
+            Testimonial(
+                id=str(uuid.uuid4()),
+                outlet_id=outlet3.id,
+                customer_name="Lisa Wang",
+                avatar="avatar-lisa.jpg",
+                rating=4,
+                review_text="Delicious Chinese food. The Kung Pao Chicken was spicy and perfect. Fast service too!",
+                created_at=now - timedelta(days=4)
+            ),
+            Testimonial(
+                id=str(uuid.uuid4()),
+                outlet_id=outlet4.id,
+                customer_name="James Wilson",
+                avatar="avatar-james.jpg",
+                rating=5,
+                review_text="Classic American comfort food done right. The burgers are juicy and the fries are crispy!",
+                created_at=now - timedelta(days=1)
+            ),
+            Testimonial(
+                id=str(uuid.uuid4()),
+                outlet_id=outlet5.id,
+                customer_name="Isabella Rossi",
+                avatar="avatar-isabella.jpg",
+                rating=5,
+                review_text="Authentic Italian pasta! The carbonara tastes just like what I had in Rome. Bellissimo!",
+                created_at=now - timedelta(days=6)
+            ),
+            Testimonial(
+                id=str(uuid.uuid4()),
+                outlet_id=outlet6.id,
+                customer_name="Yuki Tanaka",
+                avatar="avatar-yuki.jpg",
+                rating=4,
+                review_text="Fresh sushi and great quality. The California rolls are always perfect here.",
+                created_at=now - timedelta(days=3)
+            ),
+        ]
+        
+        db.session.add_all(testimonials)
+        db.session.commit()
+        
         
         print("\n✅ Database seeded successfully!")
         print("\n📊 Summary:")
