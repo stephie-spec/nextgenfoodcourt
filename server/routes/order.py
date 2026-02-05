@@ -2,7 +2,7 @@ from flask_restful import Resource
 from flask import request
 from datetime import datetime
 
-from models import db, Order, OrderStatus, Customer, MenuOutletItem
+from models import db, Order, OrderStatus, Customer, MenuOutletItem, Owner, Outlet
 from auth.permissions import require_owner
 
 
@@ -122,6 +122,30 @@ class CustomerOrderResource(Resource):
             return {"error": "Customer not found"}, 404
         
         orders = Order.query.filter_by(customer_id=customer_id).all()
+        return [serialize_order(o) for o in orders], 200
+
+
+class OwnerOrderResource(Resource):
+    def get(self, owner_id):
+        if not Owner.query.get(owner_id):
+            return {"error": "Owner not found"}, 404
+        
+        # Get all outlets for the owner
+        outlets = Outlet.query.filter_by(owner_id=owner_id).all()
+        outlet_ids = [outlet.id for outlet in outlets]
+        
+        if not outlet_ids:
+            return [], 200
+        
+        # Get all menu outlet items for these outlets
+        menu_items = MenuOutletItem.query.filter(MenuOutletItem.outlet_id.in_(outlet_ids)).all()
+        menu_item_ids = [item.id for item in menu_items]
+        
+        if not menu_item_ids:
+            return [], 200
+        
+        # Get all orders for these menu items
+        orders = Order.query.filter(Order.menu_outlet_item_id.in_(menu_item_ids)).all()
         return [serialize_order(o) for o in orders], 200
 
 
