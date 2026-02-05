@@ -116,3 +116,12 @@ class OrderResource(Resource):
         return {"message": "Order deleted"}, 204
 
 
+class CustomerOrderResource(Resource):
+    def get(self, customer_id):
+        if not Customer.query.get(customer_id):
+            return {"error": "Customer not found"}, 404
+        
+        orders = Order.query.filter_by(customer_id=customer_id).all()
+        return [serialize_order(o) for o in orders], 200
+
+

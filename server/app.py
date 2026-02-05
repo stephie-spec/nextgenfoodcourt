@@ -11,7 +11,7 @@ from routes.owner import (
     OwnerSignUp,
     OwnerDetails
 )
-from routes.order import OrderListResource, OrderResource
+from routes.order import OrderListResource, OrderResource, CustomerOrderResource
 from routes.item import ItemListResource, ItemResource
 from routes.menu import MenuListResource, MenuResource
 from routes.customer import CustomerLoginResource, CustomerDetails, CustomerSignUp
@@ -46,6 +46,7 @@ def create_app():
     api.add_resource(OwnerDetails, '/api/owner/details')
     api.add_resource(OrderListResource, "/api/orders")
     api.add_resource(OrderResource, "/api/orders/<int:order_id>")
+    api.add_resource(CustomerOrderResource, "/api/orders/customer/<int:customer_id>")
     api.add_resource(ItemListResource, "/items")
     api.add_resource(ItemResource, "/items/<int:item_id>")
     api.add_resource(MenuListResource, "/menu")
