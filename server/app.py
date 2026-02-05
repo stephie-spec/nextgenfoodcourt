@@ -22,6 +22,7 @@ from routes.table_booking import (
     TableBookingResource,
     AvailableTablesResource
 )
+from routes.favourite import CustomerFavourites, FavouriteButton, TopFavourites
 
 def create_app():
     app = Flask(__name__, static_url_path='/uploads', static_folder=os.path.abspath('../photos'))
@@ -50,8 +51,8 @@ def create_app():
     api.add_resource(OwnerOrderResource, "/api/orders/owner/<int:owner_id>")
     api.add_resource(ItemListResource, "/items")
     api.add_resource(ItemResource, "/items/<int:item_id>")
-    api.add_resource(MenuListResource, "/menu")
-    api.add_resource(MenuResource, "/menu/<int:menu_id>")
+    api.add_resource(MenuListResource, "/api/menu")
+    api.add_resource(MenuResource, "/api/menu/<int:menu_id>")
     api.add_resource(CustomerLoginResource, "/api/customer/login")
     api.add_resource(CustomerDetails, "/api/customer/details")
     api.add_resource(CustomerSignUp, "/api/customer/signup")
@@ -60,7 +61,10 @@ def create_app():
     api.add_resource(OutletMenu, "/api/outlet/<int:outlet_id>/menu")
     api.add_resource(TestimonialListResource, '/api/testimonials')
     api.add_resource(TestimonialResource, '/api/testimonials/<string:testimonial_id>')
-    
+    api.add_resource(CustomerFavourites, "/api/customer/favourites")
+    api.add_resource(FavouriteButton, "/api/items/<int:item_id>/favourite")
+    api.add_resource(TopFavourites, "/api/items/top_favourites")
+
     api.add_resource(TableBookingListResource, "/api/table-bookings")
     api.add_resource(TableBookingResource, "/api/table-bookings/<int:booking_id>")
     api.add_resource(AvailableTablesResource, "/api/table-bookings/available-tables")

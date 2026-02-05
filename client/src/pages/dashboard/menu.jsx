@@ -7,6 +7,8 @@ import { useSearchParams } from 'next/navigation';
 import Navbar from '@/components/navbar';
 import { useCart } from '@/lib/CartContext';
 import { cuisineTypes, outletsData } from '@/lib/menuData';
+import { toggleFavourite } from '@/lib/favourites';
+import { useSession } from 'next-auth/react'; // For authentication purposes.
 
 /* ---------------- PAGE ---------------- */
 
@@ -17,6 +19,10 @@ export default function MenuPage() {
   const [selectedCuisine, setSelectedCuisine] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [mounted, setMounted] = useState(false);
+  const { data: session, status } = useSession(); // Session data for user auth.
+  const token = session?.accessToken || null; // JWT
+  const isLoggedIn = status === 'authenticated'; // To check authentication status on clicking the heart button.
+
 
   // Initialize search from URL parameter on mount
   useEffect(() => {
@@ -51,6 +57,36 @@ export default function MenuPage() {
   const handleAddToCart = (outlet, item) => {
     const itemId = `${outlet.outletId}-${item.name}`;
     addToCart(itemId);
+  };
+
+  // Handling the favourite toggle - heart button
+
+  const handleFavourite = async () => {
+
+    if ( !token ) {
+      console.error ( "User not authenticated", error );
+      return;
+    }
+
+    const prevFavourited = favourited; // To revert in case of error
+    const prevCount = count;
+
+    setFavourited ( !prevFavourited );
+    setCount ( prevFavourited ? count -1 : count +1 );
+
+    try {
+
+      const response = await toggleFavourite ( item.id, token );
+      setFavourited ( response.favourited );
+      setCount ( response.count );
+    }
+    catch ( error ) {
+      
+      // Revert state in case of error.
+      setFavourited ( prevFavourited );
+      setCount ( prevCount );
+      console.error ( error );
+    }
   };
 
   if (!mounted) {
@@ -261,8 +297,8 @@ export default function MenuPage() {
                                 Add to Cart
                               </button>
                             )}
-                            <button className="p-2.5 bg-secondary hover:bg-secondary/80 rounded-xl transition-colors">
-                              <Heart className="w-5 h-5 text-muted-foreground group-hover:text-red-500 transition-colors" />
+                            <button disabled = { !isLoggedIn } onClick={ handleFavourite } className="p-2.5 bg-secondary rounded-xl transition-colors">
+                              <Heart className={`w-5 h-5 transition-colors ${ favourited ? 'text-red-500 fill-red-500' : 'text-muted-foreground hover:text-red-500'}` } />
                             </button>
                           </div>
                         </div>

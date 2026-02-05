@@ -56,6 +56,7 @@ class CustomerDetails(Resource):
         if not customer :
             return { "message" : "Unauthorized" }, 401
         
+        
         return {
             "id" : customer.id,
             "name" : customer.name,

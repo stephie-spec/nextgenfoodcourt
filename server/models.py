@@ -92,6 +92,7 @@ class Outlet(db.Model):
 
     def __repr__(self):
         return f"<Outlet {self.name}>"
+
 class Item(db.Model):
     __tablename__ = "items"
 
@@ -99,7 +100,9 @@ class Item(db.Model):
     name = db.Column(db.String(120), nullable=False)
     image = db.Column(db.String(255))
     price = db.Column(db.Integer, nullable=False)
+    category_name = db.Column ( db.String ( 120 ) )
     is_available = db.Column(db.Boolean, default=True)
+    favourites = db.Column (db.Integer, default=0, nullable=False)
 
     menu_links = db.relationship(
         "MenuOutletItem",
@@ -201,3 +204,18 @@ class TableBooking(db.Model):
 
     def __repr__(self):
         return f"<TableBooking table={self.table_number}>"
+
+class CustomerFavourite(db.Model):
+
+    __tablename__ = "customer_favourites"
+
+    id = db.Column ( db.Integer, primary_key=True )
+    customer_id = db.Column ( db.Integer, db.ForeignKey("customer.id"), nullable=False )
+    item_id = db.Column ( db.Integer, db.ForeignKey("items.id"), nullable=False )
+
+    __table_args__ = (
+        UniqueConstraint("customer_id", "item_id", name="unique_customer_item_favourite"),
+    )
+
+    def __repr__(self):
+        return f"<CustomerFavourite customer={self.customer_id} item={self.item_id}>"
