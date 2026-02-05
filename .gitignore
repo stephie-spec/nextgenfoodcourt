@@ -16,7 +16,7 @@ instance/
 server/instance/
 
 # Migrations (auto-generated)
-server/migrations/versions/e4929e4b1e57_initial_migration.py
+server/migrations/versions/
 
 # OS
 .DS_Store

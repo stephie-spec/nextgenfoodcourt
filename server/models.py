@@ -130,7 +130,7 @@ class MenuOutletItem(db.Model):
 
     orders = db.relationship(
         "Order",
-        back_populates="menu_item",
+        back_populates="menu_outlet_item",
         lazy=True
     )
 
@@ -165,7 +165,7 @@ class Order(db.Model):
         back_populates="orders"
     )
 
-    menu_item = db.relationship(
+    menu_outlet_item = db.relationship(
         "MenuOutletItem",
         back_populates="orders"
     )
