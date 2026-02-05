@@ -1,7 +1,7 @@
 from flask_restful import Resource
 from flask import request
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import db, Owner
+from models import db, Owner, Outlet
 from auth.permissions import require_owner
 from auth.jwt import generate_token
 import re
@@ -140,3 +140,18 @@ class OwnerDetails(Resource):
         db.session.commit()
 
         return {"message": "Account deleted successfully"}, 200
+
+
+class OwnerOutletResource(Resource):
+    def get(self, owner_id):
+        if not Owner.query.get(owner_id):
+            return {"error": "Owner not found"}, 404
+        
+        outlets = Outlet.query.filter_by(owner_id=owner_id).all()
+        return [{
+            "id": outlet.id,
+            "name": outlet.name,
+            "category_name": outlet.category_name,
+            "owner_id": outlet.owner_id,
+            "image_path": outlet.image_path
+        } for outlet in outlets], 200

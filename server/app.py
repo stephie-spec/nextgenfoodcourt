@@ -9,7 +9,8 @@ from models import *
 from routes.owner import (
     OwnerLoginResource,
     OwnerSignUp,
-    OwnerDetails
+    OwnerDetails,
+    OwnerOutletResource
 )
 from routes.order import OrderListResource, OrderResource, CustomerOrderResource, OwnerOrderResource
 from routes.item import ItemListResource, ItemResource
@@ -45,6 +46,7 @@ def create_app():
     api.add_resource(OwnerSignUp, '/api/owner/signup')
     api.add_resource(OwnerLoginResource, '/api/owner/login')
     api.add_resource(OwnerDetails, '/api/owner/details')
+    api.add_resource(OwnerOutletResource, '/api/owner/<int:owner_id>/outlets')
     api.add_resource(OrderListResource, "/api/orders")
     api.add_resource(OrderResource, "/api/orders/<int:order_id>")
     api.add_resource(CustomerOrderResource, "/api/orders/customer/<int:customer_id>")
