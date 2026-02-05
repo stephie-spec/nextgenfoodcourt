@@ -8,9 +8,7 @@ import Navbar from '@/components/navbar';
 import { useCart } from '@/lib/CartContext';
 import { cuisineTypes, outletsData } from '@/lib/menuData';
 import { toggleFavourite } from '@/lib/favourites';
-// import { useAuth } from ... 
-
-// const { token } = useAuth();
+import { useSession } from 'next-auth/react'; // For authentication purposes.
 
 /* ---------------- PAGE ---------------- */
 
@@ -21,8 +19,9 @@ export default function MenuPage() {
   const [selectedCuisine, setSelectedCuisine] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [mounted, setMounted] = useState(false);
-  const [favourited, setFavourited] = useState(!!item.isFavourite);
-  const [count, setCount] = useState(item.favourite_count ?? 0);
+  const { data: session, status } = useSession(); // Session data for user auth.
+  const token = session?.accessToken || null; // JWT
+  const isLoggedIn = status === 'authenticated'; // To check authentication status on clicking the heart button.
 
 
   // Initialize search from URL parameter on mount
@@ -60,7 +59,8 @@ export default function MenuPage() {
     addToCart(itemId);
   };
 
-  // Function to handle favourite toggle - heart button
+  // Handling the favourite toggle - heart button
+
   const handleFavourite = async () => {
 
     if ( !token ) {
@@ -68,27 +68,26 @@ export default function MenuPage() {
       return;
     }
 
-    const prevFavourited = favourited;
+    const prevFavourited = favourited; // To revert in case of error
     const prevCount = count;
 
     setFavourited ( !prevFavourited );
-    setCount ( prevFavourited ? prevCount - 1 : prevCount + 1 );
+    setCount ( prevFavourited ? count -1 : count +1 );
 
     try {
-      
-      const res = await toggleFavourite ( item.id, token );
-      setFavourited ( res.favourited );
-      setCount ( res.favourite_count );
-    }
-    catch ( error) {
 
+      const response = await toggleFavourite ( item.id, token );
+      setFavourited ( response.favourited );
+      setCount ( response.count );
+    }
+    catch ( error ) {
+      
+      // Revert state in case of error.
       setFavourited ( prevFavourited );
       setCount ( prevCount );
-
       console.error ( error );
     }
   };
-
 
   if (!mounted) {
     return null; // Prevent hydration mismatch
@@ -298,13 +297,8 @@ export default function MenuPage() {
                                 Add to Cart
                               </button>
                             )}
-                            <button disabled={ !token } onClick = { handleFavourite } className="p-2.5 bg-secondary rounded-xl transition-colors" aria-label='Toggle Favourite' >
-                              <Heart className = {`w-5 h-5 transition-colors ${
-                                favourited
-                                  ? "text-red-500 fill-red-500"
-                                  : "text-muted-foreground hover:text-red-500"
-                              }`
-                              } />
+                            <button disabled = { !isLoggedIn } onClick={ handleFavourite } className="p-2.5 bg-secondary rounded-xl transition-colors">
+                              <Heart className={`w-5 h-5 transition-colors ${ favourited ? 'text-red-500 fill-red-500' : 'text-muted-foreground hover:text-red-500'}` } />
                             </button>
                           </div>
                         </div>
