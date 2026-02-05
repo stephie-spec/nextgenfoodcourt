@@ -17,13 +17,9 @@ export default function OrderCard({ order, isOwner = false }) {
   const statusLabel = statusConfig[order.estimated_status]?.label || 'Pending';
 
   const outletName = order.outlet?.name || order.outlet_name;
-  const outletImages = {
-    'Addis Kitchen': '/ethiopian-food.jpg',
-    'Lagos Grill': '/nigerian-food.jpg',
-    'Nairobi Flame': '/kenyan-food.jpg',
-    'Kinshasa Kitchen': '/congolese-food.jpg',
-  };
-  const imageSrc = outletImages[outletName] || '/placeholder-food.jpg';
+    // Get food item image from backend
+  const itemImage = order.items?.[0]?.image_path || 'default-food.jpg';
+  const imageSrc = `http://localhost:5555/uploads/${itemImage.replace(/^\/+/, '')}`;
 
   const orderTime = order.created_at
     ? new Date(order.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -39,9 +35,10 @@ export default function OrderCard({ order, isOwner = false }) {
             <div className="relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-lg overflow-hidden bg-muted">
               <Image
                 src={imageSrc}
-                alt={outletName}
+                alt={order.items?.[0]?.name || outletName}
                 fill
                 className="object-cover"
+                unoptimized
               />
             </div>
           </div>
