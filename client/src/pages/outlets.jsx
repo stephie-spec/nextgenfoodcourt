@@ -3,6 +3,8 @@ import Image from 'next/image';
 import { MapPin, Clock, Phone, ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/router';
 import { getMockOutlets } from '@/lib/outletsData';
+import Navbar from '@/components/navbar';
+
 export default function OutletsPage() {
   const router = useRouter();
   const outlets = useMemo(() => getMockOutlets(), []);
@@ -16,7 +18,10 @@ export default function OutletsPage() {
     : outlets;
 
   return (
+    <div className="min-h-screen bg-background">
+    <Navbar />
     <main className="min-h-screen bg-background py-12 pt-24">
+      
       <div className="w-full px-4 sm:px-8 lg:px-12">
         <div className="mb-12">
           <h1 className="text-4xl font-bold text-foreground">All Outlets</h1>
@@ -62,5 +67,6 @@ export default function OutletsPage() {
         </div>
       </div>
     </main>
+  </div>
   );
 }

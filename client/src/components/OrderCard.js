@@ -27,11 +27,12 @@ export default function OrderCard({ order, isOwner = false }) {
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:border-primary transition-colors">
-      <div className="p-4">
-        <div className="flex gap-4">
-          {/* Left side - Image */}
-          <div className="flex-shrink-0">
-            <div className="relative w-20 h-20 md:w-24 md:h-24 rounded-lg overflow-hidden bg-muted">
+      <div className="p-3 sm:p-4">
+        {/* Mobile: Stacked layout */}
+        <div className="flex flex-col sm:flex-row sm:gap-4">
+          {/* Image */}
+          <div className="flex-shrink-0 mb-3 sm:mb-0">
+            <div className="relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-lg overflow-hidden bg-muted">
               <Image
                 src={imageSrc}
                 alt={order.items?.[0]?.name || outletName}
@@ -42,36 +43,47 @@ export default function OrderCard({ order, isOwner = false }) {
             </div>
           </div>
 
-          {/* Right side - Content */}
-          <div className="flex-1 min-w-0">
-            {/* Header with Action Button inline */}
-            <div className="flex justify-between items-start mb-2">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <h3 className="font-bold text-gray-900 truncate">
+          {/* Content */}
+          <div className="flex-1 min-w-0 overflow-hidden">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-2">
+              <div className="flex-1 min-w-0">
+                {/* Outlet name and status */}
+                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-1 overflow-hidden">
+                  <h3 className="font-bold text-gray-900 truncate text-sm sm:text-base">
                     {isOwner ? `Order #${order.id}` : outletName}
                   </h3>
-                  <div className={`px-2 py-1 rounded-full ${statusBg} flex items-center gap-1`}>
+                  <div className={`px-2 py-1 rounded-full ${statusBg} flex items-center gap-1 w-fit flex-shrink-0`}>
                     <StatusIcon className={`w-3 h-3 ${statusColor}`} />
                     <span className="text-xs font-semibold">{statusLabel}</span>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <Store className="w-3.5 h-3.5 flex-shrink-0" />
-                  <span className="truncate">{outletName}</span>
+                {/* Outlet info */}
+                <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600 overflow-hidden">
+                  {isOwner && (
+                    <>
+                      <Store className="w-3.5 h-3.5 flex-shrink-0" />
+                      <span className="truncate">{outletName}</span>
+                      <span className="text-gray-400 mx-1">•</span>
+                    </>
+                  )}
+                  <span className="truncate">{orderTime}</span>
                 </div>
               </div>
 
-              <div className="flex flex-col items-end gap-2 pl-2">
-                <p className="text-xl font-bold text-gray-900">Ksh {order.total.toFixed(2)}</p>
+              {/* Price and actions */}
+              <div className="flex flex-col items-start sm:items-end gap-1 sm:gap-2">
+                <p className="text-lg sm:text-xl font-bold text-gray-900 whitespace-nowrap">
+                  Ksh {order.total?.toFixed(2) || '0.00'}
+                </p>
                 {isOwner && order.estimated_status === 'pending' && (
-                  <button className="px-3 py-1 bg-blue-500 text-white rounded text-xs font-medium hover:bg-blue-600 transition-colors whitespace-nowrap">
+                  <button className="px-2 py-1 bg-blue-500 text-white rounded text-xs font-medium hover:bg-blue-600 transition-colors whitespace-nowrap">
                     Start Prep
                   </button>
                 )}
                 {isOwner && order.estimated_status === 'preparing' && (
-                  <button className="px-3 py-1 bg-green-500 text-white rounded text-xs font-medium hover:bg-green-600 transition-colors whitespace-nowrap">
+                  <button className="px-2 py-1 bg-green-500 text-white rounded text-xs font-medium hover:bg-green-600 transition-colors whitespace-nowrap">
                     Mark Ready
                   </button>
                 )}
@@ -79,11 +91,11 @@ export default function OrderCard({ order, isOwner = false }) {
             </div>
 
             {/* Items List */}
-            <div className="mb-3">
+            <div className="mb-2 sm:mb-3">
               <div className="space-y-1">
                 {order.items?.slice(0, 2).map((item, index) => (
-                  <div key={item.id || item.item_id || index} className="flex items-center gap-2 text-sm">
-                      {item.quantity} x
+                  <div key={item.id || item.item_id || index} className="flex items-center gap-2 text-xs sm:text-sm overflow-hidden">
+                    <span className="text-gray-500 whitespace-nowrap">{item.quantity} x</span>
                     <span className="text-gray-700 truncate">{item.name}</span>
                   </div>
                 ))}
@@ -99,22 +111,24 @@ export default function OrderCard({ order, isOwner = false }) {
 
             {/* Table Booking Info */}
             {order.table_booking && (
-              <div className="mb-3 p-2 bg-blue-50 border border-blue-100 rounded text-xs text-blue-700">
+              <div className="mb-2 sm:mb-3 p-2 bg-blue-50 border border-blue-100 rounded text-xs text-blue-700">
                 📍 Table {order.table_booking.table_number} for {order.table_booking.capacity} people
               </div>
             )}
 
             {/* Customer action buttons */}
             {!isOwner && (
-              <div className="flex gap-2 pt-3 border-t border-gray-100">
+              <div className="flex gap-2 pt-2 sm:pt-3 border-t border-gray-100">
                 {order.estimated_status === 'delivered' && (
-                  <button className="px-3 py-1.5 bg-primary text-white rounded text-xs font-medium hover:bg-primary/90 transition-colors">
+                  <button className="px-3 py-1 bg-primary text-white rounded text-xs font-medium hover:bg-primary/90 transition-colors">
                     Reorder
                   </button>
                 )}
+                <button className="px-3 py-1 border border-gray-300 rounded text-xs font-medium hover:bg-gray-50 transition-colors">
+                  View Details
+                </button>
               </div>
             )}
-
           </div>
         </div>
       </div>
