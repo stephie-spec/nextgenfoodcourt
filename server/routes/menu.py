@@ -12,14 +12,19 @@ class MenuListResource(Resource):
         """
         menu_items = MenuOutletItem.query.all()
 
+        if not menu_items :
+            return {"message": "No menu items found"}, 404
+
         return [
             {
                 "id": menu.id,
                 "outlet_id": menu.outlet_id,
                 "outlet_name": menu.outlet.name if menu.outlet else None,
-                "item_id": menu.item_id,
-                "item_name": menu.item.name if menu.item else None,
-                "price": menu.item.price if menu.item else None
+                "items" : {
+                    "item_id": menu.item_id,
+                    "item_name": menu.item.name if menu.item else None,
+                    "price": menu.item.price if menu.item else None
+                }
             }
             for menu in menu_items
         ], 200

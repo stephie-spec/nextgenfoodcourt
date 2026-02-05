@@ -1,8 +1,8 @@
-"""Add image_path to Outlet table
+"""Reinitialization
 
-Revision ID: 77bfef6f8876
+Revision ID: 9c4f34ad2405
 Revises: 
-Create Date: 2026-02-02 18:13:04.389736
+Create Date: 2026-02-05 09:51:16.434307
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '77bfef6f8876'
+revision = '9c4f34ad2405'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -34,6 +34,7 @@ def upgrade():
     sa.Column('image', sa.String(length=255), nullable=True),
     sa.Column('price', sa.Integer(), nullable=False),
     sa.Column('is_available', sa.Boolean(), nullable=True),
+    sa.Column('favourites', sa.Integer(), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('owner',
@@ -46,6 +47,15 @@ def upgrade():
     with op.batch_alter_table('owner', schema=None) as batch_op:
         batch_op.create_index(batch_op.f('ix_owner_email'), ['email'], unique=True)
 
+    op.create_table('customer_favourites',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('customer_id', sa.Integer(), nullable=False),
+    sa.Column('item_id', sa.Integer(), nullable=False),
+    sa.ForeignKeyConstraint(['customer_id'], ['customer.id'], ),
+    sa.ForeignKeyConstraint(['item_id'], ['items.id'], ),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('customer_id', 'item_id', name='unique_customer_item_favourite')
+    )
     op.create_table('outlets',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(length=120), nullable=False),
@@ -96,6 +106,7 @@ def downgrade():
     op.drop_table('orders')
     op.drop_table('menu_outlet_items')
     op.drop_table('outlets')
+    op.drop_table('customer_favourites')
     with op.batch_alter_table('owner', schema=None) as batch_op:
         batch_op.drop_index(batch_op.f('ix_owner_email'))
 
