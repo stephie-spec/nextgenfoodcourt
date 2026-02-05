@@ -14,6 +14,7 @@ class ListOutlets(Resource):
             "id": outlet.id,
             "name": outlet.name,
             "category_name": outlet.category_name,
+            "owner_id": outlet.owner_id,
             "image_path": outlet.image_path if outlet.image_path and outlet.image_path.strip() else 'default-outlet.jpg'
         } for outlet in outlets]
 
@@ -95,6 +96,7 @@ class OutletResource(Resource):
             "id" : outlet.id,
             "name" : outlet.name,
             "category_name" : outlet.category_name,
+            "owner_id": outlet.owner_id,
             "image_path": outlet.image_path if outlet.image_path else 'default-outlet.jpg'
         }, 200
 
