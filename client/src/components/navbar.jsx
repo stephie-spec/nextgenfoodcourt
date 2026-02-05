@@ -112,7 +112,7 @@ export default function Navbar() {
 
           {/* Desktop navigation links */}
           <div className="hidden lg:flex items-center gap-6">
-            <Link href="/outlets" className="text-foreground hover:text-primary transition-colors text-sm font-medium">
+            <Link href={{ pathname: '/outlets', query: { view: 'customer' } }}  className="text-foreground hover:text-primary transition-colors text-sm font-medium">
               Outlets
             </Link>
             <Link href="/dashboard/menu" className="text-foreground hover:text-primary transition-colors text-sm font-medium">
