@@ -46,9 +46,9 @@ class ItemListResource(Resource):
 
         item = Item(
             name=data["name"],
-            price=data["price"]
-            # add category
-            # add image
+            price=data["price"],
+            category_name = data ["category_name"],
+            image = data ["image"]
         )
 
         db.session.add(item)
