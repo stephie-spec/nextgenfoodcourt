@@ -144,23 +144,50 @@ class OutletResource(Resource):
 
             return {"message": "Unauthorized. Not registered owner."}, 403
 
-        data = request.get_json()
+        # Check if request contains files (multipart/form-data)
+        if 'image' in request.files:
+            # Get data from form
+            name = request.form.get('name', outlet.name)
+            category_name = request.form.get('category_name', outlet.category_name)
+            image_file = request.files['image']
+            
+            # Save new image and get filename
+            image_filename = save_outlet_image(image_file, name)
+            
+            if image_filename:
+                # Delete old image if it's not the default
+                if outlet.image_path and outlet.image_path != 'default-outlet.jpg':
+                    old_image_path = os.path.join(UPLOAD_FOLDER, outlet.image_path)
+                    if os.path.exists(old_image_path):
+                        try:
+                            os.remove(old_image_path)
+                        except Exception as e:
+                            print(f"Error deleting old image: {e}")
+                
+                outlet.image_path = image_filename
+                
+        else:
+            # Get data from JSON
+            data = request.get_json()
+            name = data.get("name", outlet.name)
+            category_name = data.get("category_name", outlet.category_name)
+            
+            # Only update image_path if explicitly provided in JSON
+            if "image_path" in data:
+                outlet.image_path = data["image_path"]
 
-        outlet.name = data.get( "name", outlet.name )
-        outlet.category_name = data.get("category_name", outlet.category_name )
-        outlet.image_path = data.get("image_path", outlet.image_path) 
+        outlet.name = name
+        outlet.category_name = category_name
         db.session.commit()
 
-        # return { "message" : "Outlet updated successfully." }, 200
         return {
-            "id" : outlet.id,
-            "name" : outlet.name,
-            "category_name" : outlet.category_name,
+            "id": outlet.id,
+            "name": outlet.name,
+            "category_name": outlet.category_name,
             "owner_id": outlet.owner_id,
             "image_path": outlet.image_path if outlet.image_path else 'default-outlet.jpg'
         }, 200
-
-
+        
     # Delete an outlet - Owner-only route
     def delete (self, outlet_id) :
 
