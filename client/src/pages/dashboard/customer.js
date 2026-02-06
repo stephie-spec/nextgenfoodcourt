@@ -9,8 +9,11 @@ import Tabs from '@/components/Tabs';
 import AuthGuard from '@/components/AuthGuard';
 import { Search, Filter, ShoppingBag, Star, Clock, Heart, Store, ArrowRight } from 'lucide-react';
 import { apiHelper } from '@/lib/apiHelper';
+import { useSession } from 'next-auth/react';
+
 
 export default function CustomerDashboard() {
+  const { data: session } = useSession();
   const [activeTab, setActiveTab] = useState('orders');
   const [outlets, setOutlets] = useState([]);
   const [orders, setOrders] = useState([]);
@@ -27,20 +30,26 @@ export default function CustomerDashboard() {
   ];
 
   useEffect(() => {
+    if (!session?.accessToken || !session?.user?.id) {
+      console.log('No session data');
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
 
-    // Fetch from backend using apiHelper
-    apiHelper.getCustomerOrders()
+    apiHelper.getCustomerOrders(session.accessToken, session.user.id)
       .then(data => {
+        console.log('Orders from apiHelper:', data);
         setOrders(data);
         setLoading(false);
       })
       .catch(error => {
-        console.error('Error fetching orders:', error);
+        console.error('Error:', error);
         setOrders([]);
         setLoading(false);
       });
-  }, []);
+  }, [session]);
 
   const activeOrders = Array.isArray(orders)
     ? orders.filter(o => o.estimated_status !== 'delivered')
@@ -54,59 +63,59 @@ export default function CustomerDashboard() {
     <AuthGuard requiredRole="customer">
       <DashboardLayout title="Customer Dashboard">
         {/* Stats Grid */}
-<div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 mb-6">
-  <StatCard
-    title="Active"
-    value={activeOrders.length}
-    icon="orders"
-    description="orders"
-    color="indigo"
-  />
-  <StatCard
-    title="Bookings"
-    value="2"
-    icon="users"
-    description="this month"
-    color="green"
-  />
-  <StatCard
-    title="Rating"
-    value="4.7★"
-    icon="star"
-    description="average"
-    color="orange"
-  />
-  <StatCard
-    title="Total"
-    value={orders.length}
-    icon="total"
-    description="orders"
-    color="purple"
-  />
-</div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 mb-6">
+          <StatCard
+            title="Active"
+            value={activeOrders.length}
+            icon="orders"
+            description="orders"
+            color="indigo"
+          />
+          <StatCard
+            title="Bookings"
+            value="2"
+            icon="users"
+            description="this month"
+            color="green"
+          />
+          <StatCard
+            title="Rating"
+            value="4.7★"
+            icon="star"
+            description="average"
+            color="orange"
+          />
+          <StatCard
+            title="Total"
+            value={orders.length}
+            icon="total"
+            description="orders"
+            color="purple"
+          />
+        </div>
 
         {/* Link to outlets page */}
         <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-blue-50 border border-blue-200 rounded-xl">
-  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-    <div>
-      <h3 className="font-bold text-base sm:text-lg text-blue-900">Want to order?</h3>
-      <p className="text-blue-700 text-sm sm:text-base">Browse all food court outlets</p>
-    </div>
-    <a
-      href="/outlets"
-      className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm sm:text-base"
-    >
-      View Outlets <ArrowRight className="w-4 h-4" />
-    </a>
-  </div>
-</div>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h3 className="font-bold text-base sm:text-lg text-blue-900">Want to order?</h3>
+              <p className="text-blue-700 text-sm sm:text-base">Browse all food court outlets</p>
+            </div>
+            <a
+              href="/outlets"
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm sm:text-base"
+            >
+              View Outlets <ArrowRight className="w-4 h-4" />
+            </a>
+          </div>
+        </div>
 
         {/* Tabs Navigation */}
-<div className="overflow-x-auto -mx-4 sm:mx-0 mb-4">
-  <div className="flex min-w-max px-4 sm:px-0">
-    <Tabs tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} />
-  </div>
-</div>
+        <div className="overflow-x-auto -mx-4 sm:mx-0 mb-4">
+          <div className="flex min-w-max px-4 sm:px-0">
+            <Tabs tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} />
+          </div>
+        </div>
 
         {/* Tab Content */}
         <div className="mt-6">
@@ -130,7 +139,7 @@ export default function CustomerDashboard() {
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
                     className="px-3 sm:px-4 py-2 text-sm sm:text-base border border-gray-300 rounded-lg"
-  >
+                  >
                     <option value="all">All Status</option>
                     <option value="pending">Pending</option>
                     <option value="preparing">Preparing</option>

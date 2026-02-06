@@ -9,8 +9,10 @@ import Tabs from '@/components/Tabs';
 import AuthGuard from '@/components/AuthGuard';
 import { apiHelper } from '@/lib/apiHelper';
 import { Search, Filter, Plus, Package, DollarSign, Users, TrendingUp, Store, ShoppingBag, Clock, ChefHat, Upload } from 'lucide-react';
+import { useSession } from 'next-auth/react';
 
 export default function OwnerDashboard() {
+  const { data: session } = useSession();
   const [activeTab, setActiveTab] = useState('overview');
   const [outlets, setOutlets] = useState([]);
   const [orders, setOrders] = useState([]);
@@ -56,16 +58,46 @@ export default function OwnerDashboard() {
   ];
 
   useEffect(() => {
-    const token = localStorage.getItem('auth_token');
+    // Debug session
+    console.log('Owner session:', session);
+    console.log('Session token:', session?.accessToken);
+    console.log('Session user:', session?.user);
+
+    // Sync session to localStorage for backward compatibility
+    if (session?.accessToken && typeof window !== 'undefined') {
+      localStorage.setItem('auth_token', session.accessToken);
+      localStorage.setItem('user_role', session.user?.role || 'owner');
+      localStorage.setItem('user_id', session.user?.id || '');
+      localStorage.setItem('user_name', session.user?.name || '');
+      localStorage.setItem('user_email', session.user?.email || '');
+    }
+
+    const token = session?.accessToken || localStorage.getItem('auth_token');
     setLoading(true);
 
     let outletsData, ordersData;
+
+    console.log('Using token:', token ? 'Exists' : 'Missing');
 
     apiHelper.getOutlets()
       .then(data => {
         outletsData = data;
         setOutlets(outletsData);
-        return apiHelper.getOrders();
+
+        // Get orders with the token
+        return fetch('http://localhost:5555/api/orders', {
+          headers: token ? {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          } : {}
+        })
+          .then(res => {
+            console.log('Orders response status:', res.status);
+            if (!res.ok) {
+              throw new Error(`HTTP ${res.status}`);
+            }
+            return res.json();
+          });
       })
       .then(data => {
         ordersData = data;
@@ -73,9 +105,9 @@ export default function OwnerDashboard() {
 
         // Fetch and normalize menu items
         return fetch('http://localhost:5555/api/menu', {
-          headers: {
+          headers: token ? {
             'Authorization': `Bearer ${token}`
-          }
+          } : {}
         })
           .then(response => {
             if (!response.ok) {
@@ -127,7 +159,7 @@ export default function OwnerDashboard() {
         console.error('Error fetching outlets or orders:', error);
         setLoading(false);
       });
-  }, []);
+  }, [session]);
 
   // Filtered and sorted orders
   const filteredOrders = orders
@@ -235,8 +267,14 @@ export default function OwnerDashboard() {
   const handleAddItem = async (e) => {
     e.preventDefault();
 
+    const token = session?.accessToken || localStorage.getItem('auth_token');
+
+    if (!token) {
+      alert('Please log in to add menu items');
+      return;
+    }
+
     try {
-      const token = localStorage.getItem('auth_token');
       const formData = new FormData();
 
       // Add item data
@@ -254,26 +292,22 @@ export default function OwnerDashboard() {
       const response = await fetch(`${API_BASE}/api/menu`, {
         method: 'POST',
         headers: {
-          'Authorization': token ? `Bearer ${token}` : ''
+          'Authorization': `Bearer ${token}`
         },
         body: formData
       });
 
       if (response.ok) {
-        // Refresh menu items — correct endpoint + auth header
+        // Refresh menu items
         const menuResponse = await fetch('http://localhost:5555/api/menu', {
           headers: {
-            'Authorization': token ? `Bearer ${token}` : ''
+            'Authorization': `Bearer ${token}`
           }
         });
 
-        let newMenuItems = [];
-
         if (menuResponse.ok) {
           const rawMenuData = await menuResponse.json();
-
-          // Normalize the same way you do in useEffect
-          newMenuItems = rawMenuData.map(entry => ({
+          const newMenuItems = rawMenuData.map(entry => ({
             id: entry.item_id,
             name: entry.item_name || 'Unnamed Item',
             price: entry.price || 0,
@@ -282,16 +316,6 @@ export default function OwnerDashboard() {
             outlet_id: entry.outlet_id,
             outlet_name: entry.outlet_name || 'Unknown Outlet'
           }));
-
-          console.log('Refreshed menu items after add:', newMenuItems);
-        } else {
-          console.warn('Failed to refresh menu after adding item:', menuResponse.status);
-          // Optional: warn user but do NOT clear the list
-          alert('Item added successfully, but could not refresh the list. Please refresh the page manually.');
-        }
-
-        // Only update if we have valid data
-        if (newMenuItems.length > 0) {
           setMenuItems(newMenuItems);
         }
 
