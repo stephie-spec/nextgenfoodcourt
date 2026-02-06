@@ -5,6 +5,37 @@ from auth.permissions import require_owner
 from werkzeug.utils import secure_filename
 import os
 
+# Configuration for file uploads
+UPLOAD_FOLDER = '../photos'  # Relative path to photos folder
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+
+def allowed_file(filename):
+    """Check if file has an allowed extension"""
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def save_outlet_image(file, outlet_name):
+    """
+    Save outlet image with sanitized outlet name as filename
+    Returns: filename if successful, None if failed
+    """
+    if file and allowed_file(file.filename):
+        # Get file extension
+        extension = file.filename.rsplit('.', 1)[1].lower()
+        
+        # Create filename from outlet name
+        safe_name = "".join(c if c.isalnum() else "_" for c in outlet_name)
+        filename = f"{safe_name}.{extension}"
+        
+        # Ensure upload folder exists
+        os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+        
+        # Save file
+        filepath = os.path.join(UPLOAD_FOLDER, filename)
+        file.save(filepath)
+        
+        return filename
+    return None
+
 # View list of all outlets
 class ListOutlets(Resource):
 
