@@ -57,29 +57,57 @@ class ListOutlets(Resource):
 
         owner = require_owner()
 
-        if not owner :
-
-            return { "message" : "Unauthorized" }, 401
+        if not owner:
+            return {"message": "Unauthorized"}, 401
         
-        data = request.get_json()
+        # Check if request contains files (multipart/form-data)
+        if 'image' in request.files:
+            # Get data from form
+            name = request.form.get('name')
+            category_name = request.form.get('category_name')
+            image_file = request.files['image']
+            
+            # Validate required fields
+            if not name or not category_name:
+                return {"message": "Name and category_name are required"}, 400
+            
+            # Save image and get filename
+            image_filename = save_outlet_image(image_file, name)
+            
+            if not image_filename:
+                return {"message": "Invalid image file"}, 400
+                
+        else:
+            # Get data from JSON (no image uploaded)
+            data = request.get_json()
+            
+            if not data:
+                return {"message": "No data provided"}, 400
+                
+            name = data.get("name")
+            category_name = data.get("category_name")
+            image_filename = data.get("image_path", "default-outlet.jpg")
+            
+            if not name or not category_name:
+                return {"message": "Name and category_name are required"}, 400
 
-        outlet = Outlet (
-            name = data["name"],
-            category_name = data["category_name"],
-            owner_id = owner.id,
-            image_path=data.get("image_path")
+        # Create outlet
+        outlet = Outlet(
+            name=name,
+            category_name=category_name,
+            owner_id=owner.id,
+            image_path=image_filename
         )
 
-        db.session.add ( outlet )
+        db.session.add(outlet)
         db.session.commit()
 
-        # return { f"message" : "Outlet {outlet.name} created successfully" }, 201
         return {
-            "id" : outlet.id,
-            "name" : outlet.name,
-            "category_name" : outlet.category_name,
-            "owner_id" : outlet.owner_id,
-            "image_path": outlet.image_path if outlet.image_path else 'default-outlet.jpg'
+            "id": outlet.id,
+            "name": outlet.name,
+            "category_name": outlet.category_name,
+            "owner_id": outlet.owner_id,
+            "image_path": outlet.image_path
         }, 201
 
 
