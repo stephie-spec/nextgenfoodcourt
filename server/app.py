@@ -33,9 +33,10 @@ def create_app():
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///app.db"
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["SECRET_KEY"] = "12345"
+    app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024 
 
-    CORS(app)
-
+    CORS(app, supports_credentials=True,
+    origins=["http://localhost:3000"])
     # INIT EXTENSIONS
     db.init_app(app)
     Migrate(app, db)

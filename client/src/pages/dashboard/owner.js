@@ -9,10 +9,8 @@ import Tabs from '@/components/Tabs';
 import AuthGuard from '@/components/AuthGuard';
 import { apiHelper } from '@/lib/apiHelper';
 import { Search, Filter, Plus, Package, DollarSign, Users, TrendingUp, Store, ShoppingBag, Clock, ChefHat, Upload } from 'lucide-react';
-import { useSession } from 'next-auth/react';
 
 export default function OwnerDashboard() {
-  const { data: session } = useSession();
   const [activeTab, setActiveTab] = useState('overview');
   const [outlets, setOutlets] = useState([]);
   const [orders, setOrders] = useState([]);
@@ -20,16 +18,24 @@ export default function OwnerDashboard() {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [showAddItemModal, setShowAddItemModal] = useState(false);
+  const [showAddOutletModal, setShowAddOutletModal] = useState(false);
   const [newItem, setNewItem] = useState({
     name: '',
     price: '',
     category: 'Main Course',
     outlet_id: '',
     is_available: true,
-    image: '', // For URL string
-    image_preview: '', // For preview
-    image_file: null // For file object
+    image: '',
+    image_preview: '',
+    image_file: null
   });
+
+  const [newOutlet, setNewOutlet] = useState({
+      name: '',
+      category_name: '',
+      image_file: null,
+      image_preview: ''
+    });
 
   const API_BASE = 'http://localhost:5555';
 
@@ -58,46 +64,16 @@ export default function OwnerDashboard() {
   ];
 
   useEffect(() => {
-    // Debug session
-    console.log('Owner session:', session);
-    console.log('Session token:', session?.accessToken);
-    console.log('Session user:', session?.user);
-
-    // Sync session to localStorage for backward compatibility
-    if (session?.accessToken && typeof window !== 'undefined') {
-      localStorage.setItem('auth_token', session.accessToken);
-      localStorage.setItem('user_role', session.user?.role || 'owner');
-      localStorage.setItem('user_id', session.user?.id || '');
-      localStorage.setItem('user_name', session.user?.name || '');
-      localStorage.setItem('user_email', session.user?.email || '');
-    }
-
-    const token = session?.accessToken || localStorage.getItem('auth_token');
+    const token = localStorage.getItem('auth_token');
     setLoading(true);
 
     let outletsData, ordersData;
-
-    console.log('Using token:', token ? 'Exists' : 'Missing');
 
     apiHelper.getOutlets()
       .then(data => {
         outletsData = data;
         setOutlets(outletsData);
-
-        // Get orders with the token
-        return fetch('http://localhost:5555/api/orders', {
-          headers: token ? {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          } : {}
-        })
-          .then(res => {
-            console.log('Orders response status:', res.status);
-            if (!res.ok) {
-              throw new Error(`HTTP ${res.status}`);
-            }
-            return res.json();
-          });
+        return apiHelper.getOrders();
       })
       .then(data => {
         ordersData = data;
@@ -105,9 +81,9 @@ export default function OwnerDashboard() {
 
         // Fetch and normalize menu items
         return fetch('http://localhost:5555/api/menu', {
-          headers: token ? {
+          headers: {
             'Authorization': `Bearer ${token}`
-          } : {}
+          }
         })
           .then(response => {
             if (!response.ok) {
@@ -159,7 +135,7 @@ export default function OwnerDashboard() {
         console.error('Error fetching outlets or orders:', error);
         setLoading(false);
       });
-  }, [session]);
+  }, []);
 
   // Filtered and sorted orders
   const filteredOrders = orders
@@ -267,14 +243,8 @@ export default function OwnerDashboard() {
   const handleAddItem = async (e) => {
     e.preventDefault();
 
-    const token = session?.accessToken || localStorage.getItem('auth_token');
-
-    if (!token) {
-      alert('Please log in to add menu items');
-      return;
-    }
-
     try {
+      const token = localStorage.getItem('auth_token');
       const formData = new FormData();
 
       // Add item data
@@ -292,7 +262,7 @@ export default function OwnerDashboard() {
       const response = await fetch(`${API_BASE}/api/menu`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': token ? `Bearer ${token}` : ''
         },
         body: formData
       });
@@ -301,13 +271,16 @@ export default function OwnerDashboard() {
         // Refresh menu items
         const menuResponse = await fetch('http://localhost:5555/api/menu', {
           headers: {
-            'Authorization': `Bearer ${token}`
+            'Authorization': token ? `Bearer ${token}` : ''
           }
         });
 
+        let newMenuItems = [];
+
         if (menuResponse.ok) {
           const rawMenuData = await menuResponse.json();
-          const newMenuItems = rawMenuData.map(entry => ({
+
+          newMenuItems = rawMenuData.map(entry => ({
             id: entry.item_id,
             name: entry.item_name || 'Unnamed Item',
             price: entry.price || 0,
@@ -316,6 +289,14 @@ export default function OwnerDashboard() {
             outlet_id: entry.outlet_id,
             outlet_name: entry.outlet_name || 'Unknown Outlet'
           }));
+
+          console.log('Refreshed menu items after add:', newMenuItems);
+        } else {
+          console.warn('Failed to refresh menu after adding item:', menuResponse.status);
+          alert('Item added successfully, but could not refresh the list. Please refresh the page manually.');
+        }
+
+        if (newMenuItems.length > 0) {
           setMenuItems(newMenuItems);
         }
 
@@ -342,21 +323,101 @@ export default function OwnerDashboard() {
     }
   };
 
-  const handleImageUpload = (file) => {
-    if (file.size > 5 * 1024 * 1024) { // 5MB limit
-      alert('File size too large. Please choose an image under 5MB.');
+  const handleAddOutlet = async (e) => {
+    e.preventDefault();
+
+    console.log("Starting to add outlet...", newOutlet);
+
+    try {
+      const token = localStorage.getItem("auth_token");
+
+      if (!token) {
+        alert("You must be logged in to add an outlet");
+        return;
+      }
+
+      // Create FormData to handle file upload
+      const formData = new FormData();
+      formData.append('name', newOutlet.name);
+      formData.append('category_name', newOutlet.category_name);
+      
+      // Add image file if exists
+      if (newOutlet.image_file) {
+        formData.append('image', newOutlet.image_file);
+      }
+
+      console.log("Sending POST request to:", `${API_BASE}/api/outlets`);
+
+      const response = await fetch(`${API_BASE}/api/outlets`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          // Don't set Content-Type - let browser set it with boundary for FormData
+        },
+        body: formData,
+      });
+
+      console.log("Response status:", response.status);
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log("Outlet added successfully:", result);
+
+        // Refresh outlets list
+        const outletsData = await apiHelper.getOutlets();
+        setOutlets(outletsData);
+
+        // Reset form
+        setNewOutlet({
+          name: "",
+          category_name: "",
+          image_file: null,
+          image_preview: ""
+        });
+
+        setShowAddOutletModal(false);
+        alert("Outlet added successfully!");
+      } else {
+        const errorData = await response
+          .json()
+          .catch(() => ({ message: "Unknown error" }));
+
+        console.error("Server error:", errorData);
+        alert(`Failed to add outlet: ${errorData.message || response.statusText}`);
+      }
+    } catch (error) {
+      console.error("Error adding outlet:", error);
+      alert(`Failed to add outlet: ${error.message}`);
+    }
+  };
+
+
+  const handleImageUpload = (file, type = "item") => {
+    if (file.size > 5 * 1024 * 1024) {
+      alert("File size too large. Please choose an image under 5MB.");
       return;
     }
 
-    // Create preview
     const reader = new FileReader();
+
     reader.onloadend = () => {
-      setNewItem({
-        ...newItem,
-        image_preview: reader.result,
-        image_file: file
-      });
+      if (type === "item") {
+        setNewItem({
+          ...newItem,
+          image_preview: reader.result,
+          image_file: file,
+        });
+      }
+
+      if (type === "outlet") {
+        setNewOutlet({
+          ...newOutlet,
+          image_preview: reader.result,
+          image_file: file
+        });
+      }
     };
+
     reader.readAsDataURL(file);
   };
 
@@ -507,7 +568,10 @@ export default function OwnerDashboard() {
                       />
                     </div>
                   </div>
-                  <button className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 flex items-center gap-2">
+                  <button 
+                    onClick={() => setShowAddOutletModal(true)}
+                    className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 flex items-center gap-2"
+                  >
                     <Plus className="w-5 h-5" />
                     Add New Outlet
                   </button>
@@ -523,8 +587,14 @@ export default function OwnerDashboard() {
 
               {filteredOutlets.length === 0 && (
                 <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
-                  <p className="text-gray-500">No outlets found</p>
-                  <button className="mt-4 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90">
+                  <Store className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-700">No Outlets Found</h3>
+                  <p className="text-gray-500 mt-2 mb-4">Get started by adding your first outlet</p>
+                  <button 
+                    onClick={() => setShowAddOutletModal(true)}
+                    className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 inline-flex items-center gap-2"
+                  >
+                    <Plus className="w-5 h-5" />
                     Add Your First Outlet
                   </button>
                 </div>
@@ -954,6 +1024,190 @@ export default function OwnerDashboard() {
                         className="flex-1 py-3 bg-primary text-white rounded-lg hover:bg-primary/90"
                       >
                         Add Item
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Add Outlet Modal */}
+          {showAddOutletModal && (
+            <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
+              <div 
+                onClick={() => setShowAddOutletModal(false)}
+                className="absolute inset-0 bg-gray-900/10 backdrop-blur-[1px]"
+              />
+              
+              <div className="relative bg-white rounded-2xl w-full max-w-md shadow-xl border border-gray-200 animate-fade-in max-h-[90vh] overflow-y-auto">
+                <div className="p-6">
+                  <div className="flex justify-between items-center mb-6">
+                    <div>
+                      <h2 className="text-xl font-bold text-gray-900">Add New Outlet</h2>
+                      <p className="text-sm text-gray-500 mt-1">Create a new outlet location</p>
+                    </div>
+                    <button 
+                      onClick={() => setShowAddOutletModal(false)}
+                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                    >
+                      <span className="text-xl text-gray-500 hover:text-gray-700">✕</span>
+                    </button>
+                  </div>
+                  
+                  <form onSubmit={handleAddOutlet} className="space-y-4">
+                    {/* Outlet Name */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Outlet Name <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={newOutlet.name}
+                        onChange={(e) => setNewOutlet({...newOutlet, name: e.target.value})}
+                        className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                        required
+                        placeholder="e.g., Downtown Branch"
+                      />
+                    </div>
+                    
+                    {/* Category Name */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Category Name <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={newOutlet.category_name}
+                        onChange={(e) => setNewOutlet({...newOutlet, category_name: e.target.value})}
+                        className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                        required
+                        placeholder="e.g., Fast Food, Fine Dining, Cafe"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        The type or category of your outlet
+                      </p>
+                    </div>
+                    
+                    {/* Image Upload */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Outlet Image
+                      </label>
+                      <div 
+                        className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors
+                          ${newOutlet.image_preview 
+                            ? 'border-primary bg-primary/5' 
+                            : 'border-gray-300 hover:border-gray-400 hover:bg-gray-50'
+                          }`}
+                        onClick={() => document.getElementById('outletFileInput').click()}
+                        onDragOver={(e) => {
+                          e.preventDefault();
+                          e.currentTarget.classList.add('border-primary', 'bg-primary/5');
+                        }}
+                        onDragLeave={(e) => {
+                          e.preventDefault();
+                          if (!newOutlet.image_preview) {
+                            e.currentTarget.classList.remove('border-primary', 'bg-primary/5');
+                          }
+                        }}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          const file = e.dataTransfer.files[0];
+                          if (file && file.type.startsWith('image/')) {
+                            handleImageUpload(file, 'outlet');
+                          }
+                        }}
+                      >
+                        <input
+                          id="outletFileInput"
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files[0];
+                            if (file) handleImageUpload(file, 'outlet');
+                          }}
+                        />
+                        
+                        {newOutlet.image_preview ? (
+                          <div className="space-y-2">
+                            <div className="relative w-32 h-32 mx-auto">
+                              <img 
+                                src={newOutlet.image_preview} 
+                                alt="Preview" 
+                                className="w-full h-full object-cover rounded-lg"
+                              />
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setNewOutlet({
+                                    ...newOutlet, 
+                                    image_file: null,
+                                    image_preview: ''
+                                  });
+                                }}
+                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                            <p className="text-sm text-gray-600">
+                              Click or drag to change image
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="space-y-2">
+                            <div className="text-gray-400 mx-auto w-12 h-12">
+                              <Upload className="w-full h-full" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-gray-700">
+                                Drag & drop an image here
+                              </p>
+                              <p className="text-xs text-gray-500 mt-1">
+                                or click to browse (PNG, JPG up to 5MB)
+                              </p>
+                              <p className="text-xs text-gray-400 mt-2">
+                                Optional - default image will be used if not provided
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {/* Info Box */}
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <div className="flex gap-2">
+                        <div className="text-blue-600 mt-0.5">
+                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-blue-900">Auto-generated fields</p>
+                          <p className="text-xs text-blue-700 mt-1">
+                            The outlet ID and owner ID will be automatically assigned when you create the outlet.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-3 pt-4">
+                      <button
+                        type="button"
+                        onClick={() => setShowAddOutletModal(false)}
+                        className="flex-1 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="flex-1 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 font-medium"
+                      >
+                        Add Outlet
                       </button>
                     </div>
                   </form>
