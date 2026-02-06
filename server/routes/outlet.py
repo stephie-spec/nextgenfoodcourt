@@ -199,18 +199,26 @@ class OutletResource(Resource):
         
         outlet = Outlet.query.get ( outlet_id)
 
-        # Check whether it is the right outlet owner
-        if outlet.owner_id != owner.id :
+        if not outlet:
+            return {"message": "Outlet not found"}, 404
 
-            return { "message" : "Unauthorized. Not registered owner."}, 401
+        # Check whether it is the right outlet owner
+        if outlet.owner_id != owner.id:
+            return {"message": "Unauthorized. Not registered owner."}, 403
         
-        db.session.delete ( outlet )
+        # Delete image file if it's not the default
+        if outlet.image_path and outlet.image_path != 'default-outlet.jpg':
+            image_path = os.path.join(UPLOAD_FOLDER, outlet.image_path)
+            if os.path.exists(image_path):
+                try:
+                    os.remove(image_path)
+                except Exception as e:
+                    print(f"Error deleting image: {e}")
+        
+        db.session.delete(outlet)
         db.session.commit()
 
-        return { "message" : f"Outlet {outlet.name} deleted successfully."}, 200
-
-
-
+        return {"message": f"Outlet {outlet.name} deleted successfully."}, 200
 
 # View the menu of a specific outlet
 class OutletMenu(Resource):
