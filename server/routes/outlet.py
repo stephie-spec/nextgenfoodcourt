@@ -2,7 +2,8 @@ from flask import request
 from flask_restful import Resource
 from models import db, Outlet, Owner, MenuOutletItem, Item
 from auth.permissions import require_owner
-
+from werkzeug.utils import secure_filename
+import os
 
 # View list of all outlets
 class ListOutlets(Resource):
