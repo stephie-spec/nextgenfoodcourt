@@ -112,7 +112,7 @@ useEffect(() => {
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4">
               <button 
-                onClick={() => router.push('/dashboard/menu')}
+                onClick={() => router.push('/orders')}
                 className="group flex items-center justify-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition-all duration-300 transform hover:scale-105"
               >
                 <Utensils className="w-5 h-5" />

@@ -12,7 +12,22 @@ export function CartProvider({ children }) {
   useEffect(() => {
     const savedCart = localStorage.getItem('cartItems');
     if (savedCart) {
-      setCartItems(JSON.parse(savedCart));
+      try {
+        const parsed = JSON.parse(savedCart);
+        // Ensure cartItems is an object with numeric or string keys
+        // Filter out any invalid entries
+        const validCart = {};
+        for (const [key, value] of Object.entries(parsed)) {
+          // Only store if value is a number (quantity)
+          if (typeof value === 'number') {
+            validCart[key] = value;
+          }
+        }
+        setCartItems(validCart);
+      } catch (e) {
+        console.error('Error loading cart from localStorage:', e);
+        setCartItems({});
+      }
     }
     setMounted(true);
   }, []);
@@ -25,7 +40,10 @@ export function CartProvider({ children }) {
   }, [cartItems, mounted]);
 
   // Calculate total items in cart
-  const cartTotalItems = Object.values(cartItems).reduce((sum, qty) => sum + qty, 0);
+  const cartTotalItems = Object.values(cartItems).reduce((sum, qty) => {
+    // Ensure qty is a number
+    return sum + (typeof qty === 'number' ? qty : 0);
+  }, 0);
 
   // Add item to cart
   const addToCart = (itemId) => {
@@ -68,7 +86,10 @@ export function CartProvider({ children }) {
   };
 
   // Get quantity of specific item
-  const getItemQuantity = (itemId) => cartItems[itemId] || 0;
+  const getItemQuantity = (itemId) => {
+    const qty = cartItems[itemId];
+    return typeof qty === 'number' ? qty : 0;
+  };
 
   return (
     <CartContext.Provider

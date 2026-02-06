@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ShoppingCart, Trash2, Plus, Minus, ArrowLeft, ArrowRight, Store, Clock, MapPin, Phone, CreditCard, Shield, Truck, Star, Info, Tag, X } from 'lucide-react';
 import { useCart } from '@/lib/CartContext';
+import { outletsData } from '@/lib/menuData';
 import Navbar from '@/components/navbar';
 
 export default function CartPage() {
@@ -13,19 +14,39 @@ export default function CartPage() {
   const [promoApplied, setPromoApplied] = useState(false);
   const [promoDiscount, setPromoDiscount] = useState(0);
 
-  // Mock menu items data
-  const getMenuItemDetails = (itemId) => {
-    const menuItems = {
-      1: { name: 'Jollof Rice', outlet: 'Naija Kitchen', price: 12.99, image: '/food-1.jpg', category: 'Main Course', prepTime: '15-20 min' },
-      2: { name: 'Fried Plantain', outlet: 'Afro Delights', price: 6.49, image: '/food-2.jpg', category: 'Side Dish', prepTime: '10-15 min' },
-      3: { name: 'Yam Porridge', outlet: 'Yam Bliss', price: 8.99, image: '/food-3.jpg', category: 'Staple', prepTime: '20-25 min' },
-      4: { name: 'Egusi Soup', outlet: 'Egusi Express', price: 10.99, image: '/food-4.jpg', category: 'Soup', prepTime: '25-30 min' },
-      101: { name: 'Borewors Oven Pizza', outlet: 'Addis Kitchen', price: 12.99, image: '/food-1.jpg', category: 'Pizza', prepTime: '20-25 min' },
-      102: { name: 'Wings & Suya Combo', outlet: 'Lagos Grill', price: 11.99, image: '/food-2.jpg', category: 'Combo', prepTime: '15-20 min' },
-      103: { name: 'Ethiopian Ainjera Platter', outlet: 'Nairobi Flame', price: 15.99, image: '/food-3.jpg', category: 'Platter', prepTime: '25-30 min' },
-      104: { name: 'Biriani Rice Bowl', outlet: 'Watamu Kitchen', price: 13.99, image: '/food-4.jpg', category: 'Rice Bowl', prepTime: '20-25 min' },
+  // Get item details from composite ID and outletsData
+  const getItemDetails = (compositeId) => {
+    // Parse composite ID: "outletId-itemName"
+    const parts = compositeId.split('-');
+    if (parts.length < 2) {
+      return { name: 'Unknown Item', outlet: 'Unknown Outlet', price: 0, image: '/placeholder.svg', category: 'Unknown', prepTime: 'N/A' };
+    }
+    
+    const outletId = parseInt(parts[0]);
+    const itemName = parts.slice(1).join('-'); // In case item name has hyphens
+    
+    // Find the outlet
+    const outlet = outletsData.find(o => o.outletId === outletId);
+    if (!outlet) {
+      return { name: 'Unknown Item', outlet: 'Unknown Outlet', price: 0, image: '/placeholder.svg', category: 'Unknown', prepTime: 'N/A' };
+    }
+    
+    // Find the item in the outlet
+    const item = outlet.items.find(i => i.name === itemName);
+    if (!item) {
+      return { name: 'Unknown Item', outlet: outlet.outletName, price: 0, image: '/placeholder.svg', category: 'Unknown', prepTime: 'N/A' };
+    }
+    
+    return {
+      name: item.name,
+      outlet: outlet.outletName,
+      price: item.price,
+      image: item.image,
+      category: 'Food Item',
+      prepTime: outlet.deliveryTime,
+      calories: item.calories,
+      description: item.description,
     };
-    return menuItems[itemId] || { name: 'Unknown Item', outlet: 'Unknown Outlet', price: 0, image: '/placeholder.svg', category: 'Unknown', prepTime: 'N/A' };
   };
 
   // Popular add-ons
@@ -37,11 +58,13 @@ export default function CartPage() {
   ];
 
   // Calculate totals
-  const cartItemList = Object.entries(cartItems).map(([id, quantity]) => ({
-    id: parseInt(id),
-    quantity,
-    ...getMenuItemDetails(parseInt(id)),
-  }));
+  const cartItemList = Object.entries(cartItems)
+    .filter(([_, quantity]) => typeof quantity === 'number')
+    .map(([id, quantity]) => ({
+      id,
+      quantity,
+      ...getItemDetails(id),
+    }));
 
   const subtotal = cartItemList.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const deliveryFee = subtotal > 25 ? 0 : 4.99;
