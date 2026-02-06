@@ -7,31 +7,28 @@ from auth.permissions import require_owner, get_current_user
 class ItemListResource(Resource):
 
     def get(self):
-
         user = get_current_user()
-
         items = Item.query.all()
         response = []
-
-        for item in items :
-
+        
+        for item in items:
             is_favourite = False
-
-            if user and user.role == 'customer' :
-
-                is_favourite = CustomerFavourite.query.filter_by (
-                    customer_id = user.id,
-                    item_id = item.id
+            if user and user.role == 'customer':
+                is_favourite = CustomerFavourite.query.filter_by(
+                    customer_id=user.id,
+                    item_id=item.id
                 ).first() is not None
-            
+
             response.append({
                 "id": item.id,
                 "name": item.name,
-                "price": item.price,
-                "favourite_count": item.favourite_count,
-                "isFavourite": is_favourite
+                "price": float(item.price),
+                "category": item.category_name,               
+                "is_available": item.is_available,
+                "favourite_count": item.favourites,
+                "isFavourite": is_favourite,
             })
-
+        
         return response, 200
 
 

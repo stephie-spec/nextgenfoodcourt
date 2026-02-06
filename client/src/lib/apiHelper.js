@@ -35,156 +35,111 @@ export const apiHelper = {
       });
   },
 
-  // Get all orders (for owners - all orders)
-  getOrders: () => {
-    const token = localStorage.getItem('auth_token');
+// Get all orders (for owners - all orders)
+getOrders: () => {
+  const token = localStorage.getItem('auth_token');
+  
+  // First, test if server is reachable
+  console.log('Testing connection to:', `${API_BASE}/api/orders`);
+  
+  // Use the simplest possible approach
+  return fetch(`${API_BASE}/api/orders`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` })
+    },
+    mode: 'cors'  // Explicitly set CORS mode
+  })
+  .then(res => {
+    console.log('Response received:', {
+      status: res.status,
+      statusText: res.statusText,
+      ok: res.ok,
+      url: res.url
+    });
     
-    return fetch(`${API_BASE}/api/orders`, {
-      headers: token ? {
-        'Authorization': `Bearer ${token}`
-      } : {}
-    })
-      .then(res => {
-        if (!res.ok) {
-          console.log('Orders API failed:', res.status);
-          if (res.status === 401) {
-            console.error('Unauthorized: Please log in');
-          }
-          return [];
-        }
-        return res.json();
-      })
-      .then(data => {
-        console.log('Orders API Response:', data);
-        
-        if (Array.isArray(data)) {
-          return data.map(order => ({
-            id: order.id || `ORD-${Math.random().toString(36).substr(2, 9)}`,
-            created_at: order.created_at || new Date().toISOString(),
-            estimated_status: order.status || 'pending',
-            total: order.total || (order.quantity || 1) * 12.99,
-            items: order.items || [{ 
-              name: 'Menu Item', 
-              quantity: order.quantity || 1, 
-              price: 12.99 
-            }],
-            outlet: {
-              id: order.outlet_id || 1,
-              name: order.outlet_name || 'Food Court Outlet',
-              category_name: order.outlet_category || 'Cuisine'
-            },
-            outlet_name: order.outlet_name || 'Food Court Outlet',
-            customer_name: order.customer_name || 'Customer',
-            delivery_time: '25-35 mins',
-            customer_id: order.customer_id  // Keep for filtering
-          }));
-        }
-        
-        if (data && Array.isArray(data.orders)) {
-          return data.orders.map(order => ({
-            id: order.id,
-            created_at: order.created_at,
-            estimated_status: order.status,
-            total: order.total || 0,
-            items: order.items || [],
-            outlet: order.outlet || {},
-            customer_name: order.customer_name,
-            customer_id: order.customer_id
-          }));
-        }
-        
-        return [];
-      })
-      .catch(error => {
-        console.error('Error fetching orders:', error);
-        return []; 
+    if (!res.ok) {
+      // Try to get error details
+      return res.text().then(text => {
+        console.log('Error response body:', text);
+        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
       });
-  },
+    }
+    
+    return res.json();
+  })
+  .then(data => {
+    console.log('Success - Orders data:', data);
+    return Array.isArray(data) ? data : [];
+  })
+  .catch(error => {
+    console.error('Fetch error details:', {
+      message: error.message,
+      name: error.name,
+      stack: error.stack
+    });
+    
+    // Test if server is even reachable
+    fetch(`${API_BASE}/api/outlets`)
+      .then(testRes => console.log('Outlets test:', testRes.status))
+      .catch(testErr => console.log('Server unreachable:', testErr));
+    
+    return []; 
+  });
+},
 
-  // Get orders for current customer 
-  getCustomerOrders: () => {
-    const token = localStorage.getItem('auth_token');
-    
-    return fetch(`${API_BASE}/api/orders`, {
-      headers: token ? {
-        'Authorization': `Bearer ${token}`
-      } : {}
-    })
-      .then(res => {
-        if (!res.ok) {
-          console.log('Customer Orders API failed:', res.status);
-          return [];
-        }
-        return res.json();
-      })
-      .then(data => {
-        console.log('Customer Orders API Response:', data);
-        
-        // Filter for current customer
-        const customerId = localStorage.getItem('user_id');
-        const userRole = localStorage.getItem('user_role');
-        
-        let ordersArray = Array.isArray(data) ? data : (data.orders || []);
-        
-        console.log('Filtering orders for:', { customerId, userRole, totalOrders: ordersArray.length });
-        
-        if (userRole === 'customer' && customerId) {
-          // Return only this customer's orders
-          const filteredOrders = ordersArray.filter(order => 
-            String(order.customer_id) === String(customerId)
-          );
-          
-          console.log('Filtered to:', filteredOrders.length, 'orders');
-          
-          return filteredOrders.map(order => ({
-            id: order.id || `ORD-${Math.random().toString(36).substr(2, 9)}`,
-            created_at: order.created_at || new Date().toISOString(),
-            estimated_status: order.status || 'pending',
-            total: order.total || (order.quantity || 1) * 12.99,
-            items: order.items || [{ 
-              name: 'Menu Item', 
-              quantity: order.quantity || 1, 
-              price: 12.99 
-            }],
-            outlet: {
-              id: order.outlet_id || 1,
-              name: order.outlet_name || 'Food Court Outlet',
-              category_name: order.outlet_category || 'Cuisine'
-            },
-            outlet_name: order.outlet_name || 'Food Court Outlet',
-            customer_name: order.customer_name || 'Customer',
-            delivery_time: '25-35 mins',
-            customer_id: order.customer_id
-          }));
-        }
-        
-        // If owner or no filtering, return all
-        return ordersArray.map(order => ({
-          id: order.id || `ORD-${Math.random().toString(36).substr(2, 9)}`,
-          created_at: order.created_at || new Date().toISOString(),
-          estimated_status: order.status || 'pending',
-          total: order.total || (order.quantity || 1) * 12.99,
-          items: order.items || [{ 
-            name: 'Menu Item', 
-            quantity: order.quantity || 1, 
-            price: 12.99 
-          }],
-          outlet: {
-            id: order.outlet_id || 1,
-            name: order.outlet_name || 'Food Court Outlet',
-            category_name: order.outlet_category || 'Cuisine'
-          },
-          outlet_name: order.outlet_name || 'Food Court Outlet',
-          customer_name: order.customer_name || 'Customer',
-          delivery_time: '25-35 mins',
-          customer_id: order.customer_id
-        }));
-      })
-      .catch(error => {
-        console.error('Error fetching customer orders:', error);
+// Get orders for current customer
+getCustomerOrders: () => {
+  const token = localStorage.getItem('auth_token');
+  const customerId = localStorage.getItem('user_id');
+  
+  if (!customerId) {
+    console.log('No customer ID found');
+    return Promise.resolve([]);
+  }
+  
+  return fetch(`${API_BASE}/api/orders/customer/${customerId}`, {
+    headers: token ? {
+      'Authorization': `Bearer ${token}`
+    } : {}
+  })
+    .then(res => {
+      if (!res.ok) {
+        console.log('Customer Orders API failed:', res.status);
         return [];
-      });
-  },
+      }
+      return res.json();
+    })
+    .then(data => {
+      console.log('Customer Orders API Response:', data);
+      
+      // Transform response
+      let ordersArray = Array.isArray(data) ? data : [];
+      
+      return ordersArray.map(order => ({
+        id: order.id,
+        created_at: order.created_at,
+        estimated_status: order.status || 'pending',
+        total: order.total || 0,
+        items: order.items || [],
+        outlet: {
+          id: order.outlet_id || 1,
+          name: order.outlet_name || 'Food Court Outlet',
+          category_name: order.outlet_category || 'Cuisine'
+        },
+        outlet_name: order.outlet_name || 'Food Court Outlet',
+        customer_name: order.customer_name || 'Customer',
+        customer_id: order.customer_id,
+        delivery_time: '25-35 mins'
+      }));
+    })
+    .catch(error => {
+      console.error('Error fetching customer orders:', error);
+      return [];
+    });
+},
+
 
   // Get owner's outlets
   getOwnerOutlets: () => {

@@ -15,7 +15,7 @@ import { useSession } from 'next-auth/react'; // For authentication purposes.
 export default function MenuPage() {
   const searchParams = useSearchParams();
   const { addToCart, cartItems, cartTotalItems } = useCart();
-  
+
   const [selectedCuisine, setSelectedCuisine] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [mounted, setMounted] = useState(false);
@@ -23,7 +23,7 @@ export default function MenuPage() {
   const { data: session, status } = useSession(); // Session data for user auth.
   const token = session?.accessToken || null; // JWT
   const isLoggedIn = status === 'authenticated'; // To check authentication status on clicking the heart button.
-
+  const userRole = session?.user?.role;
 
   // Initialize search from URL parameter on mount
   useEffect(() => {
@@ -39,7 +39,7 @@ export default function MenuPage() {
     return outletsData.filter((outlet) => {
       const matchesCuisine = selectedCuisine === 'All' || outlet.cuisine === selectedCuisine;
       const searchLower = searchQuery.toLowerCase().trim();
-      const matchesSearch = !searchQuery || 
+      const matchesSearch = !searchQuery ||
         outlet.outletName.toLowerCase().includes(searchLower) ||
         outlet.cuisine.toLowerCase().includes(searchLower) ||
         outlet.items.some(item => item.name.toLowerCase().includes(searchLower));
@@ -92,7 +92,7 @@ export default function MenuPage() {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      
+
       <main className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20">
         {/* Hero Section */}
         <div className="relative bg-gradient-to-r from-primary/10 via-primary/5 to-background pt-28 pb-16 px-4 sm:px-8 lg:px-12">
@@ -107,14 +107,14 @@ export default function MenuPage() {
                   Our <span className="text-primary">Menu</span>
                 </h1>
                 <p className="text-lg text-muted-foreground max-w-xl">
-                  Discover authentic African cuisine from {outletsData.length} unique outlets. 
+                  Discover authentic African cuisine from {outletsData.length} unique outlets.
                   From Ethiopian injera to South African bobotie, taste the continent's finest flavors.
                 </p>
                 {searchQuery && (
                   <div className="inline-flex items-center gap-2 px-4 py-2 bg-accent/20 text-accent rounded-full text-sm">
                     <Search className="w-4 h-4" />
                     <span>Showing results for "{searchQuery}"</span>
-                    <button 
+                    <button
                       onClick={() => setSearchQuery('')}
                       className="hover:text-accent/80"
                     >
@@ -123,7 +123,7 @@ export default function MenuPage() {
                   </div>
                 )}
               </div>
-              
+
               {/* Search & Filter */}
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="relative">
@@ -151,7 +151,7 @@ export default function MenuPage() {
               </div>
             </div>
           </div>
-          
+
           {/* Decorative elements */}
           <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
           <div className="absolute bottom-0 left-0 w-96 h-96 bg-accent/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
@@ -165,11 +165,10 @@ export default function MenuPage() {
                 <button
                   key={cuisine}
                   onClick={() => setSelectedCuisine(cuisine)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
-                    selectedCuisine === cuisine
+                  className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${selectedCuisine === cuisine
                       ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25'
                       : 'bg-secondary text-foreground hover:bg-secondary/80'
-                  }`}
+                    }`}
                 >
                   {cuisine}
                 </button>
@@ -195,7 +194,7 @@ export default function MenuPage() {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-card via-card/80 to-transparent"></div>
                   </div>
-                  
+
                   <div className="relative p-6 lg:p-8 flex flex-col lg:flex-row lg:items-end gap-6">
                     {/* Outlet Info */}
                     <div className="flex items-start gap-4 lg:gap-6">
@@ -231,7 +230,7 @@ export default function MenuPage() {
                         </div>
                       </div>
                     </div>
-                    
+
                     {/* View Outlet Button */}
                     <div className="lg:ml-auto">
                       <button className="flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition-all hover:scale-105 shadow-lg shadow-primary/25">
@@ -241,14 +240,14 @@ export default function MenuPage() {
                     </div>
                   </div>
                 </div>
-                
+
                 {/* Menu Items Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
                   {outlet.items.map((item, index) => {
                     const quantity = getItemQuantity(outlet.outletId, item.name);
                     const itemId = item.id || `${outlet.outletId}-${item.name}`;
                     const favourited = favourites[itemId] || false;
-                    
+
                     return (
                       <div
                         key={index}
@@ -276,7 +275,7 @@ export default function MenuPage() {
                             {item.name}
                           </h3>
                           <p className="text-sm text-muted-foreground line-clamp-2">
-                            {item.description}
+                            {item.description || 'No description available'}
                           </p>
 
                           {/* Add to Cart Button */}
@@ -287,7 +286,7 @@ export default function MenuPage() {
                                 <span>in cart</span>
                               </div>
                             ) : (
-                              <button 
+                              <button
                                 onClick={() => handleAddToCart(outlet, item)}
                                 className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground text-sm font-semibold rounded-xl hover:bg-primary/90 transition-all hover:shadow-lg hover:shadow-primary/25"
                               >
@@ -319,7 +318,7 @@ export default function MenuPage() {
                 </div>
                 <h3 className="text-xl font-semibold text-foreground mb-2">No results found</h3>
                 <p className="text-muted-foreground mb-4">Try adjusting your search or filter</p>
-                <button 
+                <button
                   onClick={() => { setSearchQuery(''); setSelectedCuisine('All'); }}
                   className="px-6 py-3 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition-colors"
                 >
@@ -333,7 +332,7 @@ export default function MenuPage() {
         {/* Floating Cart Button */}
         {cartTotalItems > 0 && (
           <div className="fixed bottom-8 right-8 z-50">
-            <button 
+            <button
               onClick={() => window.location.href = '/cart'}
               className="flex items-center gap-3 px-6 py-4 bg-primary text-primary-foreground font-bold rounded-full shadow-2xl shadow-primary/40 hover:scale-110 transition-transform animate-bounce"
             >
