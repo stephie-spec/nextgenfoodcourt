@@ -1,48 +1,39 @@
-'use client'; // Marks this component as a Client Component in Next.js (App Router)
+'use client';
 import React, { useMemo, useState, useEffect } from 'react';
-import { Moon, Sun, Search, LogIn, UserPlus, ShoppingCart, X } from 'lucide-react'; // Icon set
-import { useTheme } from 'next-themes'; //  (dark/light)
-import Link from 'next/link'; // Client-side navigation
+import { Moon, Sun, Search, LogIn, UserPlus, ShoppingCart, X, User, LogOut } from 'lucide-react';
+import { useTheme } from 'next-themes';
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useRouter } from 'next/navigation'; // Router for navigation
-import { useCart } from '@/lib/CartContext'; // Cart context
+import { useRouter } from 'next/navigation';
+import { useCart } from '@/lib/CartContext';
 import { getCuisineList, getMockOutlets } from '@/lib/outletsData';
 import { getMenuItems } from '@/lib/menuData';
+import { useSession, signOut } from 'next-auth/react';
 
 export default function Navbar() {
-  // Theme state from next-themes
+  const { data: session, status } = useSession();
   const { theme, setTheme } = useTheme();
-  const router = useRouter(); // Router instance for navigation
-  const { cartTotalItems } = useCart(); // Get cart total items
+  const router = useRouter();
+  const { cartTotalItems } = useCart();
   const pathname = usePathname();
-  
-  // Local UI state
-  const [searchOpen, setSearchOpen] = useState(false); // Toggle search input
-  const [searchQuery, setSearchQuery] = useState(''); // Search text
-  const [mounted, setMounted] = useState(false); // Track client-side mount
+
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [mounted, setMounted] = useState(false);
   const outlets = useMemo(() => getMockOutlets(), []);
   const cuisines = useMemo(() => getCuisineList(), []);
   const menuItems = useMemo(() => getMenuItems(), []);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userRole, setUserRole] = useState('');
 
-  // Ensure component only renders theme toggle after client mount
   useEffect(() => {
     setMounted(true);
-    // Check if user is logged in
-    const token = localStorage.getItem('auth_token');
-    const role = localStorage.getItem('user_role');
-    if (token) {
-      setIsLoggedIn(true);
-      setUserRole(role || 'customer');
-    }
   }, []);
+
+  const isLoading = status === 'loading';
 
   // Handle search input changes
   const handleSearch = (e) => {
     const query = e.target.value;
     setSearchQuery(query);
-    // TODO: Fetch search results from backend API
   };
 
   const normalizedQuery = searchQuery.trim().toLowerCase();
@@ -73,29 +64,18 @@ export default function Navbar() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('user_role');
-    setIsLoggedIn(false);
-    setUserRole('');
-    router.push('/');
+    signOut({ callbackUrl: '/' });
   };
 
   const handleDashboardNavigation = () => {
-    if (userRole === 'owner') {
+    if (session?.user?.role === 'owner') {
       router.push('/dashboard/owner');
     } else {
       router.push('/dashboard/customer');
     }
   };
 
-  // Check if link is active
-  const isActive = (path) => {
-    if (path === '/') return pathname === '/';
-    return pathname?.startsWith(path);
-  };
-
   return (
-    // Fixed navbar with blur + border
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur border-b border-border shadow-lg">
       <div className="max-w-full mx-auto px-3 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16 gap-4">
@@ -112,7 +92,7 @@ export default function Navbar() {
 
           {/* Desktop navigation links */}
           <div className="hidden lg:flex items-center gap-6">
-            <Link href={{ pathname: '/outlets', query: { view: 'customer' } }}  className="text-foreground hover:text-primary transition-colors text-sm font-medium">
+            <Link href="/outlets" className="text-foreground hover:text-primary transition-colors text-sm font-medium">
               Outlets
             </Link>
             <Link href="/dashboard/menu" className="text-foreground hover:text-primary transition-colors text-sm font-medium">
@@ -165,59 +145,7 @@ export default function Navbar() {
                   <Search className="w-4 sm:w-5 h-4 sm:h-5" />
                 </button>
               )}
-              {searchOpen && normalizedQuery && (cuisineMatches.length > 0 || menuItemMatches.length > 0 || outletMatches.length > 0) && (
-                <div className="absolute left-0 right-0 mt-2 bg-background border border-border rounded-xl shadow-xl z-50 overflow-hidden">
-                  {cuisineMatches.length > 0 && (
-                    <div className="px-3 py-2 border-b border-border">
-                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Cuisines</p>
-                      <div className="mt-2 space-y-1">
-                        {cuisineMatches.map((cuisine) => (
-                          <button
-                            key={cuisine}
-                            onClick={() => goToSearch(cuisine, 'menu')}
-                            className="w-full text-left px-3 py-2 rounded-lg hover:bg-secondary text-sm"
-                          >
-                            {cuisine}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  {menuItemMatches.length > 0 && (
-                    <div className="px-3 py-2 border-b border-border">
-                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Menu Items</p>
-                      <div className="mt-2 space-y-1">
-                        {menuItemMatches.map((item) => (
-                          <button
-                            key={`${item.outletName}-${item.name}`}
-                            onClick={() => goToSearch(item.name, 'menu')}
-                            className="w-full text-left px-3 py-2 rounded-lg hover:bg-secondary text-sm"
-                          >
-                            {item.name}
-                            <span className="ml-2 text-xs text-muted-foreground">{item.outletName}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  {outletMatches.length > 0 && (
-                    <div className="px-3 py-2">
-                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Outlets</p>
-                      <div className="mt-2 space-y-1">
-                        {outletMatches.map((outlet) => (
-                          <button
-                            key={outlet.id}
-                            onClick={() => goToSearch(outlet.name, 'outlets')}
-                            className="w-full text-left px-3 py-2 rounded-lg hover:bg-secondary text-sm"
-                          >
-                            {outlet.name}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
+              {/* Search results dropdown */}
             </div>
 
             {/* Cart button with badge */}
@@ -249,25 +177,53 @@ export default function Navbar() {
               </button>
             )}
 
-            {/* Auth actions (desktop only) */}
+            {/* Auth actions */}
             <div className="hidden sm:flex items-center gap-2">
-              {isLoggedIn ? (
-                <>
-                  <button
-                    onClick={handleDashboardNavigation}
-                    className="flex items-center gap-1 px-3 py-2 bg-primary text-primary-foreground text-xs sm:text-sm font-medium rounded-full hover:bg-primary/90 transition-colors shadow-md"
-                  >
-                    <span className="hidden sm:inline">
-                      {userRole === 'owner' ? 'Owner Dashboard' : 'My Dashboard'}
-                    </span>
-                  </button>
-                  <button
-                    onClick={handleLogout}
-                    className="flex items-center gap-1 px-3 py-2 text-xs sm:text-sm font-medium text-foreground hover:bg-secondary rounded-full transition-colors"
-                  >
-                    <span className="hidden sm:inline">Logout</span>
-                  </button>
-                </>
+              {isLoading ? (
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-secondary rounded-full animate-pulse"></div>
+                  <div className="w-20 h-4 bg-secondary rounded animate-pulse"></div>
+                </div>
+              ) : session?.user ? (
+                <div className="flex items-center gap-2">
+                  <div className="relative group">
+                    <button className="flex items-center gap-2 px-3 py-2 bg-secondary hover:bg-primary/20 rounded-full transition-colors">
+                      <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                        <User className="w-4 h-4 text-white" />
+                      </div>
+                      <span className="text-sm font-medium">
+                        {session.user.name || 'User'}
+                      </span>
+                    </button>
+
+                    <div className="absolute right-0 top-full mt-2 w-48 bg-background border border-border rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                      <div className="py-2">
+                        <div className="px-4 py-2 border-b border-border">
+                          <p className="font-medium text-sm">{session.user.name || 'User'}</p>
+                          <p className="text-xs text-muted-foreground capitalize">
+                            {session.user.role === 'owner' ? 'Outlet Owner' : 'Customer'}
+                          </p>
+                        </div>
+
+                        <button
+                          onClick={handleDashboardNavigation}
+                          className="w-full text-left px-4 py-2 text-sm hover:bg-secondary transition-colors flex items-center gap-2"
+                        >
+                          <User className="w-4 h-4" />
+                          {session.user.role === 'owner' ? 'Owner Dashboard' : 'My Dashboard'}
+                        </button>
+
+                        <button
+                          onClick={handleLogout}
+                          className="w-full text-left px-4 py-2 text-sm hover:bg-red-50 hover:text-red-600 transition-colors flex items-center gap-2 text-red-500"
+                        >
+                          <LogOut className="w-4 h-4" />
+                          Logout
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               ) : (
                 <>
                   <button
@@ -291,20 +247,5 @@ export default function Navbar() {
         </div>
       </div>
     </nav>
-  );
-}
-
-// Reusable hamburger menu icon component
-function Menu(props) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-    >
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-    </svg>
   );
 }
