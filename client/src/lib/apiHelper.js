@@ -218,3 +218,72 @@ export const apiHelper = {
   },
 
 };
+
+// Create an order
+export const createOrder = async (orderData, token) => {
+  try {
+    console.log('Creating order with data:', orderData);
+    
+    const response = await fetch(`${API_BASE}/api/orders`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { 'Authorization': `Bearer ${token}` })
+      },
+      body: JSON.stringify(orderData)
+    });
+
+    const responseData = await response.json();
+    console.log('Order response:', { status: response.status, data: responseData });
+
+    if (!response.ok) {
+      throw new Error(responseData.error || `HTTP ${response.status}`);
+    }
+
+    return {
+      status: response.status,
+      data: responseData
+    };
+  } catch (error) {
+    console.error('Error creating order:', error);
+    throw error;
+  }
+};
+
+// Get customer orders
+export const getCustomerOrders = async (customerId, token) => {
+  try {
+    const response = await fetch(`${API_BASE}/api/orders`, {
+      method: 'GET',
+      headers: {
+        ...(token && { 'Authorization': `Bearer ${token}` })
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const orders = await response.json();
+    return orders.filter(order => order.customer_id === customerId);
+  } catch (error) {
+    console.error('Error fetching customer orders:', error);
+    throw error;
+  }
+};
+
+// Get menu items for outlet
+export const getMenuItems = async (outletId) => {
+  try {
+    const response = await fetch(`${API_BASE}/api/menu?outlet_id=${outletId}`);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching menu items:', error);
+    throw error;
+  }
+};

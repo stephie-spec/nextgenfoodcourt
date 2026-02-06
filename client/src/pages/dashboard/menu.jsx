@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
-import { MapPin, Flame, Clock, Star, ChevronRight, Search, Filter } from 'lucide-react';
+import { MapPin, Flame, Clock, Star, ChevronRight, Search, Filter, ShoppingCart, Heart, X } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import Navbar from '@/components/navbar';
 import { useCart } from '@/lib/CartContext';
@@ -19,6 +19,7 @@ export default function MenuPage() {
   const [selectedCuisine, setSelectedCuisine] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [mounted, setMounted] = useState(false);
+  const [favourites, setFavourites] = useState({});
   const { data: session, status } = useSession(); // Session data for user auth.
   const token = session?.accessToken || null; // JWT
   const isLoggedIn = status === 'authenticated'; // To check authentication status on clicking the heart button.
@@ -61,31 +62,26 @@ export default function MenuPage() {
 
   // Handling the favourite toggle - heart button
 
-  const handleFavourite = async () => {
-
-    if ( !token ) {
-      console.error ( "User not authenticated", error );
+  const handleFavourite = async (itemId) => {
+    if (!token) {
+      console.error('User not authenticated');
       return;
     }
 
-    const prevFavourited = favourited; // To revert in case of error
-    const prevCount = count;
-
-    setFavourited ( !prevFavourited );
-    setCount ( prevFavourited ? count -1 : count +1 );
+    const prevFavourited = !!favourites[itemId];
+    setFavourites((prev) => ({
+      ...prev,
+      [itemId]: !prevFavourited
+    }));
 
     try {
-
-      const response = await toggleFavourite ( item.id, token );
-      setFavourited ( response.favourited );
-      setCount ( response.count );
-    }
-    catch ( error ) {
-      
-      // Revert state in case of error.
-      setFavourited ( prevFavourited );
-      setCount ( prevCount );
-      console.error ( error );
+      await toggleFavourite(itemId, token);
+    } catch (error) {
+      setFavourites((prev) => ({
+        ...prev,
+        [itemId]: prevFavourited
+      }));
+      console.error(error);
     }
   };
 
@@ -250,6 +246,8 @@ export default function MenuPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
                   {outlet.items.map((item, index) => {
                     const quantity = getItemQuantity(outlet.outletId, item.name);
+                    const itemId = item.id || `${outlet.outletId}-${item.name}`;
+                    const favourited = favourites[itemId] || false;
                     
                     return (
                       <div
@@ -297,8 +295,12 @@ export default function MenuPage() {
                                 Add to Cart
                               </button>
                             )}
-                            <button disabled = { !isLoggedIn } onClick={ handleFavourite } className="p-2.5 bg-secondary rounded-xl transition-colors">
-                              <Heart className={`w-5 h-5 transition-colors ${ favourited ? 'text-red-500 fill-red-500' : 'text-muted-foreground hover:text-red-500'}` } />
+                            <button
+                              disabled={!isLoggedIn}
+                              onClick={() => handleFavourite(itemId)}
+                              className="p-2.5 bg-secondary rounded-xl transition-colors hover:bg-secondary/80"
+                            >
+                              <Heart className={`w-5 h-5 transition-colors ${favourited ? 'text-red-500 fill-red-500' : 'text-muted-foreground hover:text-red-500'}`} />
                             </button>
                           </div>
                         </div>
