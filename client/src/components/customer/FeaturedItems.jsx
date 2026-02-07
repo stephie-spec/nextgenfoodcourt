@@ -17,20 +17,31 @@ export default function FeaturedItems() {
   // Loading state while fetching items
   const [loading, setLoading] = useState(true);
 
-  // Fetch featured items (mocked for now)
+  // Fetch featured items from backend API
   useEffect(() => {
     const fetchItems = async () => {
       try {
-        // TODO: Replace mock data with backend API call
-        setItems([
-          { id: 1, name: 'Jollof Rice', outlet: 'Naija Kitchen', description: 'A traditional West African rice dish', category: 'Main Course', price: 12.99, image: '/food-1.jpg' },
-          { id: 2, name: 'Fried Plantain', outlet: 'Afro Delights', description: 'Crispy fried plantain slices', category: 'Side Dish', price: 6.49, image: '/food-2.jpg' },
-          { id: 3, name: 'Yam Porridge', outlet: 'Yam Bliss', description: 'Rich and creamy yam porridge', category: 'Staple', price: 8.99, image: '/food-3.jpg' },
-          { id: 4, name: 'Egusi Soup', outlet: 'Egusi Express', description: 'A hearty egusi soup with vegetables', category: 'Soup', price: 10.99, image: '/food-4.jpg' },
-        ]);
+        const response = await fetch('/api/menu');
+        if (!response.ok) {
+          throw new Error('Failed to fetch items');
+        }
+        const data = await response.json();
+        const processedItems = data.slice(0, 8).map((menuItem) => ({
+          id: menuItem.item_id,
+          name: menuItem.item_name,
+          outlet: menuItem.outlet_name,
+          description: `${menuItem.category || 'Special'} from ${menuItem.outlet_name}`,
+          category: menuItem.category || 'Main Course',
+          price: menuItem.price || 0,
+          image: menuItem.image_path
+            ? `http://localhost:5555/uploads/${menuItem.image_path.replace(/^\/+/, '')}`
+            : '/placeholder.svg',
+        }));
+        setItems(processedItems);
         setLoading(false);
       } catch (error) {
         console.error('Error fetching items:', error);
+        setItems([]);
         setLoading(false);
       }
     };
@@ -94,6 +105,7 @@ export default function FeaturedItems() {
                       alt={item.name}
                       fill
                       className="object-cover group-hover:scale-110 transition-transform duration-300"
+                      unoptimized
                     />
 
                     {/* Category label */}

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
-import { MapPin, Flame, Clock, Star, ChevronRight, Search, Filter, ShoppingCart, Heart, X } from 'lucide-react';
+import { MapPin, Flame, Clock, Star, ChevronRight, Search, Filter, ShoppingCart, Heart, X, Plus, Minus } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import Navbar from '@/components/navbar';
 import { useCart } from '@/lib/CartContext';
@@ -14,7 +14,7 @@ import { useSession } from 'next-auth/react'; // For authentication purposes.
 
 export default function MenuPage() {
   const searchParams = useSearchParams();
-  const { addToCart, cartItems, cartTotalItems } = useCart();
+  const { addToCart, removeFromCart, cartItems, cartTotalItems } = useCart();
 
   const [selectedCuisine, setSelectedCuisine] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
@@ -373,9 +373,20 @@ export default function MenuPage() {
                           {/* Add to Cart Button */}
                           <div className="flex items-center gap-2 pt-2">
                             {quantity > 0 ? (
-                              <div className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground text-sm font-semibold rounded-xl">
+                              <div className="flex-1 flex items-center justify-between px-3 py-2.5 bg-primary text-primary-foreground text-sm font-semibold rounded-xl">
+                                <button
+                                  onClick={() => removeFromCart(`${outlet.outletId}-${item.name}`)}
+                                  className="hover:opacity-80 transition-opacity"
+                                >
+                                  <Minus className="w-4 h-4" />
+                                </button>
                                 <span className="w-5 text-center">{quantity}</span>
-                                <span>in cart</span>
+                                <button
+                                  onClick={() => handleAddToCart(outlet, item)}
+                                  className="hover:opacity-80 transition-opacity"
+                                >
+                                  <Plus className="w-4 h-4" />
+                                </button>
                               </div>
                             ) : (
                               <button
