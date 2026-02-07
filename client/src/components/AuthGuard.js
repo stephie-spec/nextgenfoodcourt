@@ -11,27 +11,30 @@ export default function AuthGuard({ children, requiredRole }) {
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/login');
-    } else if (status === 'authenticated' && session?.user?.role !== requiredRole) {
-      // Redirect to dashboard based on role
-      if (session.user.role === 'owner') {
-        router.push('/dashboard/owner');
-      } else {
-        router.push('/dashboard/customer');
+      return;
+    }
+
+    if (status === 'authenticated') {
+      const token = session?.accessToken;
+      const role = session?.user?.role || '';
+
+      //  Store only the token in localStorage
+      if (token) {
+        localStorage.setItem('auth_token', token);
+        localStorage.setItem('user_role', role); 
+      }
+
+      // Role-based redirect
+      if (requiredRole && role !== requiredRole) {
+        if (role === 'owner') router.push('/dashboard/owner');
+        else router.push('/dashboard/customer');
       }
     }
   }, [session, status, router, requiredRole]);
 
-  if (status === 'loading') {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div>Loading...</div>
-      </div>
-    );
-  }
+  if (status === 'loading') return <div>Loading...</div>;
 
-  if (!session || session.user?.role !== requiredRole) {
-    return null;
-  }
+  if (!session || (requiredRole && session?.user?.role !== requiredRole)) return null;
 
   return children;
 }
