@@ -8,7 +8,7 @@ import OrderCard from '@/components/OrderCard';
 import Tabs from '@/components/Tabs';
 import AuthGuard from '@/components/AuthGuard';
 import { apiHelper } from '@/lib/apiHelper';
-import { Search, Filter, Plus, Package, DollarSign, Users, TrendingUp, Store, ShoppingBag, Clock, ChefHat, Upload } from 'lucide-react';
+import { Search, Filter, Plus, Package, DollarSign, Users, TrendingUp, Store, ShoppingBag, Clock, ChefHat, Upload, CheckCircle, XCircle, Edit, Pencil, Trash2 } from 'lucide-react';
 
 export default function OwnerDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
@@ -19,6 +19,8 @@ export default function OwnerDashboard() {
   const [loading, setLoading] = useState(true);
   const [showAddItemModal, setShowAddItemModal] = useState(false);
   const [showAddOutletModal, setShowAddOutletModal] = useState(false);
+  const [showEditItemModal, setShowEditItemModal] = useState(false);
+  const [editingItem, setEditingItem] = useState(null);
   const [newItem, setNewItem] = useState({
     name: '',
     price: '',
@@ -31,11 +33,11 @@ export default function OwnerDashboard() {
   });
 
   const [newOutlet, setNewOutlet] = useState({
-      name: '',
-      category_name: '',
-      image_file: null,
-      image_preview: ''
-    });
+    name: '',
+    category_name: '',
+    image_file: null,
+    image_preview: ''
+  });
 
   const API_BASE = 'http://localhost:5555';
 
@@ -93,15 +95,36 @@ export default function OwnerDashboard() {
           })
           .then(rawMenuData => {
             // Normalize the nested /api/menu response into flat items
-            const normalizedItems = rawMenuData.map(entry => ({
-              id: entry.items?.item_id || entry.item_id || null,
-              name: entry.items?.item_name || entry.item_name || 'Unnamed Item',
-              price: Number(entry.items?.price || entry.price || 0),
-              category: entry.items?.category || entry.category || 'Uncategorized',
-              is_available: entry.items?.is_available ?? entry.is_available ?? true,
-              outlet_id: entry.outlet_id,
-              outlet_name: entry.outlet_name || 'Unknown Outlet'
-            }));
+            const normalizedItems = rawMenuData.map(entry => {
+              // Construct proper image URL
+              let imageUrl = 'https://placehold.co/400'; // Default fallback
+
+              if (entry.image || entry.items?.image) {
+                const imageFilename = entry.image || entry.items?.image;
+                // Check if it's already a full URL or a filename
+                if (imageFilename.startsWith('http')) {
+                  imageUrl = imageFilename;
+                } else if (imageFilename !== 'default-food.jpg') {
+                  // Construct URL to your Flask static folder
+                  imageUrl = `http://localhost:5555/uploads/${imageFilename}`;
+                } else {
+                  // Use default image
+                  imageUrl = `http://localhost:5555/uploads/${imageFilename}`;
+                }
+              }
+
+              return {
+                id: entry.items?.item_id || entry.item_id || null,
+                name: entry.items?.item_name || entry.item_name || 'Unnamed Item',
+                price: Number(entry.items?.price || entry.price || 0),
+                category: entry.items?.category || entry.category || 'Uncategorized',
+                is_available: entry.items?.is_available ?? entry.is_available ?? true,
+                outlet_id: entry.outlet_id,
+                outlet_name: entry.outlet_name || 'Unknown Outlet',
+                image: imageUrl, // Use constructed URL
+                image_filename: entry.image || entry.items?.image || 'default-food.jpg' // Keep filename for reference
+              };
+            });
 
             console.log('Normalized menu items:', normalizedItems);
 
@@ -287,7 +310,8 @@ export default function OwnerDashboard() {
             category: entry.category || 'Uncategorized',
             is_available: entry.is_available ?? true,
             outlet_id: entry.outlet_id,
-            outlet_name: entry.outlet_name || 'Unknown Outlet'
+            outlet_name: entry.outlet_name || 'Unknown Outlet',
+            image: entry.image || 'https://placehold.co/400'
           }));
 
           console.log('Refreshed menu items after add:', newMenuItems);
@@ -340,7 +364,7 @@ export default function OwnerDashboard() {
       const formData = new FormData();
       formData.append('name', newOutlet.name);
       formData.append('category_name', newOutlet.category_name);
-      
+
       // Add image file if exists
       if (newOutlet.image_file) {
         formData.append('image', newOutlet.image_file);
@@ -352,7 +376,6 @@ export default function OwnerDashboard() {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
-          // Don't set Content-Type - let browser set it with boundary for FormData
         },
         body: formData,
       });
@@ -398,6 +421,13 @@ export default function OwnerDashboard() {
       return;
     }
 
+    // File type validation
+    const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      alert("Invalid file type. Please upload PNG, JPEG, GIF, or WebP images.");
+      return;
+    }
+
     const reader = new FileReader();
 
     reader.onloadend = () => {
@@ -406,6 +436,7 @@ export default function OwnerDashboard() {
           ...newItem,
           image_preview: reader.result,
           image_file: file,
+          image: file.name
         });
       }
 
@@ -420,6 +451,142 @@ export default function OwnerDashboard() {
 
     reader.readAsDataURL(file);
   };
+
+  const handleEditItem = (item) => {
+    setEditingItem(item);
+    setNewItem({
+      name: item.name || item.item_name || '',
+      price: item.price?.toString() || '',
+      category: item.category || 'Main Course',
+      outlet_id: item.outlet_id?.toString() || '',
+      is_available: item.is_available ?? true,
+      image: item.image || '',
+      image_preview: item.image || '',
+      image_file: null
+    });
+    setShowEditItemModal(true);
+  };
+
+  const handleUpdateItem = async (e) => {
+    e.preventDefault();
+
+    if (!editingItem) return;
+
+    try {
+      const token = localStorage.getItem('auth_token');
+      const formData = new FormData();
+
+      // Add item data
+      formData.append('name', newItem.name);
+      formData.append('price', parseFloat(newItem.price));
+      formData.append('is_available', newItem.is_available);
+      formData.append('category', newItem.category);
+      formData.append('outlet_id', parseInt(newItem.outlet_id));
+
+      // Add image file if exists
+      if (newItem.image_file) {
+        formData.append('image', newItem.image_file);
+      }
+
+      // Use PUT method for update
+      const response = await fetch(`${API_BASE}/api/menu/${editingItem.id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : ''
+        },
+        body: formData
+      });
+
+      if (response.ok) {
+        // Refresh menu items
+        const menuResponse = await fetch('http://localhost:5555/api/menu', {
+          headers: {
+            'Authorization': token ? `Bearer ${token}` : ''
+          }
+        });
+
+        if (menuResponse.ok) {
+          const rawMenuData = await menuResponse.json();
+          const newMenuItems = rawMenuData.map(entry => {
+            let imageUrl = 'https://placehold.co/400';
+            if (entry.image || entry.items?.image) {
+              const imageFilename = entry.image || entry.items?.image;
+              if (imageFilename.startsWith('http')) {
+                imageUrl = imageFilename;
+              } else if (imageFilename !== 'default-food.jpg') {
+                imageUrl = `http://localhost:5555/uploads/${imageFilename}`;
+              } else {
+                imageUrl = `http://localhost:5555/uploads/${imageFilename}`;
+              }
+            }
+
+            return {
+              id: entry.items?.item_id || entry.item_id || null,
+              name: entry.items?.item_name || entry.item_name || 'Unnamed Item',
+              price: Number(entry.items?.price || entry.price || 0),
+              category: entry.items?.category || entry.category || 'Uncategorized',
+              is_available: entry.items?.is_available ?? entry.is_available ?? true,
+              outlet_id: entry.outlet_id,
+              outlet_name: entry.outlet_name || 'Unknown Outlet',
+              image: imageUrl,
+              image_filename: entry.image || entry.items?.image || 'default-food.jpg'
+            };
+          });
+
+          setMenuItems(newMenuItems);
+        }
+
+        // Reset form and close modal
+        setNewItem({
+          name: '',
+          price: '',
+          category: 'Main Course',
+          outlet_id: '',
+          is_available: true,
+          image: '',
+          image_preview: '',
+          image_file: null
+        });
+        setEditingItem(null);
+        setShowEditItemModal(false);
+        alert('Menu item updated successfully!');
+      } else {
+        throw new Error('Failed to update menu item');
+      }
+    } catch (error) {
+      console.error('Error updating menu item:', error);
+      alert('Failed to update menu item. Please try again.');
+    }
+  };
+
+  const handleDeleteItem = async (itemId) => {
+    if (!confirm('Are you sure you want to delete this menu item?')) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('auth_token');
+
+      const response = await fetch(`${API_BASE}/api/menu/${itemId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : ''
+        }
+      });
+
+      if (response.ok) {
+        // Remove item from state
+        setMenuItems(prevItems => prevItems.filter(item => item.id !== itemId));
+        alert('Menu item deleted successfully!');
+      } else {
+        throw new Error('Failed to delete menu item');
+      }
+    } catch (error) {
+      console.error('Error deleting menu item:', error);
+      alert('Failed to delete menu item. Please try again.');
+    }
+  };
+
 
   return (
     <AuthGuard requiredRole="owner">
@@ -568,7 +735,7 @@ export default function OwnerDashboard() {
                       />
                     </div>
                   </div>
-                  <button 
+                  <button
                     onClick={() => setShowAddOutletModal(true)}
                     className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 flex items-center gap-2"
                   >
@@ -590,7 +757,7 @@ export default function OwnerDashboard() {
                   <Store className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-lg font-semibold text-gray-700">No Outlets Found</h3>
                   <p className="text-gray-500 mt-2 mb-4">Get started by adding your first outlet</p>
-                  <button 
+                  <button
                     onClick={() => setShowAddOutletModal(true)}
                     className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 inline-flex items-center gap-2"
                   >
@@ -675,18 +842,18 @@ export default function OwnerDashboard() {
           {activeTab === 'menu' && (
             <div>
               <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-                <div className="flex justify-between items-center mb-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
                   <div>
-                    <h2 className="text-xl font-bold text-gray-900">Menu Items ({filteredMenuItems.length})</h2>
-                    <p className="text-sm text-gray-600 mt-1">
+                    <h2 className="text-lg sm:text-xl font-bold text-gray-900">Menu Items ({filteredMenuItems.length})</h2>
+                    <p className="text-xs sm:text-sm text-gray-600 mt-1">
                       Organized by outlet • {outlets.length} outlets
                     </p>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <select
                       value={menuSortBy}
                       onChange={(e) => setMenuSortBy(e.target.value)}
-                      className="px-4 py-2 text-sm border border-gray-300 rounded-lg"
+                      className="px-4 py-2 text-sm border border-gray-300 rounded-lg flex-shrink-0"
                     >
                       <option value="name">Sort by Name</option>
                       <option value="price-high">Sort by Price: High to Low</option>
@@ -695,16 +862,16 @@ export default function OwnerDashboard() {
                     </select>
                     <button
                       onClick={() => setShowAddItemModal(true)}
-                      className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 flex items-center gap-2"
+                      className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 flex items-center gap-2 text-sm whitespace-nowrap flex-shrink-0"
                     >
-                      <Plus className="w-5 h-5" />
+                      <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
                       Add Item
                     </button>
                   </div>
                 </div>
 
                 {/* Menu Filters */}
-                <div className="mb-6 flex flex-col md:flex-row gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
                   <div className="flex-1">
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -717,11 +884,11 @@ export default function OwnerDashboard() {
                       />
                     </div>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <select
                       value={menuCategoryFilter}
                       onChange={(e) => setMenuCategoryFilter(e.target.value)}
-                      className="px-4 py-2 text-sm border border-gray-300 rounded-lg"
+                      className="px-4 py-2 text-sm border border-gray-300 rounded-lg flex-shrink-0"
                     >
                       <option value="all">All Categories</option>
                       {menuCategories.map(category => (
@@ -731,7 +898,7 @@ export default function OwnerDashboard() {
                     <select
                       value={menuAvailabilityFilter}
                       onChange={(e) => setMenuAvailabilityFilter(e.target.value)}
-                      className="px-4 py-2 text-sm border border-gray-300 rounded-lg"
+                      className="px-4 py-2 text-sm border border-gray-300 rounded-lg flex-shrink-0"
                     >
                       <option value="all">All Items</option>
                       <option value="available">Available Only</option>
@@ -754,50 +921,189 @@ export default function OwnerDashboard() {
                     </div>
 
                     <div className="overflow-x-auto">
-                      <table className="w-full">
-                        <thead>
-                          <tr className="border-b border-gray-200">
-                            <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Item Name</th>
-                            <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Category</th>
-                            <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Price</th>
-                            <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Availability</th>
-                            <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody>
+                      {/* Mobile: Cards view, Desktop: Table view */}
+                      <div className="md:hidden">
+                        {/* Mobile: Card view */}
+                        <div className="space-y-3">
                           {items.map(item => (
-                            <tr key={item.id} className="border-b border-gray-200 hover:bg-gray-50">
-                              <td className="py-4 px-4">
-                                <p className="font-medium">{item.item_name || item.name}</p>
-                              </td>
-                              <td className="py-4 px-4">
-                                <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
-                                  {item.category || 'Main'}
-                                </span>
-                              </td>
-                              <td className="py-4 px-4">
-                                <p className="font-bold">Ksh. {item.price?.toFixed(2) || '0.00'}</p>
-                              </td>
-                              <td className="py-4 px-4">
-                                <span className={`px-2 py-1 rounded text-xs ${item.is_available || item.isAvailable
-                                  ? 'bg-green-100 text-green-800'
-                                  : 'bg-red-100 text-red-800'
-                                  }`}>
-                                  {(item.is_available || item.isAvailable) ? 'Available' : 'Out of Stock'}
-                                </span>
-                              </td>
-                              <td className="py-4 px-4">
-                                <button className="text-primary hover:text-primary/80 text-sm mr-3">
-                                  Edit
-                                </button>
-                                <button className="text-red-500 hover:text-red-700 text-sm">
-                                  Delete
-                                </button>
-                              </td>
-                            </tr>
+                            <div key={item.id} className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-sm transition-shadow">
+                              <div className="flex gap-3">
+                                {/* Item Image - Left side */}
+                                <div className="flex-shrink-0">
+                                  <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-gray-100">
+                                    <img
+                                      src={item.image || '/https://placehold.co/400'}
+                                      alt={item.item_name || item.name}
+                                      className="w-full h-full object-cover"
+                                      onError={(e) => {
+                                        e.target.src = '/default-food.jpg';
+                                      }}
+                                    />
+                                    {/* Availability badge on image */}
+                                    <div className={`absolute top-1 right-1 w-2 h-2 rounded-full ${item.is_available ? 'bg-green-500' : 'bg-red-500'}`} />
+                                  </div>
+                                </div>
+
+                                {/* Item Details - Right side */}
+                                <div className="flex-1 min-w-0">
+                                  {/* Header with name and price */}
+                                  <div className="flex justify-between items-start mb-1">
+                                    <h3 className="font-bold text-gray-900 truncate">{item.item_name || item.name}</h3>
+                                    <span className="font-bold text-gray-900">Ksh. {item.price?.toFixed(2) || '0.00'}</span>
+                                  </div>
+
+                                  {/* Category and outlet */}
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <span className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs">
+                                      {item.category || 'Main'}
+                                    </span>
+                                    {item.outlet_name && (
+                                      <span className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded text-xs flex items-center gap-1">
+                                        <Store className="w-3 h-3" />
+                                        {item.outlet_name}
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  {/* Availability and Actions */}
+                                  <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+                                    <span className={`px-2 py-1 rounded text-xs flex items-center gap-1 ${item.is_available
+                                      ? 'bg-green-100 text-green-800'
+                                      : 'bg-red-100 text-red-800'
+                                      }`}>
+                                      {item.is_available ? (
+                                        <>
+                                          <CheckCircle className="w-3 h-3" />
+                                          Available
+                                        </>
+                                      ) : (
+                                        <>
+                                          <XCircle className="w-3 h-3" />
+                                          Out of Stock
+                                        </>
+                                      )}
+                                    </span>
+                                    <div className="flex gap-2">
+                                      <button
+                                        onClick={() => handleEditItem(item)}
+                                        className="p-1.5 text-blue-600 hover:bg-blue-50 rounded"
+                                      >
+                                        <Edit className="w-4 h-4" />
+                                      </button>
+                                      <button
+                                        onClick={() => handleDeleteItem(item.id)}
+                                        className="p-1.5 text-red-600 hover:bg-red-50 rounded"
+                                      >
+                                        <Trash2 className="w-4 h-4" />
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
                           ))}
-                        </tbody>
-                      </table>
+                        </div>
+                      </div>
+
+                      {/* Desktop: Table view */}
+                      <div className="hidden md:block overflow-x-auto">
+                        <table className="w-full min-w-[600px]">
+                          <thead>
+                            <tr className="border-b border-gray-200">
+                              <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Item</th> {/* Changed from "Item Name" */}
+                              <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Category</th>
+                              <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Price</th>
+                              <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Availability</th>
+                              <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {items.map(item => (
+                              <tr key={item.id} className="border-b border-gray-200 hover:bg-gray-50 group">
+                                {/* Item column with image and name */}
+                                <td className="py-4 px-4">
+                                  <div className="flex items-center gap-3">
+                                    {/* Item Image */}
+                                    <div className="relative w-10 h-10 rounded overflow-hidden bg-gray-100 flex-shrink-0">
+                                      <img
+                                        src={item.image || '/https://placehold.co/400'}
+                                        alt={item.item_name || item.name}
+                                        className="w-full h-full object-cover"
+                                        onError={(e) => {
+                                          e.target.src = '/default-food.jpg';
+                                        }}
+                                      />
+                                      {/* Availability dot on image */}
+                                      <div className={`absolute top-0.5 right-0.5 w-1.5 h-1.5 rounded-full ${item.is_available ? 'bg-green-500' : 'bg-red-500'}`} />
+                                    </div>
+                                    <div className="min-w-0">
+                                      <p className="font-medium text-gray-900 truncate">{item.item_name || item.name}</p>
+                                      {item.outlet_name && (
+                                        <p className="text-xs text-gray-500 truncate flex items-center gap-1">
+                                          <Store className="w-3 h-3" />
+                                          {item.outlet_name}
+                                        </p>
+                                      )}
+                                    </div>
+                                  </div>
+                                </td>
+
+                                {/* Category column */}
+                                <td className="py-4 px-4">
+                                  <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
+                                    {item.category || 'Main'}
+                                  </span>
+                                </td>
+
+                                {/* Price column */}
+                                <td className="py-4 px-4">
+                                  <p className="font-bold text-gray-900">Ksh. {item.price?.toFixed(2) || '0.00'}</p>
+                                </td>
+
+                                {/* Availability column with icon */}
+                                <td className="py-4 px-4">
+                                  <span className={`px-2 py-1 rounded text-xs flex items-center gap-1 w-fit ${item.is_available
+                                    ? 'bg-green-100 text-green-800'
+                                    : 'bg-red-100 text-red-800'
+                                    }`}>
+                                    {item.is_available ? (
+                                      <>
+                                        <CheckCircle className="w-3 h-3" />
+                                        Available
+                                      </>
+                                    ) : (
+                                      <>
+                                        <XCircle className="w-3 h-3" />
+                                        Out of Stock
+                                      </>
+                                    )}
+                                  </span>
+                                </td>
+
+                                {/* Actions column with icons */}
+                                <td className="py-4 px-4">
+                                  <div className="flex gap-2">
+                                    <button
+                                      onClick={() => handleEditItem(item)}
+                                      className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                                    >
+                                      <Edit className="w-4 h-4" />
+                                      <span className="sr-only">Edit</span>
+                                    </button>
+                                    <button
+                                      onClick={() => handleDeleteItem(item.id)}
+                                      className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                      <span className="sr-only">Delete</span>
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -827,7 +1133,7 @@ export default function OwnerDashboard() {
                 className="absolute inset-0 bg-gray-900/10 backdrop-blur-[1px]"
               />
 
-              <div className="relative bg-white rounded-2xl w-full max-w-md shadow-xl border border-gray-200 animate-fade-in">
+              <div className="relative bg-white rounded-2xl w-full max-w-md shadow-xl border border-gray-200 animate-fade-in max-h-[90vh] overflow-y-auto">
                 <div className="p-6">
                   <div className="flex justify-between items-center mb-6">
                     <div>
@@ -922,7 +1228,7 @@ export default function OwnerDashboard() {
                             ? 'border-primary bg-primary/5'
                             : 'border-gray-300 hover:border-gray-400 hover:bg-gray-50'
                           }`}
-                        onClick={() => document.getElementById('fileInput').click()}
+                        onClick={() => document.getElementById('itemFileInput').click()}
                         onDragOver={(e) => {
                           e.preventDefault();
                           e.currentTarget.classList.add('border-primary', 'bg-primary/5');
@@ -937,18 +1243,18 @@ export default function OwnerDashboard() {
                           e.preventDefault();
                           const file = e.dataTransfer.files[0];
                           if (file && file.type.startsWith('image/')) {
-                            handleImageUpload(file);
+                            handleImageUpload(file, "item");
                           }
                         }}
                       >
                         <input
-                          id="fileInput"
+                          id="itemFileInput"
                           type="file"
                           accept="image/*"
                           className="hidden"
                           onChange={(e) => {
                             const file = e.target.files[0];
-                            if (file) handleImageUpload(file);
+                            if (file) handleImageUpload(file, "item");
                           }}
                         />
 
@@ -971,7 +1277,7 @@ export default function OwnerDashboard() {
                                     image_file: null
                                   });
                                 }}
-                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
+                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
                               >
                                 ✕
                               </button>
@@ -979,6 +1285,11 @@ export default function OwnerDashboard() {
                             <p className="text-sm text-gray-600">
                               Click or drag to change image
                             </p>
+                            {newItem.image_file && (
+                              <p className="text-xs text-gray-500">
+                                Selected: {newItem.image_file.name}
+                              </p>
+                            )}
                           </div>
                         ) : (
                           <div className="space-y-2">
@@ -990,7 +1301,7 @@ export default function OwnerDashboard() {
                                 Drag & drop an image here
                               </p>
                               <p className="text-xs text-gray-500 mt-1">
-                                or click to browse (PNG, JPG up to 5MB)
+                                or click to browse (PNG, JPG, JPEG, GIF, WEBP up to 5MB)
                               </p>
                             </div>
                           </div>
@@ -1015,13 +1326,13 @@ export default function OwnerDashboard() {
                       <button
                         type="button"
                         onClick={() => setShowAddItemModal(false)}
-                        className="flex-1 py-3 border border-gray-300 rounded-lg hover:bg-gray-50"
+                        className="flex-1 px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium"
                       >
                         Cancel
                       </button>
                       <button
                         type="submit"
-                        className="flex-1 py-3 bg-primary text-white rounded-lg hover:bg-primary/90"
+                        className="flex-1 px-4 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 font-medium"
                       >
                         Add Item
                       </button>
@@ -1035,11 +1346,11 @@ export default function OwnerDashboard() {
           {/* Add Outlet Modal */}
           {showAddOutletModal && (
             <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
-              <div 
+              <div
                 onClick={() => setShowAddOutletModal(false)}
                 className="absolute inset-0 bg-gray-900/10 backdrop-blur-[1px]"
               />
-              
+
               <div className="relative bg-white rounded-2xl w-full max-w-md shadow-xl border border-gray-200 animate-fade-in max-h-[90vh] overflow-y-auto">
                 <div className="p-6">
                   <div className="flex justify-between items-center mb-6">
@@ -1047,14 +1358,14 @@ export default function OwnerDashboard() {
                       <h2 className="text-xl font-bold text-gray-900">Add New Outlet</h2>
                       <p className="text-sm text-gray-500 mt-1">Create a new outlet location</p>
                     </div>
-                    <button 
+                    <button
                       onClick={() => setShowAddOutletModal(false)}
                       className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                     >
                       <span className="text-xl text-gray-500 hover:text-gray-700">✕</span>
                     </button>
                   </div>
-                  
+
                   <form onSubmit={handleAddOutlet} className="space-y-4">
                     {/* Outlet Name */}
                     <div>
@@ -1064,13 +1375,13 @@ export default function OwnerDashboard() {
                       <input
                         type="text"
                         value={newOutlet.name}
-                        onChange={(e) => setNewOutlet({...newOutlet, name: e.target.value})}
+                        onChange={(e) => setNewOutlet({ ...newOutlet, name: e.target.value })}
                         className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                         required
                         placeholder="e.g., Downtown Branch"
                       />
                     </div>
-                    
+
                     {/* Category Name */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -1079,7 +1390,7 @@ export default function OwnerDashboard() {
                       <input
                         type="text"
                         value={newOutlet.category_name}
-                        onChange={(e) => setNewOutlet({...newOutlet, category_name: e.target.value})}
+                        onChange={(e) => setNewOutlet({ ...newOutlet, category_name: e.target.value })}
                         className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                         required
                         placeholder="e.g., Fast Food, Fine Dining, Cafe"
@@ -1088,16 +1399,16 @@ export default function OwnerDashboard() {
                         The type or category of your outlet
                       </p>
                     </div>
-                    
+
                     {/* Image Upload */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Outlet Image
                       </label>
-                      <div 
+                      <div
                         className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors
-                          ${newOutlet.image_preview 
-                            ? 'border-primary bg-primary/5' 
+                          ${newOutlet.image_preview
+                            ? 'border-primary bg-primary/5'
                             : 'border-gray-300 hover:border-gray-400 hover:bg-gray-50'
                           }`}
                         onClick={() => document.getElementById('outletFileInput').click()}
@@ -1129,13 +1440,13 @@ export default function OwnerDashboard() {
                             if (file) handleImageUpload(file, 'outlet');
                           }}
                         />
-                        
+
                         {newOutlet.image_preview ? (
                           <div className="space-y-2">
                             <div className="relative w-32 h-32 mx-auto">
-                              <img 
-                                src={newOutlet.image_preview} 
-                                alt="Preview" 
+                              <img
+                                src={newOutlet.image_preview}
+                                alt="Preview"
                                 className="w-full h-full object-cover rounded-lg"
                               />
                               <button
@@ -1143,7 +1454,7 @@ export default function OwnerDashboard() {
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setNewOutlet({
-                                    ...newOutlet, 
+                                    ...newOutlet,
                                     image_file: null,
                                     image_preview: ''
                                   });
@@ -1177,7 +1488,7 @@ export default function OwnerDashboard() {
                         )}
                       </div>
                     </div>
-                    
+
                     {/* Info Box */}
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                       <div className="flex gap-2">
@@ -1194,7 +1505,7 @@ export default function OwnerDashboard() {
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="flex gap-3 pt-4">
                       <button
                         type="button"
@@ -1212,6 +1523,174 @@ export default function OwnerDashboard() {
                     </div>
                   </form>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* Edit Item Modal */}
+          {showEditItemModal && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-bold">Edit Menu Item</h2>
+                  <button
+                    onClick={() => {
+                      setShowEditItemModal(false);
+                      setEditingItem(null);
+                      setNewItem({
+                        name: '',
+                        price: '',
+                        category: 'Main Course',
+                        outlet_id: '',
+                        is_available: true,
+                        image: '',
+                        image_preview: '',
+                        image_file: null
+                      });
+                    }}
+                    className="p-1 hover:bg-gray-100 rounded"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <form onSubmit={handleUpdateItem}>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Item Name *</label>
+                      <input
+                        type="text"
+                        value={newItem.name}
+                        onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Price (Ksh) *</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={newItem.price}
+                        onChange={(e) => setNewItem({ ...newItem, price: e.target.value })}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                      <select
+                        value={newItem.category}
+                        onChange={(e) => setNewItem({ ...newItem, category: e.target.value })}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                      >
+                        <option value="Main Course">Main Course</option>
+                        <option value="Appetizer">Appetizer</option>
+                        <option value="Dessert">Dessert</option>
+                        <option value="Beverage">Beverage</option>
+                        <option value="Side Dish">Side Dish</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Outlet</label>
+                      <select
+                        value={newItem.outlet_id}
+                        onChange={(e) => setNewItem({ ...newItem, outlet_id: e.target.value })}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                        required
+                      >
+                        <option value="">Select Outlet</option>
+                        {outlets.map(outlet => (
+                          <option key={outlet.id} value={outlet.id}>{outlet.name}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="is_available"
+                        checked={newItem.is_available}
+                        onChange={(e) => setNewItem({ ...newItem, is_available: e.target.checked })}
+                        className="w-4 h-4"
+                      />
+                      <label htmlFor="is_available" className="text-sm font-medium text-gray-700">
+                        Available for order
+                      </label>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Item Image</label>
+                      <div className="mt-1 flex items-center gap-4">
+                        {newItem.image_preview ? (
+                          <div className="relative">
+                            <img
+                              src={newItem.image_preview}
+                              alt="Preview"
+                              className="w-20 h-20 object-cover rounded-lg"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setNewItem({ ...newItem, image_preview: '', image_file: null })}
+                              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center">
+                            <Package className="w-8 h-8 text-gray-400" />
+                          </div>
+                        )}
+                        <div className="flex-1">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                              const file = e.target.files[0];
+                              if (file) handleImageUpload(file, 'item');
+                            }}
+                            className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                          />
+                          <p className="text-xs text-gray-500 mt-1">PNG, JPG, GIF up to 5MB</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-6 flex justify-end gap-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowEditItemModal(false);
+                        setEditingItem(null);
+                        setNewItem({
+                          name: '',
+                          price: '',
+                          category: 'Main Course',
+                          outlet_id: '',
+                          is_available: true,
+                          image: '',
+                          image_preview: '',
+                          image_file: null
+                        });
+                      }}
+                      className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                    >
+                      Update Item
+                    </button>
+                  </div>
+                </form>
               </div>
             </div>
           )}

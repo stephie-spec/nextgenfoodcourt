@@ -17,9 +17,26 @@ export default function OrderCard({ order, isOwner = false }) {
   const statusLabel = statusConfig[order.estimated_status]?.label || 'Pending';
 
   const outletName = order.outlet?.name || order.outlet_name;
-    // Get food item image from backend
-  const itemImage = order.items?.[0]?.image_path || 'default-food.jpg';
-  const imageSrc = `http://localhost:5555/uploads/${itemImage.replace(/^\/+/, '')}`;
+
+  // Helper function to get proper image URL
+  const getImageUrl = (imagePath) => {
+    if (!imagePath) return 'http://localhost:5555/uploads/default-food.jpg';
+
+    if (imagePath.startsWith('http')) {
+      return imagePath;
+    }
+
+    if (imagePath.startsWith('/uploads/')) {
+      return `http://localhost:5555${imagePath}`;
+    }
+
+    // Default: assume it's in uploads folder
+    return `http://localhost:5555/uploads/${imagePath}`;
+  };
+
+  // Get first item's image
+  const firstItemImage = order.items?.[0]?.image || order.items?.[0]?.image_path;
+  const imageSrc = getImageUrl(firstItemImage);
 
   const orderTime = order.created_at
     ? new Date(order.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -39,6 +56,9 @@ export default function OrderCard({ order, isOwner = false }) {
                 fill
                 className="object-cover"
                 unoptimized
+                onError={(e) => {
+                  e.target.src = '/default-food.jpg';
+                }}
               />
             </div>
           </div>
