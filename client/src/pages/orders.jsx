@@ -26,6 +26,11 @@ export default function OrdersPage() {
   const isLoggedIn = status === 'authenticated';
   const token = session?.accessToken || null;
 
+  const getItemImage = (imagePath) => {
+    const finalImage = imagePath || 'default-food.jpg';
+    return `http://localhost:5555/uploads/${finalImage.replace(/^\/+/, '')}`;
+  };
+
   // Fetch menu data from backend API
   useEffect(() => {
     setMounted(true);
@@ -59,11 +64,11 @@ export default function OrdersPage() {
 
         // Add item to outlet
         organizedMenu[outletId].items.push({
-          id: menuItem.items.item_id,
-          name: menuItem.items.item_name,
-          price: menuItem.items.price,
+          id: menuItem.item_id,
+          name: menuItem.item_name,
+          price: menuItem.price,
           menuOutletItemId: menuItem.id,
-          image: '/food-1.jpg', // Default image - would come from backend
+          image: getItemImage(menuItem.image_path),
           description: 'Delicious food item',
           calories: 350
         });
@@ -292,6 +297,13 @@ export default function OrdersPage() {
                             >
                               {/* Item Image */}
                               <div className="relative h-44 overflow-hidden bg-secondary">
+                                <Image
+                                  src={item.image}
+                                  alt={item.name}
+                                  fill
+                                  className="object-cover"
+                                  unoptimized
+                                />
                                 <div className="absolute top-3 left-3 bg-primary/90 text-primary-foreground text-sm font-bold px-3 py-1 rounded-full shadow-lg">
                                   ${item.price?.toFixed(2) || '0.00'}
                                 </div>
