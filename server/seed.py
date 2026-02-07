@@ -50,445 +50,195 @@ if __name__ == "__main__":
 
         
         # Create sample outlets
-
         print("Creating outlets...")
         outlet1 = Outlet(
-            name="Taj Express",
-            category_name="Indian",
+            name="Addis Kitchen",
+            category_name="Ethiopian",
             owner_id=owner1.id,
-            image_path = "taj1.jpg"
-        
+            image_path="taj1.jpg"
         )
         outlet2 = Outlet(
-            name="El Sabor",
-            category_name="Mexican",
+            name="Lagos Grill",
+            category_name="Nigerian",
             owner_id=owner2.id,
-            image_path = "taj2.jpg"
+            image_path="taj2.jpg"
         )
         outlet3 = Outlet(
-            name="Dragon Palace",
-            category_name="Chinese",
+            name="Cairo Eats",
+            category_name="Egyptian",
             owner_id=owner3.id,
-            image_path = "taj3.jpg"
+            image_path="taj3.jpg"
         )
-        
+
         db.session.add_all([outlet1, outlet2, outlet3])
         db.session.commit()
-        
-
 
         # Create additional diverse outlets
-
         outlet4 = Outlet(
-            name="Burger Barn",
-            category_name="American",
+            name="Nairobi Bites",
+            category_name="Kenyan",
             owner_id=owner1.id,
-            image_path = "taj4.jpg"
+            image_path="taj4.jpg"
         )
         outlet5 = Outlet(
-            name="Pasta Primo",
-            category_name="Italian",
+            name="Cape Town Kitchen",
+            category_name="South African",
             owner_id=owner2.id,
-            image_path = "taj5.jpg"
+            image_path="taj5.jpg"
         )
         outlet6 = Outlet(
-            name="Sushi Sensation",
-            category_name="Japanese",
+            name="Kinsasha Flavors",
+            category_name="Congolese",
             owner_id=owner3.id,
-            image_path = "taj6.jpg"
+            image_path="taj6.jpg"
         )
         outlet7 = Outlet(
-            name="Pita Palace",
-            category_name="Mediterranean",
+            name="Zanzibari Spice House",
+            category_name="Zanzibari",
             owner_id=owner1.id,
-            image_path = "taj7.jpg"
+            image_path="taj7.jpg"
         )
         outlet8 = Outlet(
-            name="Thai Kitchen",
-            category_name="Thai",
+            name="Kilimanjaro Bites",
+            category_name="Tanzanian",
             owner_id=owner2.id,
-            image_path = "taj8.jpg"
+            image_path="taj8.jpg"
         )
         outlet9 = Outlet(
-            name="Korean BBQ House",
-            category_name="Korean",
+            name="Cairo Eats",
+            category_name="Egyptian",
             owner_id=owner3.id,
-            image_path = "taj9.jpg"
-        
+            image_path="taj9.jpg"
         )
-        
+
         db.session.add_all([outlet4, outlet5, outlet6, outlet7, outlet8, outlet9])
         db.session.commit()
-        
 
-
-        # Create sample items for Indian restaurant
-
+        # Create sample items
         print("Creating menu items...")
-        indian_items = [
-            Item(
-                name="Butter Chicken",
-                image="food-butter-chicken.jpg",
-                price=350,
-                is_available=True
-            ),
-            Item(
-                name="Biryani",
-                image="food-biryani.jpg",
-                price=300,
-                is_available=True
-            ),
-            Item(
-                name="Naan",
-                image="food-naan.jpg",
-                price=50,
-                is_available=True
-            ),
-            Item(
-                name="Samosa",
-                image="food-samosa.jpg",
-                price=40,
-                is_available=True
-            ),
-            Item(
-                name="Mango Lassi",
-                image="food-mango-lassi.jpg",
-                price=80,
-                is_available=True
-            ),
-        ]
-        
-        # Create sample items for Mexican restaurant
-        mexican_items = [
-            Item(
-                name="Burrito",
-                image="food-burrito.jpg",
-                price=250,
-                is_available=True
-            ),
-            Item(
-                name="Tacos",
-                image="food-tacos.jpg",
-                price=200,
-                is_available=True
-            ),
-            Item(
-                name="Enchiladas",
-                image="food-enchiladas.jpg",
-                price=280,
-                is_available=True
-            ),
-            Item(
-                name="Guacamole",
-                image="food-guacamole.jpg",
-                price=120,
-                is_available=True
-            ),
-            Item(
-                name="Churros",
-                image="food-churros.jpg",
-                price=100,
-                is_available=True
-            ),
-        ]
-        
-        # Create sample items for Chinese restaurant
 
-        chinese_items = [
-            Item(
-                name="Fried Rice",
-                image="food-fried-rice.jpg",
-                price=200,
-                is_available=True
-            ),
-            Item(
-                name="Kung Pao Chicken",
-                image="food-kung-pao.jpg",
-                price=320,
-                is_available=True
-            ),
-            Item(
-                name="Spring Rolls",
-                image="food-spring-rolls.jpg",
-                price=120,
-                is_available=True
-            ),
-            Item(
-                name="Chow Mein",
-                image="food-chow-mein.jpg",
-                price=240,
-                is_available=True
-            ),
-            Item(
-                name="Green Tea",
-                image="food-green-tea.jpg",
-                price=60,
-                is_available=True
-            ),
+        ethiopian_items = [
+            Item(name="Doro Wat", image="taj14.jpg", price=350, is_available=True),
+            Item(name="Injera Platter", image="taj15.jpg", price=300, is_available=True),
+            Item(name="Kitfo", image="taj16.jpg", price=380, is_available=True),
+            Item(name="Tibs", image="taj17.jpg", price=360, is_available=True),
         ]
-        
-        all_items = indian_items + mexican_items + chinese_items
+
+        nigerian_items = [
+            Item(name="Jollof Rice", image="taj10.jpg", price=250, is_available=True),
+            Item(name="Suya Skewers", image="taj11.jpg", price=200, is_available=True),
+            Item(name="Egusi Soup", image="taj12.jpg", price=280, is_available=True),
+            Item(name="Pounded Yam", image="taj13.jpg", price=220, is_available=True),
+        ]
+
+        swahili_items = [
+            Item(name="Pilau Rice", image="taj18.jpg", price=220, is_available=True),
+            Item(name="Biriani ya Pwani", image="taj19.jpg", price=300, is_available=True),
+            Item(name="Samaki wa Kupaka", image="taj20.jpg", price=320, is_available=True),
+            Item(name="Viazi Karai", image="taj21.jpg", price=180, is_available=True),
+            Item(name="Mahamri", image="taj18.jpg", price=120, is_available=True),
+        ]
+
+        all_items = ethiopian_items + nigerian_items + swahili_items
         db.session.add_all(all_items)
         db.session.commit()
-        
-        # Create items for American restaurant
 
         print("Creating additional menu items...")
-        american_items = [
-            Item(
-                name="Classic Burger",
-                image="food-burger.jpg",
-                price=280,
-                is_available=True
-            ),
-            Item(
-                name="Cheese Fries",
-                image="food-fries.jpg",
-                price=120,
-                is_available=True
-            ),
-            Item(
-                name="Hot Dog",
-                image="food-hotdog.jpg",
-                price=150,
-                is_available=True
-            ),
-            Item(
-                name="Chicken Sandwich",
-                image="food-chicken-sandwich.jpg",
-                price=260,
-                is_available=True
-            ),
-            Item(
-                name="Milkshake",
-                image="food-milkshake.jpg",
-                price=100,
-                is_available=True
-            ),
-        ]
-        
-        # Italian items
 
-        italian_items = [
-            Item(
-                name="Spaghetti Carbonara",
-                image="food-carbonara.jpg",
-                price=350,
-                is_available=True
-            ),
-            Item(
-                name="Lasagna",
-                image="food-lasagna.jpg",
-                price=380,
-                is_available=True
-            ),
-            Item(
-                name="Fettuccine Alfredo",
-                image="food-alfredo.jpg",
-                price=340,
-                is_available=True
-            ),
-            Item(
-                name="Penne Arrabbiata",
-                image="food-arrabbiata.jpg",
-                price=320,
-                is_available=True
-            ),
-            Item(
-                name="Tiramisu",
-                image="food-tiramisu.jpg",
-                price=140,
-                is_available=True
-            ),
+        kenyan_items = [
+            Item(name="Nyama Choma", image="taj22.jpg", price=420, is_available=True),
+            Item(name="Ugali & Sukuma Wiki", image="taj24.jpg", price=180, is_available=True),
+            Item(name="Githeri", image="taj23.jpg", price=200, is_available=True),
+            Item(name="Mandazi", image="taj25.jpg", price=120, is_available=True),
         ]
-        
-        # Japanese items
 
-        japanese_items = [
-            Item(
-                name="California Roll",
-                image="food-california-roll.jpg",
-                price=280,
-                is_available=True
-            ),
-            Item(
-                name="Spicy Tuna Roll",
-                image="food-spicy-tuna.jpg",
-                price=320,
-                is_available=True
-            ),
-            Item(
-                name="Tempura",
-                image="food-tempura.jpg",
-                price=300,
-                is_available=True
-            ),
-            Item(
-                name="Edamame",
-                image="food-edamame.jpg",
-                price=100,
-                is_available=True
-            ),
-            Item(
-                name="Miso Soup",
-                image="food-miso-soup.jpg",
-                price=80,
-                is_available=True
-            ),
+        southafrican_items = [
+            Item(name="Bobotie", image="taj26.jpg", price=340, is_available=True),
+            Item(name="Bunny Chow", image="taj27.jpg", price=300, is_available=True),
+            Item(name="Boerewors", image="taj28.jpg", price=280, is_available=True),
+            Item(name="Pap & Chakalaka", image="taj29.jpg", price=200, is_available=True),
+            Item(name="Malva Pudding", image="taj26.jpg", price=160, is_available=True),
         ]
-        
-        # Mediterranean items
 
-        mediterranean_items = [
-            Item(
-                name="Falafel Wrap",
-                image="food-falafel-wrap.jpg",
-                price=200,
-                is_available=True
-            ),
-            Item(
-                name="Hummus & Pita",
-                image="food-hummus-pita.jpg",
-                price=120,
-                is_available=True
-            ),
-            Item(
-                name="Greek Salad",
-                image="food-greek-salad.jpg",
-                price=180,
-                is_available=True
-            ),
-            Item(
-                name="Shawarma",
-                image="food-shawarma.jpg",
-                price=220,
-                is_available=True
-            ),
-            Item(
-                name="Baklava",
-                image="food-baklava.jpg",
-                price=90,
-                is_available=True
-            ),
+        congolese_items = [
+            Item(name="Moambe Chicken", image="taj31.jpg", price=320, is_available=True),
+            Item(name="Fufu & Palm Nut Soup", image="taj30.jpg", price=260, is_available=True),
+            Item(name="Grilled Tilapia", image="taj32.jpg", price=300, is_available=True),
+            Item(name="Kwanga", image="taj33.jpg", price=140, is_available=True),
+            Item(name="Saka Saka", image="taj30.jpg", price=200, is_available=True),
         ]
-        
-        # Thai items
 
-        thai_items = [
-            Item(
-                name="Pad Thai",
-                image="food-pad-thai.jpg",
-                price=280,
-                is_available=True
-            ),
-            Item(
-                name="Green Curry",
-                image="food-green-curry.jpg",
-                price=320,
-                is_available=True
-            ),
-            Item(
-                name="Tom Yum Soup",
-                image="food-tom-yum.jpg",
-                price=200,
-                is_available=True
-            ),
-            Item(
-                name="Satay Chicken",
-                image="food-satay-chicken.jpg",
-                price=240,
-                is_available=True
-            ),
-            Item(
-                name="Mango Sticky Rice",
-                image="food-mango-sticky.jpg",
-                price=120,
-                is_available=True
-            ),
+        zanzibari_items = [
+            Item(name="Zanzibar Pilau", price=260, is_available=True),
+            Item(name="Octopus Curry", price=340, is_available=True),
+            Item(name="Urojo Soup", price=200, is_available=True),
+            Item(name="Coconut Bean Stew", price=180, is_available=True),
+            Item(name="Seafood Mishkaki", price=300, is_available=True),
         ]
-        
-        # Korean items
 
-        korean_items = [
-            Item(
-                name="Bulgogi",
-                image="food-bulgogi.jpg",
-                price=340,
-                is_available=True
-            ),
-            Item(
-                name="Bibimbap",
-                image="food-bibimbap.jpg",
-                price=300,
-                is_available=True
-            ),
-            Item(
-                name="Korean Fried Chicken",
-                image="food-korean-fried-chicken.jpg",
-                price=360,
-                is_available=True
-            ),
-            Item(
-                name="Kimchi",
-                image="food-kimchi.jpg",
-                price=80,
-                is_available=True
-            ),
-            Item(
-                name="Tteokbokki",
-                image="food-tteokbokki.jpg",
-                price=150,
-                is_available=True
-            ),
+        tanzanian_items = [
+            Item(name="Ugali & Beef Stew", price=240, is_available=True),
+            Item(name="Ndizi Nyama", price=280, is_available=True),
+            Item(name="Mchuzi wa Samaki", price=260, is_available=True),
+            Item(name="Chapati", price=100, is_available=True),
+            Item(name="Chips Mayai", price=180, is_available=True),
         ]
-        
-        additional_items = american_items + italian_items + japanese_items + mediterranean_items + thai_items + korean_items
+
+        egyptian_items = [
+            Item(name="Koshari", image="taj18.jpg", price=220, is_available=True),
+            Item(name="Shawarma", image="taj19.jpg", price=240, is_available=True),
+            Item(name="Falafel", image="taj20.jpg", price=180, is_available=True),
+            Item(name="Molokhia", image="taj21.jpg", price=260, is_available=True),
+            Item(name="Feteer Meshaltet", image="taj18.jpg", price=200, is_available=True),
+        ]
+
+        additional_items = (
+            kenyan_items
+            + southafrican_items
+            + congolese_items
+            + zanzibari_items
+            + tanzanian_items
+            + egyptian_items
+        )
+
         db.session.add_all(additional_items)
         db.session.commit()
 
-        
         # Link items to outlets
         print("Creating menu outlet items...")
         menu_items = []
-        
-        # Indian outlet menu
-        for item in indian_items:
+
+        for item in ethiopian_items:
             menu_items.append(MenuOutletItem(outlet_id=outlet1.id, item_id=item.id))
-        
-        # Mexican outlet menu
-        for item in mexican_items:
+
+        for item in nigerian_items:
             menu_items.append(MenuOutletItem(outlet_id=outlet2.id, item_id=item.id))
-        
-        # Chinese outlet menu
-        for item in chinese_items:
+
+        for item in egyptian_items:
             menu_items.append(MenuOutletItem(outlet_id=outlet3.id, item_id=item.id))
-        
-        # American outlet menu
-        for item in american_items:
+
+        for item in kenyan_items:
             menu_items.append(MenuOutletItem(outlet_id=outlet4.id, item_id=item.id))
-        
-        # Italian outlet menu
-        for item in italian_items:
+
+        for item in southafrican_items:
             menu_items.append(MenuOutletItem(outlet_id=outlet5.id, item_id=item.id))
-        
-        # Japanese outlet menu
-        for item in japanese_items:
+
+        for item in congolese_items:
             menu_items.append(MenuOutletItem(outlet_id=outlet6.id, item_id=item.id))
-        
-        # Mediterranean outlet menu
-        for item in mediterranean_items:
+
+        for item in zanzibari_items:
             menu_items.append(MenuOutletItem(outlet_id=outlet7.id, item_id=item.id))
-        
-        # Thai outlet menu
-        for item in thai_items:
+
+        for item in tanzanian_items:
             menu_items.append(MenuOutletItem(outlet_id=outlet8.id, item_id=item.id))
-        
-        # Korean outlet menu
-        for item in korean_items:
+
+        for item in egyptian_items:
             menu_items.append(MenuOutletItem(outlet_id=outlet9.id, item_id=item.id))
-        
+
         db.session.add_all(menu_items)
         db.session.commit()
+
+        print("\n✅ Database seeded successfully!")
 
 
         
@@ -589,78 +339,96 @@ if __name__ == "__main__":
         print("Creating testimonials...")
         
         testimonials = [
-            Testimonial(
-                id=str(uuid.uuid4()),
-                outlet_id=outlet1.id,
-                customer_name="Emily Chen",
-                avatar="avatar-emily.jpg",
-                rating=5,
-                review_text="Absolutely amazing! The Butter Chicken was incredible and the service was top-notch. Will definitely be coming back!",
-                created_at=now - timedelta(days=5)
-            ),
-            Testimonial(
-                id=str(uuid.uuid4()),
-                outlet_id=outlet1.id,
-                customer_name="Michael Brown",
-                avatar="avatar-michael.jpg",
-                rating=4,
-                review_text="Great Indian food. The Biryani was flavorful and authentic. Only wish the portions were a bit larger.",
-                created_at=now - timedelta(days=3)
-            ),
-            Testimonial(
-                id=str(uuid.uuid4()),
-                outlet_id=outlet2.id,
-                customer_name="Sofia Rodriguez",
-                avatar="avatar-sofia.jpg",
-                rating=5,
-                review_text="Best Mexican food I've had in years! The tacos are to die for and the guacamole is fresh every time.",
-                created_at=now - timedelta(days=7)
-            ),
-            Testimonial(
-                id=str(uuid.uuid4()),
-                outlet_id=outlet2.id,
-                customer_name="David Kim",
-                avatar="avatar-david.jpg",
-                rating=5,
-                review_text="Love this place! The burritos are huge and packed with flavor. Great value for money.",
-                created_at=now - timedelta(days=2)
-            ),
-            Testimonial(
-                id=str(uuid.uuid4()),
-                outlet_id=outlet3.id,
-                customer_name="Lisa Wang",
-                avatar="avatar-lisa.jpg",
-                rating=4,
-                review_text="Delicious Chinese food. The Kung Pao Chicken was spicy and perfect. Fast service too!",
-                created_at=now - timedelta(days=4)
-            ),
-            Testimonial(
-                id=str(uuid.uuid4()),
-                outlet_id=outlet4.id,
-                customer_name="James Wilson",
-                avatar="avatar-james.jpg",
-                rating=5,
-                review_text="Classic American comfort food done right. The burgers are juicy and the fries are crispy!",
-                created_at=now - timedelta(days=1)
-            ),
-            Testimonial(
-                id=str(uuid.uuid4()),
-                outlet_id=outlet5.id,
-                customer_name="Isabella Rossi",
-                avatar="avatar-isabella.jpg",
-                rating=5,
-                review_text="Authentic Italian pasta! The carbonara tastes just like what I had in Rome. Bellissimo!",
-                created_at=now - timedelta(days=6)
-            ),
-            Testimonial(
-                id=str(uuid.uuid4()),
-                outlet_id=outlet6.id,
-                customer_name="Yuki Tanaka",
-                avatar="avatar-yuki.jpg",
-                rating=4,
-                review_text="Fresh sushi and great quality. The California rolls are always perfect here.",
-                created_at=now - timedelta(days=3)
-            ),
+             Testimonial(
+        id=str(uuid.uuid4()),
+        outlet_id=outlet1.id,  # Ethiopian
+        customer_name="Emily Chen",
+        avatar="avatar-emily.jpg",
+        rating=5,
+        review_text="The Doro Wat was rich, spicy, and incredibly authentic. Injera was fresh and perfect!",
+        created_at=now - timedelta(days=5)
+    ),
+    Testimonial(
+        id=str(uuid.uuid4()),
+        outlet_id=outlet1.id,
+        customer_name="Michael Brown",
+        avatar="avatar-michael.jpg",
+        rating=4,
+        review_text="Loved the Injera platter and tibs. Great flavors, would definitely order again.",
+        created_at=now - timedelta(days=3)
+    ),
+    Testimonial(
+        id=str(uuid.uuid4()),
+        outlet_id=outlet2.id,  # Nigerian
+        customer_name="Sofia Rodriguez",
+        avatar="avatar-sofia.jpg",
+        rating=5,
+        review_text="Best Jollof Rice I've had in a long time! The suya was perfectly spiced.",
+        created_at=now - timedelta(days=7)
+    ),
+    Testimonial(
+        id=str(uuid.uuid4()),
+        outlet_id=outlet2.id,
+        customer_name="David Kim",
+        avatar="avatar-david.jpg",
+        rating=5,
+        review_text="Amazing Nigerian food. Egusi soup was thick, flavorful, and filling.",
+        created_at=now - timedelta(days=2)
+    ),
+    Testimonial(
+        id=str(uuid.uuid4()),
+        outlet_id=outlet3.id,  # Swahili
+        customer_name="Lisa Wang",
+        avatar="avatar-lisa.jpg",
+        rating=4,
+        review_text="The Swahili biriani and pilau were aromatic and delicious. Loved the coastal flavors.",
+        created_at=now - timedelta(days=4)
+    ),
+    Testimonial(
+        id=str(uuid.uuid4()),
+        outlet_id=outlet4.id,  # Kenyan
+        customer_name="James Wilson",
+        avatar="avatar-james.jpg",
+        rating=5,
+        review_text="Nyama Choma was grilled to perfection. Authentic Kenyan taste!",
+        created_at=now - timedelta(days=1)
+    ),
+    Testimonial(
+        id=str(uuid.uuid4()),
+        outlet_id=outlet5.id,  # South African
+        customer_name="Isabella Rossi",
+        avatar="avatar-isabella.jpg",
+        rating=5,
+        review_text="The bobotie was comforting and delicious. Malva pudding was a perfect finish.",
+        created_at=now - timedelta(days=6)
+    ),
+    Testimonial(
+        id=str(uuid.uuid4()),
+        outlet_id=outlet6.id,  # Congolese
+        customer_name="Yuki Tanaka",
+        avatar="avatar-yuki.jpg",
+        rating=4,
+        review_text="Moambe chicken was rich and hearty. Loved discovering Congolese cuisine here.",
+        created_at=now - timedelta(days=3)
+    ),
+    Testimonial(
+        id=str(uuid.uuid4()),
+        outlet_id=outlet7.id,  # Zanzibari
+        customer_name="Ahmed Hassan",
+        avatar="avatar-ahmed.jpg",
+        rating=5,
+        review_text="The octopus curry and Zanzibar pilau were bursting with flavor. Highly recommended!",
+        created_at=now - timedelta(days=2)
+    ),
+    Testimonial(
+        id=str(uuid.uuid4()),
+        outlet_id=outlet9.id,  # Egyptian
+        customer_name="Noura El-Sayed",
+        avatar="avatar-noura.jpg",
+        rating=5,
+        review_text="Koshari was comforting and perfectly balanced. Felt like home!",
+        created_at=now - timedelta(days=1)
+    ),
         ]
         
         db.session.add_all(testimonials)
