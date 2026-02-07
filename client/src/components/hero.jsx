@@ -8,8 +8,48 @@ export default function HeroSection() {
 const [currentImageIndex, setCurrentImageIndex] = useState(0);
 const router = useRouter();
 
-//  Array of image paths used in the hero section slideshow
-const heroImages = ['/food-1.jpg', '/food-2.jpg', '/food-3.jpg', '/food-4.jpg'];
+//  Fallback images used in the hero section slideshow
+const fallbackImages = ['/food-1.jpg', '/food-2.jpg', '/food-3.jpg', '/food-4.jpg'];
+const [heroImages, setHeroImages] = useState(fallbackImages);
+
+useEffect(() => {
+  let isMounted = true;
+  const fetchHeroImages = async () => {
+    try {
+      const response = await fetch('/api/menu');
+      if (!response.ok) {
+        throw new Error('Failed to fetch hero images');
+      }
+      const data = await response.json();
+      const unique = new Set();
+      data.forEach((menuItem) => {
+        const imagePath = menuItem.image_path;
+        const outletName = menuItem.outlet_name;
+        if (outletName !== 'Kinsasha Flavors' || !imagePath || !imagePath.trim()) {
+          return;
+        }
+        unique.add(`http://localhost:5555/uploads/${imagePath.replace(/^\/+/, '')}`);
+      });
+      const selected = Array.from(unique).slice(0, 8);
+      if (isMounted && selected.length > 0) {
+        setHeroImages(selected);
+      }
+    } catch (error) {
+      console.error('Error fetching hero images:', error);
+    }
+  };
+
+  fetchHeroImages();
+  return () => {
+    isMounted = false;
+  };
+}, []);
+
+useEffect(() => {
+  if (currentImageIndex >= heroImages.length) {
+    setCurrentImageIndex(0);
+  }
+}, [currentImageIndex, heroImages.length]);
 
 useEffect(() => {
   // Set up an interval to change the image every 5 seconds
@@ -53,6 +93,7 @@ useEffect(() => {
                     index === currentImageIndex ? 'opacity-100' : 'opacity-0'
                   }`}
                   priority={index === 0}
+                  unoptimized
                 />
               ))}
               {/* Overlay Gradient */}
