@@ -2,130 +2,112 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { Star, MessageCircle, Quote } from 'lucide-react';
+import { Star, MessageCircle, Quote, Plus } from 'lucide-react';
 
 export default function Testimonials() {
   /**
-   * Mock testimonials grouped by outlet.
-   * Each outlet contains metadata + an array of customer reviews.
-   * This structure makes it easy to switch outlets dynamically.
+   * Testimonials fetched from backend and grouped by `outlet_id`.
+   * Backend testimonial shape (server) includes: id, outlet_id, outlet_name,
+   * customer_name, avatar, rating, review_text, created_at, updated_at
    */
-  const mockTestimonialsByOutlet = {
+  const [testimonialsByOutlet, setTestimonialsByOutlet] = useState({});
+  const [error, setError] = useState(null);
+  const [showForm, setShowForm] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [successMsg, setSuccessMsg] = useState(null);
+
+  // Form state
+  const [form, setForm] = useState({
+    customer_name: '',
+    rating: 5,
+    review_text: '',
+    avatar: '',
+  });
+
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5555';
+
+  // Minimal fallback mock used when the backend is unreachable
+  const fallbackMock = {
     0: {
-      outlet: 'Addis Kitchen',
-      cuisine: 'Ethiopian',
+      outlet: 'Demo Outlet',
       testimonials: [
         {
-          id: 1,
-          name: 'Stephanie Abebe',
-          avatar: '👩‍🍳',
+          id: 'fallback-1',
+          name: 'Demo User',
+          avatar: '👤',
           rating: 5,
-          text: 'The most authentic Ethiopian food I\'ve had outside of Africa. The injera is perfectly soft and the spices are just right!',
-          date: '2 weeks ago',
-        },
-        {
-          id: 2,
-          name: 'Abiud Tekle',
-          avatar: '👨‍💼',
-          rating: 5,
-          text: 'Coming here is like traveling to Addis Ababa. Every bite takes me back to my travels. Highly recommend!',
-          date: '1 month ago',
-        },
-      ],
-    },
-    1: {
-      outlet: 'Lagos Grill',
-      cuisine: 'Nigerian',
-      testimonials: [
-        {
-          id: 3,
-          name: 'Natalie Okoro',
-          avatar: '👩‍💻',
-          rating: 5,
-          text: 'Best jollof rice in the city! The chicken is always juicy and the rice has that perfect balance of spices.',
-          date: '1 week ago',
-        },
-        {
-          id: 4,
-          name: 'Newton Eze',
-          avatar: '👨‍🎓',
-          rating: 5,
-          text: 'I bring my friends here all the time. They always ask for the jollof rice and nobody complains!',
-          date: '3 weeks ago',
-        },
-      ],
-    },
-    2: {
-      outlet: 'Nairobi Flame',
-      cuisine: 'Kenyan',
-      testimonials: [
-        {
-          id: 5,
-          name: 'Heebah Mwangi',
-          avatar: '👨‍🌾',
-          rating: 5,
-          text: 'The nyama choma here is cooked to perfection. You can taste the quality of the meat and the charcoal flavor. Asante!',
-          date: '2 weeks ago',
-        },
-        {
-          id: 6,
-          name: 'Verah Njeri',
-          avatar: '👩‍🏫',
-          rating: 5,
-          text: 'Great service, great food, great prices. This is my go-to place for authentic Kenyan cuisine.',
-          date: '1 month ago',
-        },
-      ],
-    },
-    3: {
-      outlet: 'Kinshasa Kitchen',
-      cuisine: 'Congolese',
-      testimonials: [
-        {
-          id: 7,
-          name: 'Maria Mbemba',
-          avatar: '🧑‍🎤',
-          rating: 5,
-          text: 'Finally found authentic Congolese food! The saka saka and fufu taste just like home. This place is a gem!',
-          date: '3 weeks ago',
-        },
-        {
-          id: 8,
-          name: 'Tomashi Mputu',
-          avatar: '👩‍⚕️',
-          rating: 5,
-          text: 'The flavors are incredible. Everything is fresh and cooked with so much love. Definitely worth a visit!',
-          date: '2 weeks ago',
+          text: 'Demo testimonial — backend unavailable.',
+          date: new Date().toLocaleString(),
         },
       ],
     },
   };
 
+
   /** Currently selected outlet index */
   const [selectedOutlet, setSelectedOutlet] = useState(0);
 
-  /** Simulated loading state (useful when replacing mock data with API calls) */
+  /** Loading state for async fetch */
   const [loading, setLoading] = useState(true);
 
-  /**
-   * Simulate async data loading.
-   * This mirrors real-world API behavior and prevents UI flicker later.
-   */
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 2000);
+    const url = `${API_BASE}/api/testimonials`;
 
-    return () => clearTimeout(timer);
+    let mounted = true;
+
+    async function load() {
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+
+        // Group testimonials by outlet_id
+        const grouped = {};
+        (data.testimonials || []).forEach((t) => {
+          const outletId = t.outlet_id || 0;
+          if (!grouped[outletId]) {
+            grouped[outletId] = {
+              outlet: t.outlet_name || `Outlet ${outletId}`,
+              testimonials: [],
+            };
+          }
+
+          grouped[outletId].testimonials.push({
+            id: t.id,
+            name: t.customer_name,
+            avatar: t.avatar || '👤',
+            rating: t.rating || 0,
+            text: t.review_text || '',
+            date: t.created_at ? new Date(t.created_at).toLocaleString() : null,
+          });
+        });
+
+        if (mounted) {
+          setTestimonialsByOutlet(grouped);
+        }
+      } catch (err) {
+        console.error('Failed to load testimonials', err);
+        if (mounted) {
+          setError(String(err));
+          // Use fallback so UI still renders sensibly during development
+          setTestimonialsByOutlet(fallbackMock);
+        }
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }
+
+    load();
+
+    return () => { mounted = false; };
   }, []);
 
   /** Active outlet data based on selection */
-  const current = mockTestimonialsByOutlet[selectedOutlet];
+  const outletKeys = Object.keys(testimonialsByOutlet);
+  const current = outletKeys.length ? testimonialsByOutlet[outletKeys[selectedOutlet]] : { testimonials: [] };
 
   /** Extract outlet names for the selector buttons */
-  const outletList = Object.keys(mockTestimonialsByOutlet).map(
-    key => mockTestimonialsByOutlet[key].outlet
-  );
+  const outletList = outletKeys.length ? outletKeys.map(k => testimonialsByOutlet[k].outlet) : [];
 
   return (
     <section
@@ -151,65 +133,249 @@ export default function Testimonials() {
           </p>
         </div>
 
-        {/* ================= Outlet Selector ================= */}
-        <div className="mb-10 sm:mb-12 flex flex-wrap gap-2 sm:gap-3">
-          {outletList.map((outlet, index) => (
-            <button
-              key={index}
-              onClick={() => setSelectedOutlet(index)}
-              className={`px-4 sm:px-6 py-2 sm:py-3 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-300 ${
-                selectedOutlet === index
-                  ? 'bg-primary text-primary-foreground shadow-lg'
-                  : 'bg-secondary text-foreground hover:bg-secondary/80'
-              }`}
-            >
-              {outlet}
-            </button>
-          ))}
-        </div>
-
-        {/* ================= Testimonials Grid ================= */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-          {current.testimonials.map((testimonial) => (
-            <div
-              key={testimonial.id}
-              className="bg-card border border-border rounded-xl p-6 hover:shadow-lg transition-all duration-300 hover:border-primary"
-            >
-              {/* Decorative quote icon */}
-              <Quote className="w-8 h-8 text-primary/30 mb-4" />
-
-              {/* Star rating */}
-              <div className="flex gap-1 mb-4">
-                {[...Array(testimonial.rating)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className="w-5 h-5 fill-accent text-accent"
-                  />
-                ))}
+        {/* ================= Outlet Selector / Status ================= */}
+        {loading ? (
+          <div className="mb-10 sm:mb-12">
+            <p className="text-sm text-muted-foreground">Loading testimonials...</p>
+          </div>
+        ) : (
+          <>
+            {error && (
+              <div className="mb-4 p-3 rounded bg-red-50 text-red-700">
+                Failed to load testimonials: {error}
               </div>
+            )}
 
-              {/* Review text */}
-              <p className="text-foreground mb-6 leading-relaxed">
-                "{testimonial.text}"
-              </p>
-
-              {/* Author details */}
-              <div className="flex items-center justify-between border-t border-border pt-4">
-                <div className="flex items-center gap-3">
-                  <div className="text-3xl">{testimonial.avatar}</div>
-                  <div>
-                    <p className="font-semibold text-foreground">
-                      {testimonial.name}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {testimonial.date}
-                    </p>
-                  </div>
-                </div>
+            <div className="mb-10 sm:mb-12 flex flex-wrap gap-2 sm:gap-3">
+              {outletList.length ? (
+                  outletList.map((outlet, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setSelectedOutlet(index)}
+                    className={`px-4 sm:px-6 py-2 sm:py-3 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-300 ${
+                      selectedOutlet === index
+                        ? 'bg-primary text-primary-foreground shadow-lg'
+                        : 'bg-secondary text-foreground hover:bg-secondary/80'
+                    }`}
+                  >
+                    {outlet}
+                  </button>
+                ))
+              ) : (
+                <p className="text-sm text-muted-foreground">No testimonials available.</p>
+              )}
+              {/* Add Review button - placed next to outlet selector */}
+              <div className="ml-auto flex items-center gap-3">
+                <button
+                  onClick={() => { setShowForm((s) => !s); setSuccessMsg(null); setError(null); }}
+                  className="ml-2 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-primary to-accent text-white shadow-lg hover:scale-105 transform transition"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span className="text-sm font-semibold">Add Review</span>
+                </button>
               </div>
             </div>
-          ))}
-        </div>
+
+            {/* Optional Add Review form */}
+            {showForm && (
+              <div className="mb-6 p-6 bg-card border border-border rounded-xl">
+                <h4 className="font-semibold text-lg mb-3">Share your experience</h4>
+                {successMsg && <div className="mb-2 text-sm text-green-600">{successMsg}</div>}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <input
+                    value={form.customer_name}
+                    onChange={(e) => setForm(f => ({ ...f, customer_name: e.target.value }))}
+                    className="input w-full"
+                    placeholder="Your name"
+                  />
+                  <select
+                    value={form.rating}
+                    onChange={(e) => setForm(f => ({ ...f, rating: parseInt(e.target.value, 10) }))}
+                    className="input w-full"
+                  >
+                    {[5,4,3,2,1].map(r => <option key={r} value={r}>{r} ★</option>)}
+                  </select>
+                </div>
+
+                <textarea
+                  value={form.review_text}
+                  onChange={(e) => setForm(f => ({ ...f, review_text: e.target.value }))}
+                  className="mt-3 textarea w-full"
+                  placeholder="Write your review..."
+                />
+
+                <div className="mt-3">
+                  <label className="block text-sm font-medium mb-2">Choose an avatar</label>
+                  <div className="flex items-center gap-3">
+                    <label
+                      className={`flex flex-col items-center gap-1 p-2 rounded-md cursor-pointer border ${form.avatar === '👨' ? 'border-primary bg-primary/10' : 'border-transparent'}`}
+                      onClick={() => setForm(f => ({ ...f, avatar: '👨' }))}
+                    >
+                      <div className="text-2xl">👨</div>
+                      <div className="text-xs text-muted-foreground">Male</div>
+                    </label>
+
+                    <label
+                      className={`flex flex-col items-center gap-1 p-2 rounded-md cursor-pointer border ${form.avatar === '👩' ? 'border-primary bg-primary/10' : 'border-transparent'}`}
+                      onClick={() => setForm(f => ({ ...f, avatar: '👩' }))}
+                    >
+                      <div className="text-2xl">👩</div>
+                      <div className="text-xs text-muted-foreground">Female</div>
+                    </label>
+
+                    <label
+                      className={`flex flex-col items-center gap-1 p-2 rounded-md cursor-pointer border ${!form.avatar ? 'border-primary bg-primary/10' : 'border-transparent'}`}
+                      onClick={() => setForm(f => ({ ...f, avatar: '' }))}
+                    >
+                      <div className="text-2xl">👤</div>
+                      <div className="text-xs text-muted-foreground">Default</div>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="mt-4 flex gap-3">
+                  <button
+                    onClick={async () => {
+                      // submit handler
+                      setSubmitting(true);
+                      setError(null);
+                      try {
+                        const outletKey = outletKeys[selectedOutlet];
+                        const outletIdNum = parseInt(outletKey, 10) || 0;
+                        const body = {
+                          outlet_id: outletIdNum,
+                          customer_name: form.customer_name.trim(),
+                          rating: form.rating,
+                          review_text: form.review_text.trim(),
+                          avatar: form.avatar.trim() || undefined,
+                        };
+
+                        // basic validation
+                        if (!body.customer_name || !body.review_text) {
+                          setError('Name and review are required');
+                          setSubmitting(false);
+                          return;
+                        }
+
+                        const res = await fetch(`${API_BASE}/api/testimonials`, {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify(body),
+                        });
+
+                        if (!res.ok) {
+                          const err = await res.json().catch(() => ({}));
+                          throw new Error(err.error || `HTTP ${res.status}`);
+                        }
+
+                        const created = await res.json();
+
+                        // update local state to include new testimonial
+                        setTestimonialsByOutlet(prev => {
+                          const copy = { ...prev };
+                          const key = String(outletKey || '0');
+                          if (!copy[key]) copy[key] = { outlet: created.outlet_name || `Outlet ${key}`, testimonials: [] };
+                          copy[key] = { ...copy[key], testimonials: [ { id: created.id, name: created.customer_name, avatar: created.avatar || '👤', rating: created.rating, text: created.review_text, date: new Date(created.created_at).toLocaleString() }, ...copy[key].testimonials ] };
+                          return copy;
+                        });
+
+                        setSuccessMsg('Thanks! Your review was submitted.');
+                        setShowForm(false);
+                        setForm({ customer_name: '', rating: 5, review_text: '', avatar: '' });
+                      } catch (err) {
+                        console.error('Submit review failed', err);
+                        setError(String(err));
+                      } finally {
+                        setSubmitting(false);
+                      }
+                    }}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-primary text-white font-semibold hover:opacity-90 disabled:opacity-50"
+                    disabled={submitting}
+                  >
+                    {submitting ? 'Submitting...' : 'Submit Review'}
+                  </button>
+
+                  <button
+                    onClick={() => { setShowForm(false); setError(null); setSuccessMsg(null); }}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-secondary text-foreground font-semibold hover:opacity-90"
+                  >
+                    Cancel
+                  </button>
+                </div>
+
+                {error && <div className="mt-3 text-sm text-red-600">{error}</div>}
+              </div>
+            )}
+
+            {/* ================= Testimonials Grid ================= */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+              {current.testimonials && current.testimonials.length ? (
+                current.testimonials.map((testimonial) => (
+                  <div
+                    key={testimonial.id}
+                    className="bg-card border border-border rounded-xl p-6 hover:shadow-lg transition-all duration-300 hover:border-primary"
+                  >
+                    {/* Decorative quote icon */}
+                    <Quote className="w-8 h-8 text-primary/30 mb-4" />
+
+                    {/* Star rating */}
+                    <div className="flex gap-1 mb-4">
+                      {[...Array(testimonial.rating || 0)].map((_, i) => (
+                        <Star
+                          key={i}
+                          className="w-5 h-5 fill-accent text-accent"
+                        />
+                      ))}
+                    </div>
+
+                    {/* Review text */}
+                    <p className="text-foreground mb-6 leading-relaxed">
+                      "{testimonial.text}"
+                    </p>
+
+                    {/* Author details */}
+                    <div className="flex items-center justify-between border-t border-border pt-4">
+                      <div className="flex items-center gap-3">
+                        <div>
+                          {/**
+                           * If avatar looks like a filename (has an extension), render the image
+                           * from the backend uploads path. Otherwise render the emoji avatar.
+                           * If missing, render the backend default image.
+                           */}
+                          {testimonial.avatar && /\.[a-zA-Z0-9]+$/.test(testimonial.avatar) ? (
+                            <img
+                              src={`${API_BASE}/uploads/${testimonial.avatar}`}
+                              alt={testimonial.name}
+                              className="w-12 h-12 rounded-full object-cover"
+                            />
+                          ) : testimonial.avatar ? (
+                            <div className="text-3xl">{testimonial.avatar}</div>
+                          ) : (
+                            <img
+                              src={`${API_BASE}/uploads/default-avatar.jpg`}
+                              alt={testimonial.name}
+                              className="w-12 h-12 rounded-full object-cover"
+                            />
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-semibold text-foreground">
+                            {testimonial.name}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {testimonial.date}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-muted-foreground">No reviews for this outlet yet.</p>
+              )}
+            </div>
+          </>
+        )}
 
         {/* ================= Stats Summary ================= */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 bg-gradient-to-r from-primary/10 to-accent/10 rounded-2xl p-8 md:p-12">
