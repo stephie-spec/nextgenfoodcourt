@@ -21,6 +21,7 @@ class MenuListResource(Resource):
                 "outlet_name": menu.outlet.name if menu.outlet else None,
                 "item_id": menu.item_id,
                 "item_name": menu.item.name if menu.item else None,
+                "image_path": menu.item.image if menu.item and menu.item.image and menu.item.image.strip() else "default-food.jpg",
                 "price": float(menu.item.price) if menu.item and menu.item.price else None,
                 "category": menu.item.category_name if menu.item and menu.item.category_name else "Uncategorized",
                 "is_available": menu.item.is_available if menu.item is not None else True,
@@ -104,6 +105,7 @@ class MenuResource(Resource):
             "outlet_name": menu.outlet.name,
             "item_id": menu.item_id,
             "item_name": menu.item.name,
+            "image_path": menu.item.image if menu.item and menu.item.image and menu.item.image.strip() else "default-food.jpg",
             "price": menu.item.price
         }, 200
 

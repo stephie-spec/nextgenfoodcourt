@@ -20,6 +20,8 @@ export default function MenuPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [mounted, setMounted] = useState(false);
   const [favourites, setFavourites] = useState({});
+  const [outletImageMap, setOutletImageMap] = useState({});
+  const [itemImageMap, setItemImageMap] = useState({});
   const { data: session, status } = useSession(); // Session data for user auth.
   const token = session?.accessToken || null; // JWT
   const isLoggedIn = status === 'authenticated'; // To check authentication status on clicking the heart button.
@@ -34,9 +36,96 @@ export default function MenuPage() {
     }
   }, [searchParams]);
 
+  useEffect(() => {
+    const fetchOutletImages = async () => {
+      try {
+        const response = await fetch('http://localhost:5555/api/outlets');
+        if (!response.ok) {
+          throw new Error('Failed to fetch outlet images');
+        }
+        const data = await response.json();
+        const outletsList = data.outlets || data;
+        const imageMap = {};
+
+        outletsList.forEach((outlet) => {
+          const imagePath = outlet.image_path || 'default-outlet.jpg';
+          const imageUrl = `http://localhost:5555/uploads/${imagePath.replace(/^\/+/, '')}`;
+          imageMap[outlet.id] = imageUrl;
+        });
+
+        setOutletImageMap(imageMap);
+      } catch (error) {
+        console.error('Error fetching outlet images:', error);
+      }
+    };
+
+    fetchOutletImages();
+  }, []);
+
+  useEffect(() => {
+    const fetchMenuImages = async () => {
+      try {
+        const response = await fetch('/api/menu');
+        if (!response.ok) {
+          throw new Error('Failed to fetch menu images');
+        }
+        const data = await response.json();
+        const imageMap = {};
+
+        data.forEach((menuItem) => {
+          const outletName = menuItem.outlet_name;
+          const itemName = menuItem.item_name;
+          const imagePath = menuItem.image_path || 'default-food.jpg';
+
+          if (outletName && itemName) {
+            const key = `${outletName}::${itemName}`.toLowerCase();
+            imageMap[key] = `http://localhost:5555/uploads/${imagePath.replace(/^\/+/, '')}`;
+          }
+        });
+
+        setItemImageMap(imageMap);
+      } catch (error) {
+        console.error('Error fetching menu images:', error);
+      }
+    };
+
+    fetchMenuImages();
+  }, []);
+
+  const outletsWithImages = useMemo(() => {
+    return outletsData.map((outlet) => {
+      const backendImage = outletImageMap[outlet.outletId];
+      if (!backendImage) {
+        return outlet;
+      }
+      return {
+        ...outlet,
+        image: backendImage,
+        coverImage: backendImage
+      };
+    });
+  }, [outletImageMap]);
+
+  const outletsWithImagesAndItems = useMemo(() => {
+    return outletsWithImages.map((outlet) => ({
+      ...outlet,
+      items: outlet.items.map((item) => {
+        const key = `${outlet.outletName}::${item.name}`.toLowerCase();
+        const backendItemImage = itemImageMap[key];
+        if (!backendItemImage) {
+          return item;
+        }
+        return {
+          ...item,
+          image: backendItemImage
+        };
+      })
+    }));
+  }, [itemImageMap, outletsWithImages]);
+
   // Filter outlets based on cuisine and search query
   const filteredOutlets = useMemo(() => {
-    return outletsData.filter((outlet) => {
+    return outletsWithImagesAndItems.filter((outlet) => {
       const matchesCuisine = selectedCuisine === 'All' || outlet.cuisine === selectedCuisine;
       const searchLower = searchQuery.toLowerCase().trim();
       const matchesSearch = !searchQuery ||
@@ -45,7 +134,7 @@ export default function MenuPage() {
         outlet.items.some(item => item.name.toLowerCase().includes(searchLower));
       return matchesCuisine && matchesSearch;
     });
-  }, [selectedCuisine, searchQuery]);
+  }, [outletsWithImagesAndItems, selectedCuisine, searchQuery]);
 
   // Get quantity for an item
   const getItemQuantity = (outletId, itemName) => {
@@ -101,13 +190,13 @@ export default function MenuPage() {
               <div className="space-y-4">
                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-medium">
                   <span className="w-2 h-2 bg-primary rounded-full animate-pulse"></span>
-                  {outletsData.length} Outlets • {outletsData.reduce((acc, o) => acc + o.items.length, 0)} Items
+                  {outletsWithImages.length} Outlets • {outletsWithImages.reduce((acc, o) => acc + o.items.length, 0)} Items
                 </div>
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground">
                   Our <span className="text-primary">Menu</span>
                 </h1>
                 <p className="text-lg text-muted-foreground max-w-xl">
-                  Discover authentic African cuisine from {outletsData.length} unique outlets.
+                  Discover authentic African cuisine from {outletsWithImages.length} unique outlets.
                   From Ethiopian injera to South African bobotie, taste the continent's finest flavors.
                 </p>
                 {searchQuery && (
@@ -191,6 +280,7 @@ export default function MenuPage() {
                       alt={outlet.outletName}
                       fill
                       className="object-cover opacity-30"
+                      unoptimized
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-card via-card/80 to-transparent"></div>
                   </div>
@@ -204,6 +294,7 @@ export default function MenuPage() {
                           alt={outlet.outletName}
                           fill
                           className="object-cover"
+                          unoptimized
                         />
                       </div>
                       <div className="space-y-2">
@@ -260,6 +351,7 @@ export default function MenuPage() {
                             alt={item.name}
                             fill
                             className="object-cover group-hover:scale-110 transition-transform duration-500"
+                            unoptimized
                           />
                           <div className="absolute top-3 left-3 bg-primary/90 text-primary-foreground text-sm font-bold px-3 py-1 rounded-full shadow-lg">
                             ${item.price.toFixed(2)}
