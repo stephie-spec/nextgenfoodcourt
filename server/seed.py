@@ -1,4 +1,3 @@
-
 # Seed file to populate the database with sample data.
 
 import uuid
@@ -11,7 +10,7 @@ if __name__ == "__main__":
     # Import app and dependencies
     from app import app
     from extensions import db
-    from models import Owner, Customer, Outlet, Item, MenuOutletItem, Order, TableBooking, OrderStatus, Testimonial
+    from models import Owner, Customer, Outlet, Item, MenuOutletItem, Order, TableBooking, OrderStatus, Testimonial, CustomerFavourite
     
 
     with app.app_context():
@@ -453,3 +452,23 @@ if __name__ == "__main__":
         print("    - john.smith@email.com / customer123")
         print("    - sarah.johnson@email.com / customer456")
         print("    - amit.kumar@email.com / customer789")
+
+        # Create sample customer favourites
+        print("Creating customer favourites...")
+        
+        # Add some items to customer1's favourites
+        customer1.favourite_items.append(CustomerFavourite(item_id=all_items[39].id))  # Shawarma
+        customer1.favourite_items.append(CustomerFavourite(item_id=all_items[5].id))  # Suya Skewers
+        customer1.favourite_items.append(CustomerFavourite(item_id=all_items[10].id))  # Pilau Rice
+        
+        # Add some items to customer2's favourites
+        customer2.favourite_items.append(CustomerFavourite(item_id=all_items[39].id))  # Shawarma
+        customer2.favourite_items.append(CustomerFavourite(item_id=all_items[5].id))  # Suya Skewers
+        customer2.favourite_items.append(CustomerFavourite(item_id=all_items[15].id))  # Nyama Choma
+        
+        # Add some items to customer3's favourites
+        customer3.favourite_items.append(CustomerFavourite(item_id=all_items[2].id))  # Kitfo
+        customer3.favourite_items.append(CustomerFavourite(item_id=all_items[39].id))  # Shawarma
+        customer3.favourite_items.append(CustomerFavourite(item_id=all_items[15].id))  # Nyama Choma
+        
+        db.session.commit()
