@@ -174,3 +174,83 @@ export default function OutletManage() {
       console.error('Error refreshing menu items:', error);
     }
   };
+// Update outlet - SENDS FORMDATA
+  const handleUpdateOutlet = async (e) => {
+    e.preventDefault();
+
+    try {
+      const token = getAuthToken();
+
+      if (!token) {
+        alert("You must be logged in to update an outlet");
+        return;
+      }
+
+      console.log('Updating outlet with token:', token ? 'Present' : 'Missing');
+      
+      const formData = new FormData();
+      formData.append('name', editedOutlet.name);
+      formData.append('category_name', editedOutlet.category_name);
+      
+      if (editedOutlet.image_file) {
+        formData.append('image', editedOutlet.image_file);
+      }
+
+      const response = await fetch(`${API_BASE}/api/outlets/${outletId}`, {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      if (response.ok) {
+        const updatedOutlet = await response.json();
+        setOutlet(updatedOutlet);
+        setIsEditingOutlet(false);
+        setEditedOutlet({
+          ...editedOutlet,
+          image_file: null,
+          image_preview: ''
+        });
+        alert('Outlet updated successfully!');
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Update failed:', response.status, errorData);
+        throw new Error(errorData.message || 'Failed to update outlet');
+      }
+    } catch (error) {
+      console.error('Error updating outlet:', error);
+      alert(`Failed to update outlet: ${error.message}`);
+    }
+  };
+
+  // Handle image upload
+  const handleImageUpload = (file, type = 'outlet') => {
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File size too large. Please choose an image under 5MB.');
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onloadend = () => {
+      if (type === 'outlet') {
+        setEditedOutlet({
+          ...editedOutlet,
+          image_preview: reader.result,
+          image_file: file
+        });
+      }
+
+      if (type === 'item') {
+        setNewMenuItem({
+          ...newMenuItem,
+          image_preview: reader.result,
+          image_file: file
+        });
+      }
+    };
+
+    reader.readAsDataURL(file);
+  };
