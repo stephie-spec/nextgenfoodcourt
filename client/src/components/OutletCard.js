@@ -4,6 +4,7 @@ import { Store, MapPin, Star, Tag, Users, CheckCircle } from 'lucide-react';
 import Image from 'next/image';
 
 export default function OutletCard({ outlet, isOwner = false }) {
+  const router = useRouter();
   // outlet images url path
   const getOutletImage = (imagePath) => {
     const finalImage = imagePath || 'default-outlet.jpg';
@@ -119,7 +120,10 @@ export default function OutletCard({ outlet, isOwner = false }) {
             View Menu
           </button>
           {isOwner && (
-            <button className="flex-1 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium">
+            <button
+              onClick={() => router.push(`/dashboard/owner/outlets/${outlet.id}/manage`)}
+              className="flex-1 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+            >
               Manage
             </button>
           )}
