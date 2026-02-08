@@ -24,3 +24,29 @@ const getOutletImage = (imagePath) => {
   const finalImage = imagePath || 'default-outlet.jpg';
   return `${API_BASE}/uploads/${finalImage.replace(/^\/+/, '')}`;
 };
+// FIXED: Helper function to get auth token
+function getAuthToken() {
+  if (typeof window === 'undefined') return null;
+  
+  // Try multiple token storage locations
+  let token = localStorage.getItem('token');
+  
+  if (!token) {
+    token = localStorage.getItem('auth_token');
+  }
+  
+  if (!token) {
+    try {
+      const authData = localStorage.getItem('auth');
+      if (authData) {
+        const parsed = JSON.parse(authData);
+        token = parsed.token;
+      }
+    } catch (e) {
+      console.log('Error parsing auth data:', e);
+    }
+  }
+  
+  console.log('getAuthToken result:', token ? 'Token found' : 'No token found');
+  return token;
+}
