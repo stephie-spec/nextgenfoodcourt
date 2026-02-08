@@ -60,7 +60,7 @@ def create_app():
     api.add_resource(CustomerDetails, "/api/customer/details")
     api.add_resource(CustomerSignUp, "/api/customer/signup")
     api.add_resource(ListOutlets, "/api/outlets")
-    api.add_resource(OutletResource, "/outlets/<int:outlet_id>")
+    api.add_resource(OutletResource, "/api/outlets/<int:outlet_id>")
     api.add_resource(OutletMenu, "/api/outlet/<int:outlet_id>/menu")
     api.add_resource(TestimonialListResource, '/api/testimonials')
     api.add_resource(TestimonialResource, '/api/testimonials/<string:testimonial_id>')
