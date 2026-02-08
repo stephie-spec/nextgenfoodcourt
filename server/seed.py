@@ -460,19 +460,19 @@ if __name__ == "__main__":
         print("Creating customer favourites...")
         
         # Add some items to customer1's favourites
-        customer1.favourites.append(CustomerFavourite(item_id=all_items[38].id))  # Shawarma
-        customer1.favourites.append(CustomerFavourite(item_id=all_items[4].id))  # Jollof Rice
-        customer1.favourites.append(CustomerFavourite(item_id=all_items[8].id))  # Pilau Rice
+        customer1.favourites.append(CustomerFavourite(item_id=all_items[3].id))  # Shawarma
+        customer1.favourites.append(CustomerFavourite(item_id=all_items[5].id))  # Suya Skewers
+        customer1.favourites.append(CustomerFavourite(item_id=all_items[10].id))  # Pilau Rice
         
         # Add some items to customer2's favourites
-        customer2.favourites.append(CustomerFavourite(item_id=all_items[38].id))  # Shawarma
+        customer2.favourites.append(CustomerFavourite(item_id=all_items[3].id))  # Shawarma
         customer2.favourites.append(CustomerFavourite(item_id=all_items[5].id))  # Suya Skewers
-        customer2.favourites.append(CustomerFavourite(item_id=all_items[13].id))  # Nyama Choma
+        customer2.favourites.append(CustomerFavourite(item_id=all_items[1].id))  # Nyama Choma
         
         # Add some items to customer3's favourites
         customer3.favourites.append(CustomerFavourite(item_id=all_items[2].id))  # Kitfo
-        customer3.favourites.append(CustomerFavourite(item_id=all_items[38].id))  # Shawarma
-        customer3.favourites.append(CustomerFavourite(item_id=all_items[13].id))  # Nyama Choma
+        customer3.favourites.append(CustomerFavourite(item_id=all_items[3].id))  # Shawarma
+        customer3.favourites.append(CustomerFavourite(item_id=all_items[1].id))  # Nyama Choma
         
         db.session.commit()
 
