@@ -254,3 +254,95 @@ export default function OutletManage() {
 
     reader.readAsDataURL(file);
   };
+
+  // Add menu item - SENDS FORMDATA
+  const handleAddMenuItem = async (e) => {
+    e.preventDefault();
+
+    try {
+      const token = getAuthToken();
+
+      if (!token) {
+        alert("You must be logged in to add menu items");
+        return;
+      }
+      
+      const formData = new FormData();
+      formData.append('name', newMenuItem.name);
+      formData.append('price', parseFloat(newMenuItem.price));
+      formData.append('category', newMenuItem.category);
+      formData.append('is_available', newMenuItem.is_available);
+      formData.append('outlet_id', parseInt(outletId));
+
+      if (newMenuItem.image_file) {
+        formData.append('image', newMenuItem.image_file);
+      }
+
+      const response = await fetch(`${API_BASE}/api/menu`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData
+      });
+
+      if (response.ok) {
+        await refreshMenuItems();
+
+        setNewMenuItem({
+          name: '',
+          price: '',
+          category: 'Main Course',
+          is_available: true,
+          image_file: null,
+          image_preview: ''
+        });
+
+        setShowAddItemModal(false);
+        alert('Menu item added successfully!');
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to add menu item');
+      }
+    } catch (error) {
+      console.error('Error adding menu item:', error);
+      alert(`Failed to add menu item: ${error.message}`);
+    }
+  };
+
+  // Delete menu item
+  const handleDeleteMenuItem = async (itemId, itemName) => {
+    if (!confirm(`Are you sure you want to delete "${itemName}"?`)) {
+      return;
+    }
+
+    try {
+      const token = getAuthToken();
+
+      if (!token) {
+        alert("You must be logged in to delete menu items");
+        return;
+      }
+      
+      console.log('Deleting menu item with token:', token ? 'Present' : 'Missing');
+
+      const response = await fetch(`${API_BASE}/api/menu/${itemId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        await refreshMenuItems();
+        alert('Menu item deleted successfully!');
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Delete failed:', response.status, errorData);
+        throw new Error(errorData.message || 'Failed to delete menu item');
+      }
+    } catch (error) {
+      console.error('Error deleting menu item:', error);
+      alert(`Failed to delete menu item: ${error.message}`);
+    }
+  };
