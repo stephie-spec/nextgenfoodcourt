@@ -36,7 +36,8 @@ def create_app():
     app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024 
 
     CORS(app, supports_credentials=True,
-    origins=["http://localhost:3000"])
+    origins=["http://localhost:3000"],
+    allow_headers=["Content-Type", "Authorization"])
     # INIT EXTENSIONS
     db.init_app(app)
     Migrate(app, db)
