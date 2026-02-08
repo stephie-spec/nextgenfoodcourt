@@ -60,6 +60,14 @@ class Customer(db.Model):
         cascade="all, delete-orphan",
         lazy=True
     )
+
+    favourites = db.relationship (
+        "CustomerFavourite",
+        back_populates= "customer",
+        cascade= "all, delete-orphan",
+        lazy= True
+    
+    )
     def __repr__(self):
         return f"<Customer {self.email}>"
 
@@ -110,6 +118,13 @@ class Item(db.Model):
         back_populates="item",
         cascade="all, delete-orphan",
         lazy=True
+    )
+
+    customer_favourites = db.relationship (
+        "CustomerFavourite",
+        back_populates= "item",
+        cascade= "all, delete-orphan",
+        lazy= True
     )
 
     def __repr__(self):
@@ -216,6 +231,16 @@ class CustomerFavourite(db.Model):
 
     __table_args__ = (
         UniqueConstraint("customer_id", "item_id", name="unique_customer_item_favourite"),
+    )
+
+    customer = db.relationship (
+        "Customer",
+        back_populates= "favourites"
+    )
+
+    item = db.relationship (
+        "Item",
+        back_populates= "customer_favourites"
     )
 
     def __repr__(self):
