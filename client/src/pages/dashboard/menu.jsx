@@ -103,24 +103,40 @@ export default function MenuPage() {
     }, [menuOutlets, outletImageMap]);
 
 
+  // const outletsWithImagesAndItems = useMemo(() => {
+  //   return outletsWithImages.map((outlet) => ({
+  //     ...outlet,
+  //     items: (outlet.items || [])
+  //     .filter(item => item && item.name)
+  //     .map((item) => {
+  //       const key = `${outlet.outletName}::${item.name}`.toLowerCase();
+  //       const backendItemImage = itemImageMap[key];
+  //       if (!backendItemImage) {
+  //         return item;
+  //       }
+  //       return {
+  //         ...item,
+  //         image: backendItemImage || item.image
+  //       };
+  //     })
+  //   }));
+  // }, [itemImageMap, outletsWithImages]);
+
   const outletsWithImagesAndItems = useMemo(() => {
-    return outletsWithImages.map((outlet) => ({
-      ...outlet,
-      items: (outlet.items || [])
+  return outletsWithImages.map((outlet) => ({
+    ...outlet,
+    items: (outlet.items || [])
       .filter(item => item && item.name)
       .map((item) => {
         const key = `${outlet.outletName}::${item.name}`.toLowerCase();
         const backendItemImage = itemImageMap[key];
-        if (!backendItemImage) {
-          return item;
-        }
         return {
           ...item,
-          image: backendItemImage
-        };
-      })
-    }));
-  }, [itemImageMap, outletsWithImages]);
+          image: backendItemImage || item.image,  // Use backend image if available
+          };
+        })
+      }));
+    }, [outletsWithImages, itemImageMap]);
 
   // Filter outlets based on cuisine and search query
   const filteredOutlets = useMemo(() => {
@@ -220,56 +236,107 @@ useEffect(() => {
   // Handling the favourite toggle - heart button
 
   const handleFavourite = async (itemId) => {
-  console.log(`Toggling favourite for item: ${itemId}`);
+    if (!token) {
+      console.error('User not authenticated');
+      return;
+    }
 
-  if (!token) {
-    console.error('User not authenticated');
-    return;
-  }
+    // Determine current state before update
+    const currentItem = menuOutlets
+      .flatMap(o => o.items)
+      .find(i => i.id === itemId);
+    const isCurrentlyFavourited = currentItem?.favourited || false;
+    const action = isCurrentlyFavourited ? 'Removing' : 'Adding';
+    
+    console.log(`${action} favourite for item ID: ${itemId}`);
 
-  // 🔹 Optimistic update
-  setMenuOutlets(prevOutlets =>
-    prevOutlets.map(outlet => ({
-      ...outlet,
-      items: (outlet.items || []).map(item => {
-        if (item.id !== itemId) return item;
-
-        const currentFavourited =
-          item.favourited ?? item.is_favourite ?? false;
-
-        return {
-          ...item,
-          favourited: !currentFavourited,
-          favourite_count: currentFavourited
-            ? item.favourite_count - 1
-            : item.favourite_count + 1,
-        };
-      }),
-    }))
-  );
-
-  try {
-    const response = await toggleFavourite(itemId, token);
-
-    // 🔹 Authoritative update from backend
+    // Update favourited data early - in order to reflect changes before actually making them.
     setMenuOutlets(prevOutlets =>
       prevOutlets.map(outlet => ({
         ...outlet,
-        items: (outlet.items || []).map(item =>
-          item.id === itemId
-            ? {
-                ...item,
-                favourited: response.favourited,
-                favourite_count: response.favourite_count,
-              }
-            : item
-        ),
+        items: (outlet.items || []).map(item => {
+          if (item.id !== itemId) return item;
+
+          const currentFavourited =
+            item.favourited ?? item.is_favourite ?? false;
+
+          return {
+            ...item,
+            favourited: !currentFavourited,
+            favourite_count: currentFavourited
+              ? item.favourite_count - 1
+              : item.favourite_count + 1,
+          };
+        }),
       }))
     );
-  } catch (error) {
-    console.error('Error toggling favourite:', error);
-  }
-};
+
+    try {
+      const response = await toggleFavourite(itemId, token);
+      console.log(`✓ ${action} favourite successful:`, response);
+
+      // Authoritative update from backend
+      setMenuOutlets(prevOutlets =>
+        prevOutlets.map(outlet => ({
+          ...outlet,
+          items: (outlet.items || []).map(item =>
+            item.id === itemId
+              ? {
+                  ...item,
+                  favourited: response.favourited,
+                  favourite_count: response.favourite_count,
+                }
+              : item
+          ),
+        }))
+      );
+    } catch (error) {
+      console.error(`✗ ${action} favourite failed:`, error);
+    }
+  };
+
+
+// Fetch customer's favourites and add into menuOutlets - to persist the red heart button.
+
+useEffect(() => {
+  if (!token || !isLoggedIn) return;
+
+  const fetchCustomerFavourites = async () => {
+    try {
+      const response = await fetch('http://localhost:5555/api/customer/favourites', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch customer favourites');
+      }
+
+      const data = await response.json();
+      const favouritedItemIds = new Set(
+        data['Your Favourites']?.map(item => item.id) || []
+      );
+
+      // Update menuOutlets to mark favourited items
+      setMenuOutlets(prevOutlets =>
+        prevOutlets.map(outlet => ({
+          ...outlet,
+          items: (outlet.items || []).map(item => ({
+            ...item,
+            favourited: favouritedItemIds.has(item.id),
+          })),
+        }))
+      );
+
+      console.log('✓ Loaded customer favourites:', favouritedItemIds);
+    } catch (error) {
+      console.error('Error fetching customer favourites:', error);
+    }
+  };
+
+  fetchCustomerFavourites();
+}, [token, isLoggedIn]);
 
 
   if (!mounted) {
