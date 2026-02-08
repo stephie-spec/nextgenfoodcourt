@@ -14,21 +14,41 @@ import {
   Trash2,
   ArrowLeft,
   Save,
-  X
+  X,
+  CheckCircle,
+  XCircle,
+  Edit,
+  Pencil
 } from 'lucide-react';
 
 const API_BASE = 'http://localhost:5555';
 
-// Helper function to get outlet image URL
+// function to get outlet image URL
 const getOutletImage = (imagePath) => {
   const finalImage = imagePath || 'default-outlet.jpg';
   return `${API_BASE}/uploads/${finalImage.replace(/^\/+/, '')}`;
 };
-// FIXED: Helper function to get auth token
+//function to get menu item image URL
+
+const getMenuItemImage = (imagePath) => {
+  if (!imagePath) return 'https://placehold.co/400';
+  
+  if (imagePath.startsWith('http')) {
+    return imagePath;
+  }
+  
+  if (imagePath === 'default-food.jpg') {
+    return `${API_BASE}/uploads/default-food.jpg`;
+  }
+  
+  return `${API_BASE}/uploads/${imagePath.replace(/^\/+/, '')}`;
+};
+
+// function to get auth token
 function getAuthToken() {
   if (typeof window === 'undefined') return null;
   
-  // Try multiple token storage locations
+  // multiple token storage locations
   let token = localStorage.getItem('token');
   
   if (!token) {
@@ -50,6 +70,7 @@ function getAuthToken() {
   console.log('getAuthToken result:', token ? 'Token found' : 'No token found');
   return token;
 }
+
 export default function OutletManage() {
   const router = useRouter();
   const { id: outletId } = router.query;
@@ -60,6 +81,8 @@ export default function OutletManage() {
   const [menuItems, setMenuItems] = useState([]);
   const [isEditingOutlet, setIsEditingOutlet] = useState(false);
   const [showAddItemModal, setShowAddItemModal] = useState(false);
+  const [showEditItemModal, setShowEditItemModal] = useState(false);
+  const [editingItem, setEditingItem] = useState(null);
 
   const [editedOutlet, setEditedOutlet] = useState({
     name: '',
@@ -74,7 +97,8 @@ export default function OutletManage() {
     category: 'Main Course',
     is_available: true,
     image_file: null,
-    image_preview: ''
+    image_preview: '',
+    image: ''
   });
 
   // Fetch outlet data and menu items
@@ -119,13 +143,31 @@ export default function OutletManage() {
               const itemOutletId = entry.outlet_id || entry.items?.outlet_id;
               return itemOutletId === parseInt(outletId);
             })
-            .map(entry => ({
-              id: entry.items?.item_id || entry.item_id,
-              name: entry.items?.item_name || entry.item_name || 'Unnamed Item',
-              price: Number(entry.items?.price || entry.price || 0),
-              category: entry.items?.category || entry.category || 'Main Course',
-              is_available: entry.items?.is_available ?? entry.is_available ?? true,
-            }));
+            .map(entry => {
+              // Construct proper image URL
+              let imageUrl = 'https://placehold.co/400';
+
+              if (entry.image || entry.items?.image) {
+                const imageFilename = entry.image || entry.items?.image;
+                if (imageFilename.startsWith('http')) {
+                  imageUrl = imageFilename;
+                } else if (imageFilename !== 'default-food.jpg') {
+                  imageUrl = `${API_BASE}/uploads/${imageFilename}`;
+                } else {
+                  imageUrl = `${API_BASE}/uploads/${imageFilename}`;
+                }
+              }
+
+              return {
+                id: entry.items?.item_id || entry.item_id,
+                name: entry.items?.item_name || entry.item_name || 'Unnamed Item',
+                price: Number(entry.items?.price || entry.price || 0),
+                category: entry.items?.category || entry.category || 'Main Course',
+                is_available: entry.items?.is_available ?? entry.is_available ?? true,
+                image: imageUrl,
+                image_filename: entry.image || entry.items?.image || 'default-food.jpg'
+              };
+            });
           
           setMenuItems(thisOutletItems);
         }
@@ -160,13 +202,30 @@ export default function OutletManage() {
             const itemOutletId = entry.outlet_id || entry.items?.outlet_id;
             return itemOutletId === parseInt(outletId);
           })
-          .map(entry => ({
-            id: entry.items?.item_id || entry.item_id,
-            name: entry.items?.item_name || entry.item_name || 'Unnamed Item',
-            price: Number(entry.items?.price || entry.price || 0),
-            category: entry.items?.category || entry.category || 'Main Course',
-            is_available: entry.items?.is_available ?? entry.is_available ?? true,
-          }));
+          .map(entry => {
+            let imageUrl = 'https://placehold.co/400';
+
+            if (entry.image || entry.items?.image) {
+              const imageFilename = entry.image || entry.items?.image;
+              if (imageFilename.startsWith('http')) {
+                imageUrl = imageFilename;
+              } else if (imageFilename !== 'default-food.jpg') {
+                imageUrl = `${API_BASE}/uploads/${imageFilename}`;
+              } else {
+                imageUrl = `${API_BASE}/uploads/${imageFilename}`;
+              }
+            }
+
+            return {
+              id: entry.items?.item_id || entry.item_id,
+              name: entry.items?.item_name || entry.item_name || 'Unnamed Item',
+              price: Number(entry.items?.price || entry.price || 0),
+              category: entry.items?.category || entry.category || 'Main Course',
+              is_available: entry.items?.is_available ?? entry.is_available ?? true,
+              image: imageUrl,
+              image_filename: entry.image || entry.items?.image || 'default-food.jpg'
+            };
+          });
         
         setMenuItems(thisOutletItems);
       }
@@ -232,6 +291,12 @@ export default function OutletManage() {
       return;
     }
 
+    const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      alert("Invalid file type. Please upload PNG, JPEG, GIF, or WebP images.");
+      return;
+    }
+
     const reader = new FileReader();
 
     reader.onloadend = () => {
@@ -247,7 +312,8 @@ export default function OutletManage() {
         setNewMenuItem({
           ...newMenuItem,
           image_preview: reader.result,
-          image_file: file
+          image_file: file,
+          image: file.name
         });
       }
     };
@@ -295,7 +361,8 @@ export default function OutletManage() {
           category: 'Main Course',
           is_available: true,
           image_file: null,
-          image_preview: ''
+          image_preview: '',
+          image: ''
         });
 
         setShowAddItemModal(false);
@@ -310,6 +377,77 @@ export default function OutletManage() {
     }
   };
 
+  // Edit menu item
+  const handleEditItem = (item) => {
+    setEditingItem(item);
+    setNewMenuItem({
+      name: item.name || '',
+      price: item.price?.toString() || '',
+      category: item.category || 'Main Course',
+      is_available: item.is_available ?? true,
+      image: item.image || '',
+      image_preview: item.image || '',
+      image_file: null
+    });
+    setShowEditItemModal(true);
+  };
+
+  // Update menu item
+  const handleUpdateItem = async (e) => {
+    e.preventDefault();
+
+    if (!editingItem) return;
+
+    try {
+      const token = getAuthToken();
+
+      if (!token) {
+        alert("You must be logged in to update menu items");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('name', newMenuItem.name);
+      formData.append('price', parseFloat(newMenuItem.price));
+      formData.append('is_available', newMenuItem.is_available);
+      formData.append('category', newMenuItem.category);
+      formData.append('outlet_id', parseInt(outletId));
+
+      if (newMenuItem.image_file) {
+        formData.append('image', newMenuItem.image_file);
+      }
+
+      const response = await fetch(`${API_BASE}/api/menu/${editingItem.id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      if (response.ok) {
+        await refreshMenuItems();
+
+        setNewMenuItem({
+          name: '',
+          price: '',
+          category: 'Main Course',
+          is_available: true,
+          image: '',
+          image_preview: '',
+          image_file: null
+        });
+        setEditingItem(null);
+        setShowEditItemModal(false);
+        alert('Menu item updated successfully!');
+      } else {
+        throw new Error('Failed to update menu item');
+      }
+    } catch (error) {
+      console.error('Error updating menu item:', error);
+      alert('Failed to update menu item. Please try again.');
+    }
+  };
   // Delete menu item
   const handleDeleteMenuItem = async (itemId, itemName) => {
     if (!confirm(`Are you sure you want to delete "${itemName}"?`)) {
@@ -324,8 +462,6 @@ export default function OutletManage() {
         return;
       }
       
-      console.log('Deleting menu item with token:', token ? 'Present' : 'Missing');
-
       const response = await fetch(`${API_BASE}/api/menu/${itemId}`, {
         method: 'DELETE',
         headers: {
@@ -334,11 +470,10 @@ export default function OutletManage() {
       });
 
       if (response.ok) {
-        await refreshMenuItems();
+        setMenuItems(prevItems => prevItems.filter(item => item.id !== itemId));
         alert('Menu item deleted successfully!');
       } else {
         const errorData = await response.json().catch(() => ({}));
-        console.error('Delete failed:', response.status, errorData);
         throw new Error(errorData.message || 'Failed to delete menu item');
       }
     } catch (error) {
@@ -346,6 +481,7 @@ export default function OutletManage() {
       alert(`Failed to delete menu item: ${error.message}`);
     }
   };
+  
 // Delete outlet
   const handleDeleteOutlet = async () => {
     if (!confirm(`Are you sure you want to delete "${outlet.name}"? This action cannot be undone.`)) {
@@ -636,67 +772,204 @@ export default function OutletManage() {
               </div>
             </div>
 
-            {/* Menu Items */}
+            {/* Menu Items - Updated Format */}
             <div className="lg:col-span-2">
               <div className="bg-white rounded-xl shadow-sm border p-6">
-                <div className="flex justify-between mb-6">
+                <div className="flex justify-between items-center mb-6">
                   <div>
-                    <h2 className="text-xl font-bold">Menu Items</h2>
-                    <p className="text-sm text-gray-600">{menuItems.length} items</p>
+                    <h2 className="text-xl font-bold">Menu Items ({menuItems.length})</h2>
+                    <p className="text-sm text-gray-600 mt-1">Manage your outlet's menu</p>
                   </div>
                   <button
                     onClick={() => setShowAddItemModal(true)}
                     className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 flex items-center gap-2"
                   >
                     <Plus className="w-4 h-4" />
-                    Add
+                    Add Item
                   </button>
                 </div>
 
                 {menuItems.length === 0 ? (
-                  <div className="text-center py-16">
-                    <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold">No Items Yet</h3>
+                  <div className="text-center py-12">
+                    <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-gray-700">No Menu Items Found</h3>
+                    <p className="text-gray-500 mt-2 mb-4">Get started by adding your first item</p>
                     <button
                       onClick={() => setShowAddItemModal(true)}
-                      className="mt-4 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 inline-flex items-center gap-2"
+                      className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 inline-flex items-center gap-2"
                     >
                       <Plus className="w-5 h-5" />
-                      Add First Item
+                      Add Your First Item
                     </button>
                   </div>
                 ) : (
-                  <div className="space-y-3">
-                    {menuItems.map(item => (
-                      <div key={item.id} className="border rounded-lg p-4 hover:border-gray-300">
-                        <div className="flex justify-between">
-                          <div className="flex-1">
-                            <h3 className="font-semibold">{item.name}</h3>
-                            <div className="flex gap-2 mt-2">
-                              <span className="px-2 py-1 bg-gray-100 text-xs rounded">
-                                {item.category}
-                              </span>
-                              <span className={`px-2 py-1 text-xs rounded ${
-                                item.is_available 
-                                  ? 'bg-green-100 text-green-800' 
-                                  : 'bg-red-100 text-red-800'
-                              }`}>
-                                {item.is_available ? 'Available' : 'Out of Stock'}
-                              </span>
+                  <div>
+                    {/* Mobile: Cards view */}
+                    <div className="md:hidden space-y-3">
+                      {menuItems.map(item => (
+                        <div key={item.id} className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-sm transition-shadow">
+                          <div className="flex gap-3">
+                            {/* Item Image */}
+                            <div className="flex-shrink-0">
+                              <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-gray-100">
+                                <img
+                                  src={item.image || 'https://placehold.co/400'}
+                                  alt={item.name}
+                                  className="w-full h-full object-cover"
+                                  onError={(e) => {
+                                    e.target.src = 'https://placehold.co/400';
+                                  }}
+                                />
+                                {/* Availability badge */}
+                                <div className={`absolute top-1 right-1 w-2 h-2 rounded-full ${item.is_available ? 'bg-green-500' : 'bg-red-500'}`} />
+                              </div>
+                            </div>
+
+                            {/* Item Details */}
+                            <div className="flex-1 min-w-0">
+                              {/* Header */}
+                              <div className="flex justify-between items-start mb-1">
+                                <h3 className="font-bold text-gray-900 truncate">{item.name}</h3>
+                                <span className="font-bold text-gray-900 ml-2">Ksh. {item.price?.toFixed(2) || '0.00'}</span>
+                              </div>
+
+                              {/* Category */}
+                              <div className="mb-2">
+                                <span className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs">
+                                  {item.category}
+                                </span>
+                              </div>
+
+                              {/* Availability and Actions */}
+                              <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+                                <span className={`px-2 py-1 rounded text-xs flex items-center gap-1 ${
+                                  item.is_available
+                                    ? 'bg-green-100 text-green-800'
+                                    : 'bg-red-100 text-red-800'
+                                }`}>
+                                  {item.is_available ? (
+                                    <>
+                                      <CheckCircle className="w-3 h-3" />
+                                      Available
+                                    </>
+                                  ) : (
+                                    <>
+                                      <XCircle className="w-3 h-3" />
+                                      Out of Stock
+                                    </>
+                                  )}
+                                </span>
+                                <div className="flex gap-2">
+                                  <button
+                                    onClick={() => handleEditItem(item)}
+                                    className="p-1.5 text-blue-600 hover:bg-blue-50 rounded"
+                                  >
+                                    <Edit className="w-4 h-4" />
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteMenuItem(item.id)}
+                                    className="p-1.5 text-red-600 hover:bg-red-50 rounded"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              </div>
                             </div>
                           </div>
-                          <div className="text-right ml-4">
-                            <p className="text-lg font-bold">Ksh. {item.price.toFixed(2)}</p>
-                            <button 
-                              onClick={() => handleDeleteMenuItem(item.id, item.name)}
-                              className="text-red-500 hover:text-red-700 text-sm mt-2"
-                            >
-                              Delete
-                            </button>
-                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
+
+                    {/* Desktop: Table view */}
+                    <div className="hidden md:block overflow-x-auto">
+                      <table className="w-full min-w-[600px]">
+                        <thead>
+                          <tr className="border-b border-gray-200">
+                            <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Item</th>
+                            <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Category</th>
+                            <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Price</th>
+                            <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Availability</th>
+                            <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {menuItems.map(item => (
+                            <tr key={item.id} className="border-b border-gray-200 hover:bg-gray-50 group">
+                              {/* Item column */}
+                              <td className="py-4 px-4">
+                                <div className="flex items-center gap-3">
+                                  <div className="relative w-10 h-10 rounded overflow-hidden bg-gray-100 flex-shrink-0">
+                                    <img
+                                      src={item.image || 'https://placehold.co/400'}
+                                      alt={item.name}
+                                      className="w-full h-full object-cover"
+                                      onError={(e) => {
+                                        e.target.src = 'https://placehold.co/400';
+                                      }}
+                                    />
+                                    <div className={`absolute top-0.5 right-0.5 w-1.5 h-1.5 rounded-full ${item.is_available ? 'bg-green-500' : 'bg-red-500'}`} />
+                                  </div>
+                                  <p className="font-medium text-gray-900">{item.name}</p>
+                                </div>
+                              </td>
+
+                              {/* Category */}
+                              <td className="py-4 px-4">
+                                <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
+                                  {item.category}
+                                </span>
+                              </td>
+
+                              {/* Price */}
+                              <td className="py-4 px-4">
+                                <p className="font-bold text-gray-900">Ksh. {item.price?.toFixed(2) || '0.00'}</p>
+                              </td>
+
+                              {/* Availability */}
+                              <td className="py-4 px-4">
+                                <span className={`px-2 py-1 rounded text-xs flex items-center gap-1 w-fit ${
+                                  item.is_available
+                                    ? 'bg-green-100 text-green-800'
+                                    : 'bg-red-100 text-red-800'
+                                }`}>
+                                  {item.is_available ? (
+                                    <>
+                                      <CheckCircle className="w-3 h-3" />
+                                      Available
+                                    </>
+                                  ) : (
+                                    <>
+                                      <XCircle className="w-3 h-3" />
+                                      Out of Stock
+                                    </>
+                                  )}
+                                </span>
+                              </td>
+
+                              {/* Actions */}
+                              <td className="py-4 px-4">
+                                <div className="flex gap-2">
+                                  <button
+                                    onClick={() => handleEditItem(item)}
+                                    className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                                  >
+                                    <Edit className="w-4 h-4" />
+                                    <span className="sr-only">Edit</span>
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteMenuItem(item.id)}
+                                    className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                    <span className="sr-only">Delete</span>
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 )}
               </div>
@@ -706,30 +979,37 @@ export default function OutletManage() {
 
         {/* Add Item Modal */}
         {showAddItemModal && (
-          <div className="fixed inset-0 flex items-center justify-center z-50 p-4 bg-black/50">
-            <div className="bg-white rounded-2xl w-full max-w-md shadow-xl">
+          <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
+            <div
+              onClick={() => setShowAddItemModal(false)}
+              className="absolute inset-0 bg-gray-900/10 backdrop-blur-[1px]"
+            />
+
+            <div className="relative bg-white rounded-2xl w-full max-w-md shadow-xl border border-gray-200 animate-fade-in max-h-[90vh] overflow-y-auto">
               <div className="p-6">
-                <div className="flex justify-between mb-6">
+                <div className="flex justify-between items-center mb-6">
                   <div>
-                    <h2 className="text-xl font-bold">Add Menu Item</h2>
-                    <p className="text-sm text-gray-500">to {outlet.name}</p>
+                    <h2 className="text-xl font-bold text-gray-900">Add Menu Item</h2>
+                    <p className="text-sm text-gray-500 mt-1">to {outlet.name}</p>
                   </div>
                   <button
                     onClick={() => setShowAddItemModal(false)}
-                    className="p-2 hover:bg-gray-100 rounded-lg"
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                   >
-                    <X className="w-5 h-5" />
+                    <span className="text-xl text-gray-500 hover:text-gray-700">✕</span>
                   </button>
                 </div>
 
                 <form onSubmit={handleAddMenuItem} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium mb-1">Name</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Item Name
+                    </label>
                     <input
                       type="text"
                       value={newMenuItem.name}
                       onChange={(e) => setNewMenuItem({ ...newMenuItem, name: e.target.value })}
-                      className="w-full p-3 border rounded-lg"
+                      className="w-full p-3 border border-gray-300 rounded-lg"
                       required
                       placeholder="e.g., Jollof Rice"
                     />
@@ -737,24 +1017,29 @@ export default function OutletManage() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium mb-1">Price</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Price (Ksh)
+                      </label>
                       <input
                         type="number"
                         step="0.01"
                         min="0"
                         value={newMenuItem.price}
                         onChange={(e) => setNewMenuItem({ ...newMenuItem, price: e.target.value })}
-                        className="w-full p-3 border rounded-lg"
+                        className="w-full p-3 border border-gray-300 rounded-lg"
                         required
+                        placeholder="0.00"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-1">Category</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Category
+                      </label>
                       <select
                         value={newMenuItem.category}
                         onChange={(e) => setNewMenuItem({ ...newMenuItem, category: e.target.value })}
-                        className="w-full p-3 border rounded-lg"
+                        className="w-full p-3 border border-gray-300 rounded-lg"
                       >
                         <option value="Main Course">Main Course</option>
                         <option value="Side Dish">Side Dish</option>
@@ -765,22 +1050,25 @@ export default function OutletManage() {
                     </div>
                   </div>
 
+                  {/* Image Upload */}
                   <div>
-                    <label className="block text-sm font-medium mb-1">Image (Optional)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Item Image
+                    </label>
                     <div
-                      className={`border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-colors ${
-                        newMenuItem.image_preview 
-                          ? 'border-primary bg-primary/5' 
+                      className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
+                        newMenuItem.image_preview || newMenuItem.image
+                          ? 'border-primary bg-primary/5'
                           : 'border-gray-300 hover:border-gray-400 hover:bg-gray-50'
                       }`}
-                      onClick={() => document.getElementById('itemImg').click()}
+                      onClick={() => document.getElementById('itemFileInput').click()}
                       onDragOver={(e) => {
                         e.preventDefault();
                         e.currentTarget.classList.add('border-primary', 'bg-primary/5');
                       }}
                       onDragLeave={(e) => {
                         e.preventDefault();
-                        if (!newMenuItem.image_preview) {
+                        if (!newMenuItem.image_preview && !newMenuItem.image) {
                           e.currentTarget.classList.remove('border-primary', 'bg-primary/5');
                         }
                       }}
@@ -788,26 +1076,26 @@ export default function OutletManage() {
                         e.preventDefault();
                         const file = e.dataTransfer.files[0];
                         if (file && file.type.startsWith('image/')) {
-                          handleImageUpload(file, 'item');
+                          handleImageUpload(file, "item");
                         }
                       }}
                     >
                       <input
-                        id="itemImg"
+                        id="itemFileInput"
                         type="file"
                         accept="image/*"
                         className="hidden"
                         onChange={(e) => {
                           const file = e.target.files[0];
-                          if (file) handleImageUpload(file, 'item');
+                          if (file) handleImageUpload(file, "item");
                         }}
                       />
 
-                      {newMenuItem.image_preview ? (
+                      {newMenuItem.image_preview || newMenuItem.image ? (
                         <div className="space-y-2">
-                          <div className="relative w-24 h-24 mx-auto">
+                          <div className="relative w-32 h-32 mx-auto">
                             <img
-                              src={newMenuItem.image_preview}
+                              src={newMenuItem.image_preview || newMenuItem.image}
                               alt="Preview"
                               className="w-full h-full object-cover rounded-lg"
                             />
@@ -817,6 +1105,7 @@ export default function OutletManage() {
                                 e.stopPropagation();
                                 setNewMenuItem({
                                   ...newMenuItem,
+                                  image: '',
                                   image_preview: '',
                                   image_file: null
                                 });
@@ -832,13 +1121,15 @@ export default function OutletManage() {
                         </div>
                       ) : (
                         <div className="space-y-2">
-                          <Upload className="w-8 h-8 text-gray-400 mx-auto" />
+                          <div className="text-gray-400 mx-auto w-12 h-12">
+                            <Upload className="w-full h-full" />
+                          </div>
                           <div>
                             <p className="text-sm font-medium text-gray-700">
                               Drag & drop an image here
                             </p>
                             <p className="text-xs text-gray-500 mt-1">
-                              or click to browse (PNG, JPG up to 5MB)
+                              or click to browse (PNG, JPG, JPEG, GIF, WEBP up to 5MB)
                             </p>
                           </div>
                         </div>
@@ -849,31 +1140,184 @@ export default function OutletManage() {
                   <div className="flex items-center gap-2">
                     <input
                       type="checkbox"
-                      id="available"
+                      id="is_available"
                       checked={newMenuItem.is_available}
                       onChange={(e) => setNewMenuItem({ ...newMenuItem, is_available: e.target.checked })}
                       className="rounded"
                     />
-                    <label htmlFor="available" className="text-sm">Available for ordering</label>
+                    <label htmlFor="is_available" className="text-sm text-gray-700">
+                      Available for ordering
+                    </label>
                   </div>
 
-                  <div className="flex gap-3">
+                  <div className="flex gap-3 pt-4">
                     <button
                       type="button"
                       onClick={() => setShowAddItemModal(false)}
-                      className="flex-1 py-3 border rounded-lg hover:bg-gray-50"
+                      className="flex-1 px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
-                      className="flex-1 py-3 bg-primary text-white rounded-lg hover:bg-primary/90"
+                      className="flex-1 px-4 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 font-medium"
                     >
                       Add Item
                     </button>
                   </div>
                 </form>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Edit Item Modal */}
+        {showEditItemModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold">Edit Menu Item</h2>
+                <button
+                  onClick={() => {
+                    setShowEditItemModal(false);
+                    setEditingItem(null);
+                    setNewMenuItem({
+                      name: '',
+                      price: '',
+                      category: 'Main Course',
+                      is_available: true,
+                      image: '',
+                      image_preview: '',
+                      image_file: null
+                    });
+                  }}
+                  className="p-1 hover:bg-gray-100 rounded"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <form onSubmit={handleUpdateItem}>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Item Name *</label>
+                    <input
+                      type="text"
+                      value={newMenuItem.name}
+                      onChange={(e) => setNewMenuItem({ ...newMenuItem, name: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Price (Ksh) *</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={newMenuItem.price}
+                      onChange={(e) => setNewMenuItem({ ...newMenuItem, price: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                    <select
+                      value={newMenuItem.category}
+                      onChange={(e) => setNewMenuItem({ ...newMenuItem, category: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                    >
+                      <option value="Main Course">Main Course</option>
+                      <option value="Appetizer">Appetizer</option>
+                      <option value="Dessert">Dessert</option>
+                      <option value="Beverage">Beverage</option>
+                      <option value="Side Dish">Side Dish</option>
+                    </select>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="edit_is_available"
+                      checked={newMenuItem.is_available}
+                      onChange={(e) => setNewMenuItem({ ...newMenuItem, is_available: e.target.checked })}
+                      className="w-4 h-4"
+                    />
+                    <label htmlFor="edit_is_available" className="text-sm font-medium text-gray-700">
+                      Available for order
+                    </label>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Item Image</label>
+                    <div className="mt-1 flex items-center gap-4">
+                      {newMenuItem.image_preview ? (
+                        <div className="relative">
+                          <img
+                            src={newMenuItem.image_preview}
+                            alt="Preview"
+                            className="w-20 h-20 object-cover rounded-lg"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setNewMenuItem({ ...newMenuItem, image_preview: '', image_file: null })}
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center">
+                          <Package className="w-8 h-8 text-gray-400" />
+                        </div>
+                      )}
+                      <div className="flex-1">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files[0];
+                            if (file) handleImageUpload(file, 'item');
+                          }}
+                          className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">PNG, JPG, GIF up to 5MB</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-6 flex justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowEditItemModal(false);
+                      setEditingItem(null);
+                      setNewMenuItem({
+                        name: '',
+                        price: '',
+                        category: 'Main Course',
+                        is_available: true,
+                        image: '',
+                        image_preview: '',
+                        image_file: null
+                      });
+                    }}
+                    className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  >
+                    Update Item
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}
