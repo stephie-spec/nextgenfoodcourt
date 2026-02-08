@@ -70,6 +70,8 @@ class MenuListResource(Resource):
                 "item_id": menu.item_id,
                 "item_name": menu.item.name if menu.item else None,
                 "image": menu.item.image if menu.item and menu.item.image and menu.item.image.strip() else "default-food.jpg",  
+                "description" : menu.item.description if menu.item else None, 
+                "image_path": menu.item.image if menu.item and menu.item.image and menu.item.image.strip() else "default-food.jpg",
                 "price": float(menu.item.price) if menu.item and menu.item.price else None,
                 "category": menu.item.category_name if menu.item and menu.item.category_name else "Uncategorized",
                 "is_available": menu.item.is_available if menu.item is not None else True,
@@ -84,6 +86,7 @@ class MenuListResource(Resource):
         # Handle form data (multipart/form-data)
         name = request.form.get('name')
         price_str = request.form.get('price')
+        description = request.form.get ( 'description' )
         category = request.form.get('category')
         is_available_str = request.form.get('is_available')
         outlet_id_str = request.form.get('outlet_id')
@@ -117,6 +120,7 @@ class MenuListResource(Resource):
         new_item = Item(
             name=name,
             price=price,
+            description = description,
             category_name=category,
             is_available=is_available,
             image=image_filename
@@ -165,6 +169,8 @@ class MenuResource(Resource):
             "item_id": menu.item_id,
             "item_name": menu.item.name,
             "image": menu.item.image if menu.item and menu.item.image and menu.item.image.strip() else "default-food.jpg",  
+            "description" : menu.item.description if menu.item else None,
+            "image_path": menu.item.image if menu.item and menu.item.image and menu.item.image.strip() else "default-food.jpg",
             "price": menu.item.price
         }, 200
 

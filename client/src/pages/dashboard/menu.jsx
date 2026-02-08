@@ -15,8 +15,8 @@ import { useSession } from 'next-auth/react'; // For authentication purposes.
 export default function MenuPage() {
   const searchParams = useSearchParams();
   const { addToCart, removeFromCart, cartItems, cartTotalItems } = useCart();
-
   const [selectedCuisine, setSelectedCuisine] = useState('All');
+  const [menuOutlets, setMenuOutlets] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [mounted, setMounted] = useState(false);
   const [favourites, setFavourites] = useState({});
@@ -92,36 +92,51 @@ export default function MenuPage() {
     fetchMenuImages();
   }, []);
 
+
   const outletsWithImages = useMemo(() => {
-    return outletsData.map((outlet) => {
+    return menuOutlets.map((outlet) => {
       const backendImage = outletImageMap[outlet.outletId];
-      if (!backendImage) {
-        return outlet;
-      }
-      return {
-        ...outlet,
-        image: backendImage,
-        coverImage: backendImage
-      };
-    });
-  }, [outletImageMap]);
+      return backendImage
+        ? { ...outlet, image: backendImage, coverImage: backendImage }
+        : outlet;
+      });
+    }, [menuOutlets, outletImageMap]);
+
+
+  // const outletsWithImagesAndItems = useMemo(() => {
+  //   return outletsWithImages.map((outlet) => ({
+  //     ...outlet,
+  //     items: (outlet.items || [])
+  //     .filter(item => item && item.name)
+  //     .map((item) => {
+  //       const key = `${outlet.outletName}::${item.name}`.toLowerCase();
+  //       const backendItemImage = itemImageMap[key];
+  //       if (!backendItemImage) {
+  //         return item;
+  //       }
+  //       return {
+  //         ...item,
+  //         image: backendItemImage || item.image
+  //       };
+  //     })
+  //   }));
+  // }, [itemImageMap, outletsWithImages]);
 
   const outletsWithImagesAndItems = useMemo(() => {
-    return outletsWithImages.map((outlet) => ({
-      ...outlet,
-      items: outlet.items.map((item) => {
+  return outletsWithImages.map((outlet) => ({
+    ...outlet,
+    items: (outlet.items || [])
+      .filter(item => item && item.name)
+      .map((item) => {
         const key = `${outlet.outletName}::${item.name}`.toLowerCase();
         const backendItemImage = itemImageMap[key];
-        if (!backendItemImage) {
-          return item;
-        }
         return {
           ...item,
-          image: backendItemImage
-        };
-      })
-    }));
-  }, [itemImageMap, outletsWithImages]);
+          image: backendItemImage || item.image,  // Use backend image if available
+          };
+        })
+      }));
+    }, [outletsWithImages, itemImageMap]);
 
   // Filter outlets based on cuisine and search query
   const filteredOutlets = useMemo(() => {
@@ -149,6 +164,75 @@ export default function MenuPage() {
     addToCart(itemId);
   };
 
+
+// fetch outlets and menu from backend with descriptions
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      const [outletsRes, menuRes] = await Promise.all([
+        fetch('http://localhost:5555/api/outlets'),
+        fetch('http://localhost:5555/api/menu'),
+      ]);
+
+      if (!outletsRes.ok || !menuRes.ok) {
+        throw new Error('Failed to fetch backend menu or outlets');
+      }
+
+      const outletsDataBackend = await outletsRes.json();
+      const menuData = await menuRes.json();
+
+      // normalize outlets list from backend
+      const outletsList = (outletsDataBackend.outlets || outletsDataBackend).reduce((acc, o) => {
+        acc[o.id] = {
+          outletId: o.id,
+          outletName: o.name,
+          cuisine: o.category_name || 'Uncategorized',
+          location: '',
+          rating: 0,
+          deliveryTime: '',
+          image: `http://localhost:5555/uploads/${(o.image_path || 'default-outlet.jpg').replace(/^\/+/, '')}`,
+          coverImage: `http://localhost:5555/uploads/${(o.image_path || 'default-outlet.jpg').replace(/^\/+/, '')}`,
+          items: [],
+        };
+        return acc;
+      }, {});
+
+      // menuData is an array of MenuOutletItem records from backend
+      menuData.forEach((m) => {
+        const outlet = outletsList[m.outlet_id] || {
+          outletId: m.outlet_id,
+          outletName: m.outlet_name || `Outlet ${m.outlet_id}`,
+          cuisine: m.category || 'Uncategorized',
+          image: `http://localhost:5555/uploads/${(m.image_path || 'default-food.jpg').replace(/^\/+/, '')}`,
+          coverImage: `http://localhost:5555/uploads/${(m.image_path || 'default-food.jpg').replace(/^\/+/, '')}`,
+          items: [],
+        };
+
+        outlet.items.push({
+          id: m.item_id,
+          name: m.item_name,
+          price: m.price,
+          image: `http://localhost:5555/uploads/${(m.image_path || 'default-food.jpg').replace(/^\/+/, '')}`,
+          description: m.description || '',
+          calories: m.calories || 0,
+          is_available: m.is_available !== undefined ? m.is_available : true,
+          favourite_count: 0,
+          favourited: false,
+        });
+
+        outletsList[m.outlet_id] = outlet;
+      });
+
+      const menuOutletsArr = Object.values(outletsList);
+      setMenuOutlets(menuOutletsArr);
+    } catch (err) {
+      console.error('Error loading backend menu:', err);
+    }
+  };
+
+  fetchData();
+}, []);
+
   // Handling the favourite toggle - heart button
 
   const handleFavourite = async (itemId) => {
@@ -157,22 +241,103 @@ export default function MenuPage() {
       return;
     }
 
-    const prevFavourited = !!favourites[itemId];
-    setFavourites((prev) => ({
-      ...prev,
-      [itemId]: !prevFavourited
-    }));
+    // Determine current state before update
+    const currentItem = menuOutlets
+      .flatMap(o => o.items)
+      .find(i => i.id === itemId);
+    const isCurrentlyFavourited = currentItem?.favourited || false;
+    const action = isCurrentlyFavourited ? 'Removing' : 'Adding';
+    
+    console.log(`${action} favourite for item ID: ${itemId}`);
+
+    // Update favourited data early - in order to reflect changes before actually making them.
+    setMenuOutlets(prevOutlets =>
+      prevOutlets.map(outlet => ({
+        ...outlet,
+        items: (outlet.items || []).map(item => {
+          if (item.id !== itemId) return item;
+
+          const currentFavourited =
+            item.favourited ?? item.is_favourite ?? false;
+
+          return {
+            ...item,
+            favourited: !currentFavourited,
+            favourite_count: currentFavourited
+              ? item.favourite_count - 1
+              : item.favourite_count + 1,
+          };
+        }),
+      }))
+    );
 
     try {
-      await toggleFavourite(itemId, token);
+      const response = await toggleFavourite(itemId, token);
+      console.log(`✓ ${action} favourite successful:`, response);
+
+      // Authoritative update from backend
+      setMenuOutlets(prevOutlets =>
+        prevOutlets.map(outlet => ({
+          ...outlet,
+          items: (outlet.items || []).map(item =>
+            item.id === itemId
+              ? {
+                  ...item,
+                  favourited: response.favourited,
+                  favourite_count: response.favourite_count,
+                }
+              : item
+          ),
+        }))
+      );
     } catch (error) {
-      setFavourites((prev) => ({
-        ...prev,
-        [itemId]: prevFavourited
-      }));
-      console.error(error);
+      console.error(`✗ ${action} favourite failed:`, error);
     }
   };
+
+
+// Fetch customer's favourites and add into menuOutlets - to persist the red heart button.
+
+useEffect(() => {
+  if (!token || !isLoggedIn) return;
+
+  const fetchCustomerFavourites = async () => {
+    try {
+      const response = await fetch('http://localhost:5555/api/customer/favourites', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch customer favourites');
+      }
+
+      const data = await response.json();
+      const favouritedItemIds = new Set(
+        data['Your Favourites']?.map(item => item.id) || []
+      );
+
+      // Update menuOutlets to mark favourited items
+      setMenuOutlets(prevOutlets =>
+        prevOutlets.map(outlet => ({
+          ...outlet,
+          items: (outlet.items || []).map(item => ({
+            ...item,
+            favourited: favouritedItemIds.has(item.id),
+          })),
+        }))
+      );
+
+      console.log('✓ Loaded customer favourites:', favouritedItemIds);
+    } catch (error) {
+      console.error('Error fetching customer favourites:', error);
+    }
+  };
+
+  fetchCustomerFavourites();
+}, [token, isLoggedIn]);
+
 
   if (!mounted) {
     return null; // Prevent hydration mismatch
@@ -336,8 +501,9 @@ export default function MenuPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
                   {outlet.items.map((item, index) => {
                     const quantity = getItemQuantity(outlet.outletId, item.name);
-                    const itemId = item.id || `${outlet.outletId}-${item.name}`;
-                    const favourited = favourites[itemId] || false;
+                    // const itemId = item.id || `${outlet.outletId}-${item.name}`;
+                    const itemId = item.id;
+                    const favourited = item.favourited || false;
 
                     return (
                       <div
@@ -356,9 +522,9 @@ export default function MenuPage() {
                           <div className="absolute top-3 left-3 bg-primary/90 text-primary-foreground text-sm font-bold px-3 py-1 rounded-full shadow-lg">
                             ${item.price.toFixed(2)}
                           </div>
-                          <div className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-lg">
-                            {item.calories} cal
-                          </div>
+                          {/* <div className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-lg">
+                            {item.calories} cal 
+                          </div> */} {/* Calories removed, not in seed data. Can be added if desired.*/ }
                         </div>
 
                         {/* Card Content */}
