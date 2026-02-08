@@ -43,11 +43,12 @@ const getMenuItemImage = (imagePath) => {
   
   return `${API_BASE}/uploads/${imagePath.replace(/^\/+/, '')}`;
 };
-// FIXED: Helper function to get auth token
+
+// function to get auth token
 function getAuthToken() {
   if (typeof window === 'undefined') return null;
   
-  // Try multiple token storage locations
+  // multiple token storage locations
   let token = localStorage.getItem('token');
   
   if (!token) {
@@ -69,6 +70,7 @@ function getAuthToken() {
   console.log('getAuthToken result:', token ? 'Token found' : 'No token found');
   return token;
 }
+
 export default function OutletManage() {
   const router = useRouter();
   const { id: outletId } = router.query;
@@ -79,6 +81,8 @@ export default function OutletManage() {
   const [menuItems, setMenuItems] = useState([]);
   const [isEditingOutlet, setIsEditingOutlet] = useState(false);
   const [showAddItemModal, setShowAddItemModal] = useState(false);
+  const [showEditItemModal, setShowEditItemModal] = useState(false);
+  const [editingItem, setEditingItem] = useState(null);
 
   const [editedOutlet, setEditedOutlet] = useState({
     name: '',
@@ -93,7 +97,8 @@ export default function OutletManage() {
     category: 'Main Course',
     is_available: true,
     image_file: null,
-    image_preview: ''
+    image_preview: '',
+    image: ''
   });
 
   // Fetch outlet data and menu items
@@ -138,13 +143,31 @@ export default function OutletManage() {
               const itemOutletId = entry.outlet_id || entry.items?.outlet_id;
               return itemOutletId === parseInt(outletId);
             })
-            .map(entry => ({
-              id: entry.items?.item_id || entry.item_id,
-              name: entry.items?.item_name || entry.item_name || 'Unnamed Item',
-              price: Number(entry.items?.price || entry.price || 0),
-              category: entry.items?.category || entry.category || 'Main Course',
-              is_available: entry.items?.is_available ?? entry.is_available ?? true,
-            }));
+            .map(entry => {
+              // Construct proper image URL
+              let imageUrl = 'https://placehold.co/400';
+
+              if (entry.image || entry.items?.image) {
+                const imageFilename = entry.image || entry.items?.image;
+                if (imageFilename.startsWith('http')) {
+                  imageUrl = imageFilename;
+                } else if (imageFilename !== 'default-food.jpg') {
+                  imageUrl = `${API_BASE}/uploads/${imageFilename}`;
+                } else {
+                  imageUrl = `${API_BASE}/uploads/${imageFilename}`;
+                }
+              }
+
+              return {
+                id: entry.items?.item_id || entry.item_id,
+                name: entry.items?.item_name || entry.item_name || 'Unnamed Item',
+                price: Number(entry.items?.price || entry.price || 0),
+                category: entry.items?.category || entry.category || 'Main Course',
+                is_available: entry.items?.is_available ?? entry.is_available ?? true,
+                image: imageUrl,
+                image_filename: entry.image || entry.items?.image || 'default-food.jpg'
+              };
+            });
           
           setMenuItems(thisOutletItems);
         }
