@@ -14,15 +14,34 @@ import {
   Trash2,
   ArrowLeft,
   Save,
-  X
+  X,
+  CheckCircle,
+  XCircle,
+  Edit,
+  Pencil
 } from 'lucide-react';
 
 const API_BASE = 'http://localhost:5555';
 
-// Helper function to get outlet image URL
+// function to get outlet image URL
 const getOutletImage = (imagePath) => {
   const finalImage = imagePath || 'default-outlet.jpg';
   return `${API_BASE}/uploads/${finalImage.replace(/^\/+/, '')}`;
+};
+//function to get menu item image URL
+
+const getMenuItemImage = (imagePath) => {
+  if (!imagePath) return 'https://placehold.co/400';
+  
+  if (imagePath.startsWith('http')) {
+    return imagePath;
+  }
+  
+  if (imagePath === 'default-food.jpg') {
+    return `${API_BASE}/uploads/default-food.jpg`;
+  }
+  
+  return `${API_BASE}/uploads/${imagePath.replace(/^\/+/, '')}`;
 };
 // FIXED: Helper function to get auth token
 function getAuthToken() {
