@@ -37,7 +37,7 @@ export default function DashboardLayout({ children, title }) {
 
   const getSidebarItems = () => {
     const baseItems = [
-      { icon: Home, label: 'Dashboard', href: userRole === 'owner' ? '/dashboard/owner' : '/dashboard/customer' },
+      { icon: Home, label: 'Dashboard', href: userRole === 'owner' ? '/dashboard/owner' : '/dashboard/customer', exact: true },
       { icon: User, label: 'Profile', href: userRole === 'owner' ? '/dashboard/owner/profile' : '/dashboard/customer/profile' },
       { icon: Bell, label: 'Notifications', href: userRole === 'owner' ? '/dashboard/owner/notifications' : '/dashboard/customer/notifications' },
       { icon: Settings, label: 'Settings', href: userRole === 'owner' ? '/dashboard/owner/settings' : '/dashboard/customer/settings' },
@@ -46,9 +46,7 @@ export default function DashboardLayout({ children, title }) {
     if (userRole === 'owner') {
       return [
         ...baseItems,
-        { icon: Package, label: 'My Outlets', href: '/dashboard/owner/outlets' },
         { icon: User, label: 'Staff Management', href: '/dashboard/owner/staff' },
-        { icon: Package, label: 'Orders', href: '/dashboard/owner/orders' },
         { icon: BarChart, label: 'Analytics', href: '/dashboard/owner/analytics' },
       ];
     }
@@ -56,7 +54,6 @@ export default function DashboardLayout({ children, title }) {
     // Customer items
     return [
       ...baseItems,
-      { icon: Package, label: 'My Orders', href: '/dashboard/customer/orders' },
       { icon: Heart, label: 'Favorites', href: '/dashboard/customer/favorites' },
       { icon: CreditCard, label: 'Payment Methods', href: '/dashboard/customer/payments' },
       { icon: Heart, label: 'Address Book', href: '/dashboard/customer/addresses' },
@@ -87,7 +84,9 @@ export default function DashboardLayout({ children, title }) {
                 <nav className="space-y-2">
                   {sidebarItems.map((item, index) => {
                     const Icon = item.icon;
-                    const isActive = pathname === item.href || pathname?.startsWith(item.href);
+                    const isActive = item.exact 
+    ? pathname === item.href // Exact match for dashboard
+    : pathname === item.href || pathname?.startsWith(`${item.href}/`);
                     return (
                       <Link
                         key={index}
