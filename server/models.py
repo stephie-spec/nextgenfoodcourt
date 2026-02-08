@@ -100,6 +100,7 @@ class Item(db.Model):
     name = db.Column(db.String(120), nullable=False)
     image = db.Column(db.String(255))
     price = db.Column(db.Integer, nullable=False)
+    description = db.Column ( db.String ( 255 ))
     category_name = db.Column ( db.String ( 120 ) )
     is_available = db.Column(db.Boolean, default=True)
     favourites = db.Column (db.Integer, default=0, nullable=False)
