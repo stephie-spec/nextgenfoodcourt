@@ -202,13 +202,30 @@ export default function OutletManage() {
             const itemOutletId = entry.outlet_id || entry.items?.outlet_id;
             return itemOutletId === parseInt(outletId);
           })
-          .map(entry => ({
-            id: entry.items?.item_id || entry.item_id,
-            name: entry.items?.item_name || entry.item_name || 'Unnamed Item',
-            price: Number(entry.items?.price || entry.price || 0),
-            category: entry.items?.category || entry.category || 'Main Course',
-            is_available: entry.items?.is_available ?? entry.is_available ?? true,
-          }));
+          .map(entry => {
+            let imageUrl = 'https://placehold.co/400';
+
+            if (entry.image || entry.items?.image) {
+              const imageFilename = entry.image || entry.items?.image;
+              if (imageFilename.startsWith('http')) {
+                imageUrl = imageFilename;
+              } else if (imageFilename !== 'default-food.jpg') {
+                imageUrl = `${API_BASE}/uploads/${imageFilename}`;
+              } else {
+                imageUrl = `${API_BASE}/uploads/${imageFilename}`;
+              }
+            }
+
+            return {
+              id: entry.items?.item_id || entry.item_id,
+              name: entry.items?.item_name || entry.item_name || 'Unnamed Item',
+              price: Number(entry.items?.price || entry.price || 0),
+              category: entry.items?.category || entry.category || 'Main Course',
+              is_available: entry.items?.is_available ?? entry.is_available ?? true,
+              image: imageUrl,
+              image_filename: entry.image || entry.items?.image || 'default-food.jpg'
+            };
+          });
         
         setMenuItems(thisOutletItems);
       }
@@ -274,7 +291,15 @@ export default function OutletManage() {
       return;
     }
 
+    const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      alert("Invalid file type. Please upload PNG, JPEG, GIF, or WebP images.");
+      return;
+    }
+
     const reader = new FileReader();
+
+    
 
     reader.onloadend = () => {
       if (type === 'outlet') {
