@@ -232,6 +232,7 @@ export default function SpecialOffersPage() {
                     fill
                     sizes="(max-width: 1024px) 100vw, 540px"
                     className="object-cover"
+                    unoptimized
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
                   <div className="absolute top-4 left-4 bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-semibold">
@@ -319,6 +320,7 @@ export default function SpecialOffersPage() {
                       fill
                       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 280px"
                       className="object-cover group-hover:scale-105 transition-transform"
+                      unoptimized
                     />
                     <div className="absolute top-3 left-3 bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full">
                       {offer.discount}% OFF
@@ -339,6 +341,7 @@ export default function SpecialOffersPage() {
                             width={24}
                             height={24}
                             className="object-cover"
+                            unoptimized
                           />
                         </div>
                         {offer.outlet}
