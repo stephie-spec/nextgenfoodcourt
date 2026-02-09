@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 import DashboardLayout from '@/components/DashboardLayout';
 import StatCard from '@/components/StatCard';
 import OutletCard from '@/components/OutletCard';
@@ -11,6 +12,7 @@ import { apiHelper } from '@/lib/apiHelper';
 import { Search, Filter, Plus, Package, DollarSign, Users, TrendingUp, Store, ShoppingBag, Clock, ChefHat, Upload, CheckCircle, XCircle, Edit, Pencil, Trash2 } from 'lucide-react';
 
 export default function OwnerDashboard() {
+  const { data: session, status } = useSession();
   const [activeTab, setActiveTab] = useState('overview');
   const [outlets, setOutlets] = useState([]);
   const [orders, setOrders] = useState([]);
@@ -65,100 +67,194 @@ export default function OwnerDashboard() {
     { id: 'menu', label: 'Menu Items' },
   ];
 
-  useEffect(() => {
-    const token = localStorage.getItem('auth_token');
-    setLoading(true);
+  // Toast notification function
+  const showToast = (message, type = 'info') => {
+    // Remove any existing toasts
+    const existingToasts = document.querySelectorAll('.custom-toast');
+    existingToasts.forEach(toast => toast.remove());
 
-    let outletsData, ordersData;
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.className = `custom-toast fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg flex items-center gap-3 transform transition-all duration-300 translate-y-0 opacity-100 ${getToastClasses(type)}`;
 
-    apiHelper.getOutlets()
-      .then(data => {
-        outletsData = data;
-        setOutlets(outletsData);
-        return apiHelper.getOrders();
-      })
-      .then(data => {
-        ordersData = data;
-        setOrders(ordersData);
+    // Add icon based on type
+    const icon = getToastIcon(type);
+    toast.innerHTML = `
+    ${icon}
+    <span class="font-medium">${message}</span>
+    <button class="ml-4 text-lg hover:opacity-80" onclick="this.parentElement.remove()">&times;</button>
+  `;
 
-        // Fetch and normalize menu items
-        return fetch('http://localhost:5555/api/menu', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        })
-          .then(response => {
-            if (!response.ok) {
-              throw new Error(`Failed to fetch menu: ${response.status} - ${response.statusText}`);
-            }
-            return response.json();
-          })
-          .then(rawMenuData => {
-            // Normalize the nested /api/menu response into flat items
-            const normalizedItems = rawMenuData.map(entry => {
-              // Construct proper image URL
-              let imageUrl = 'https://placehold.co/400'; // Default fallback
+    document.body.appendChild(toast);
 
-              if (entry.image || entry.items?.image) {
-                const imageFilename = entry.image || entry.items?.image;
-                // Check if it's already a full URL or a filename
-                if (imageFilename.startsWith('http')) {
-                  imageUrl = imageFilename;
-                } else if (imageFilename !== 'default-food.jpg') {
-                  // Construct URL to your Flask static folder
-                  imageUrl = `http://localhost:5555/uploads/${imageFilename}`;
-                } else {
-                  // Use default image
-                  imageUrl = `http://localhost:5555/uploads/${imageFilename}`;
-                }
-              }
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+      if (toast.parentElement) {
+        toast.style.transform = 'translateY(-20px)';
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+      }
+    }, 5000);
+  };
 
-              return {
-                id: entry.items?.item_id || entry.item_id || null,
-                name: entry.items?.item_name || entry.item_name || 'Unnamed Item',
-                price: Number(entry.items?.price || entry.price || 0),
-                category: entry.items?.category || entry.category || 'Uncategorized',
-                is_available: entry.items?.is_available ?? entry.is_available ?? true,
-                outlet_id: entry.outlet_id,
-                outlet_name: entry.outlet_name || 'Unknown Outlet',
-                image: imageUrl, // Use constructed URL
-                image_filename: entry.image || entry.items?.image || 'default-food.jpg' // Keep filename for reference
-              };
-            });
+  const getToastClasses = (type) => {
+    switch (type) {
+      case 'success':
+        return 'bg-green-50 border border-green-200 text-green-800';
+      case 'error':
+        return 'bg-red-50 border border-red-200 text-red-800';
+      case 'warning':
+        return 'bg-yellow-50 border border-yellow-200 text-yellow-800';
+      case 'info':
+        return 'bg-blue-50 border border-blue-200 text-blue-800';
+      default:
+        return 'bg-gray-50 border border-gray-200 text-gray-800';
+    }
+  };
 
-            console.log('Normalized menu items:', normalizedItems);
+  const getToastIcon = (type) => {
+    switch (type) {
+      case 'success':
+        return '<svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
+      case 'error':
+        return '<svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>';
+      case 'warning':
+        return '<svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.998-.833-2.732 0L4.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path></svg>';
+      case 'info':
+        return '<svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+      default:
+        return '<svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+    }
+  };
 
-            setMenuItems(normalizedItems);
+useEffect(() => {
+  // Early return if no session yet
+  if (!session || status === 'loading') {
+    setLoading(false);
+    return;
+  }
 
-            // Calculate stats using normalized menu data
-            const totalRevenue = ordersData.reduce((sum, order) => sum + (order.total || 0), 0);
-            const totalOrders = ordersData.length;
-            const activeItems = normalizedItems.filter(item => item.is_available).length;
+  // Get auth data - prefer session, fallback to localStorage
+  const token = session?.accessToken || localStorage.getItem('auth_token');
+  const ownerId = session?.user?.id || localStorage.getItem('user_id');
+  const userRole = session?.user?.role || localStorage.getItem('user_role');
 
-            const avgRating = outletsData.length > 0
-              ? (outletsData.reduce((sum, outlet) => sum + (outlet.rating || 4.5), 0) / outletsData.length).toFixed(1)
-              : 0;
+  console.log('DEBUG - OwnerDashboard useEffect:', {
+    tokenExists: !!token,
+    ownerId,
+    userRole,
+    sessionExists: !!session
+  });
 
-            setStats({
-              totalRevenue,
-              totalOrders,
-              activeItems,
-              avgRating: parseFloat(avgRating)
-            });
+  // Critical auth check - if anything essential is missing, stop and let AuthGuard handle redirect
+  if (!token || !ownerId || userRole !== 'owner') {
+    console.warn('Missing required auth data (token, ownerId, or role) - dashboard will not load data');
+    setLoading(false);
+    // Optional: trigger redirect here if you want extra safety
+    // router.push('/login');
+    return;
+  }
 
-            setLoading(false);
-          })
-          .catch(error => {
-            console.error('Error fetching or processing menu:', error);
-            setMenuItems([]);
-            setLoading(false);
-          });
-      })
-      .catch(error => {
-        console.error('Error fetching outlets or orders:', error);
-        setLoading(false);
+  let isMounted = true;
+  setLoading(true);
+
+  const fetchDashboardData = async () => {
+    try {
+      // Fetch owner's outlets
+      const outletsData = await apiHelper.getOwnerOutlets(token);
+      if (!isMounted) return;
+      setOutlets(outletsData);
+
+      // Fetch owner's orders (similar pattern to customer orders)
+      const ordersData = await apiHelper.getOrders(token, ownerId);
+      if (!isMounted) return;
+      setOrders(ordersData);
+
+      // Fetch all menu items and filter for owner's outlets
+      const menuResponse = await fetch(`${API_BASE}/api/menu`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
       });
-  }, []);
+
+      if (!menuResponse.ok) {
+        throw new Error(`Menu fetch failed: ${menuResponse.status}`);
+      }
+
+      const rawMenuData = await menuResponse.json();
+
+      // Get owner's outlet IDs
+      const ownerOutletIds = outletsData.map((outlet) => outlet.id);
+
+      // Filter menu items to only those belonging to owner's outlets
+      const filteredMenuData = rawMenuData.filter((entry) =>
+        entry.outlet_id && ownerOutletIds.includes(entry.outlet_id)
+      );
+
+      console.log(`Filtered ${filteredMenuData.length} menu items from ${rawMenuData.length} total`);
+
+      // Normalize menu items (same as before)
+      const normalizedItems = filteredMenuData.map((entry) => {
+        let imageUrl = 'https://placehold.co/400';
+        const imageFilename = entry.image || entry.items?.image || 'default-food.jpg';
+
+        if (imageFilename && imageFilename !== 'default-food.jpg') {
+          imageUrl = `http://localhost:5555/uploads/${imageFilename}`;
+        } else if (imageFilename.startsWith('http')) {
+          imageUrl = imageFilename;
+        }
+
+        return {
+          id: entry.items?.item_id || entry.item_id || null,
+          name: entry.items?.item_name || entry.item_name || 'Unnamed Item',
+          price: Number(entry.items?.price || entry.price || 0),
+          category: entry.items?.category || entry.category || 'Uncategorized',
+          is_available: entry.items?.is_available ?? entry.is_available ?? true,
+          outlet_id: entry.outlet_id,
+          outlet_name: entry.outlet_name || 'Unknown Outlet',
+          image: imageUrl,
+          image_filename: imageFilename
+        };
+      });
+
+      if (!isMounted) return;
+      setMenuItems(normalizedItems);
+
+      // Calculate stats
+      const totalRevenue = ordersData.reduce((sum, order) => sum + (order.total || 0), 0);
+      const totalOrders = ordersData.length;
+      const activeItems = normalizedItems.filter((item) => item.is_available).length;
+      const avgRating =
+        outletsData.length > 0
+          ? (outletsData.reduce((sum, outlet) => sum + (outlet.rating || 4.5), 0) / outletsData.length).toFixed(1)
+          : '0.0';
+
+      if (!isMounted) return;
+      setStats({
+        totalRevenue,
+        totalOrders,
+        activeItems,
+        avgRating: parseFloat(avgRating)
+      });
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+      // Optional: show toast/error message to user
+      // showToast('Failed to load dashboard data', 'error');
+    } finally {
+      if (isMounted) {
+        setLoading(false);
+      }
+    }
+  };
+
+  fetchDashboardData();
+
+  // Cleanup
+  return () => {
+    isMounted = false;
+  };
+}, [session, status]);  // Dependencies: re-run when session or status changes
 
   // Filtered and sorted orders
   const filteredOrders = orders
@@ -303,7 +399,13 @@ export default function OwnerDashboard() {
         if (menuResponse.ok) {
           const rawMenuData = await menuResponse.json();
 
-          newMenuItems = rawMenuData.map(entry => ({
+          const ownerOutletIds = outlets.map(outlet => outlet.id);
+
+          const filteredMenuData = rawMenuData.filter(entry => {
+    return ownerOutletIds.includes(entry.outlet_id);
+  });
+
+          newMenuItems = filteredMenuData.map(entry => ({
             id: entry.item_id,
             name: entry.item_name || 'Unnamed Item',
             price: entry.price || 0,
@@ -317,7 +419,7 @@ export default function OwnerDashboard() {
           console.log('Refreshed menu items after add:', newMenuItems);
         } else {
           console.warn('Failed to refresh menu after adding item:', menuResponse.status);
-          alert('Item added successfully, but could not refresh the list. Please refresh the page manually.');
+          showToast('Item added successfully, but could not refresh the list. Please refresh the page manually.', 'warning');
         }
 
         if (newMenuItems.length > 0) {
@@ -337,13 +439,13 @@ export default function OwnerDashboard() {
         });
 
         setShowAddItemModal(false);
-        alert('Menu item added successfully!');
+        showToast('Menu item added successfully!', 'success');
       } else {
         throw new Error('Failed to add menu item');
       }
     } catch (error) {
       console.error('Error adding menu item:', error);
-      alert('Failed to add menu item. Please try again.');
+      showToast('Failed to add menu item. Please try again.', 'error');
     }
   };
 
@@ -364,6 +466,7 @@ export default function OwnerDashboard() {
       const formData = new FormData();
       formData.append('name', newOutlet.name);
       formData.append('category_name', newOutlet.category_name);
+      formData.append('owner_id', ownerId);
 
       // Add image file if exists
       if (newOutlet.image_file) {
@@ -387,8 +490,10 @@ export default function OwnerDashboard() {
         console.log("Outlet added successfully:", result);
 
         // Refresh outlets list
-        const outletsData = await apiHelper.getOutlets();
+        const outletsData = await apiHelper.getOwnerOutlets();
         setOutlets(outletsData);
+
+        await refreshMenuItemsForOwner(outletsData);
 
         // Reset form
         setNewOutlet({
@@ -399,32 +504,32 @@ export default function OwnerDashboard() {
         });
 
         setShowAddOutletModal(false);
-        alert("Outlet added successfully!");
+        showToast('Outlet added successfully!', 'success');
       } else {
         const errorData = await response
           .json()
           .catch(() => ({ message: "Unknown error" }));
 
         console.error("Server error:", errorData);
-        alert(`Failed to add outlet: ${errorData.message || response.statusText}`);
+        showToast(`Failed to add outlet: ${errorData.message || response.statusText}`, 'error');
       }
     } catch (error) {
       console.error("Error adding outlet:", error);
-      alert(`Failed to add outlet: ${error.message}`);
+      showToast(`Failed to add outlet: ${error.message}`, 'error');
     }
   };
 
 
   const handleImageUpload = (file, type = "item") => {
     if (file.size > 5 * 1024 * 1024) {
-      alert("File size too large. Please choose an image under 5MB.");
+      showToast('File size too large. Please choose an image under 5MB.', 'error');
       return;
     }
 
     // File type validation
     const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp'];
     if (!allowedTypes.includes(file.type)) {
-      alert("Invalid file type. Please upload PNG, JPEG, GIF, or WebP images.");
+      showToast('Invalid file type. Please upload PNG, JPEG, GIF, or WebP images.', 'error');
       return;
     }
 
@@ -549,13 +654,13 @@ export default function OwnerDashboard() {
         });
         setEditingItem(null);
         setShowEditItemModal(false);
-        alert('Menu item updated successfully!');
+        showToast('Menu item updated successfully!', 'success');
       } else {
         throw new Error('Failed to update menu item');
       }
     } catch (error) {
       console.error('Error updating menu item:', error);
-      alert('Failed to update menu item. Please try again.');
+      showToast('Failed to update menu item. Please try again.', 'error');
     }
   };
 
@@ -577,13 +682,13 @@ export default function OwnerDashboard() {
       if (response.ok) {
         // Remove item from state
         setMenuItems(prevItems => prevItems.filter(item => item.id !== itemId));
-        alert('Menu item deleted successfully!');
+        showToast('Menu item deleted successfully!', 'success');
       } else {
         throw new Error('Failed to delete menu item');
       }
     } catch (error) {
       console.error('Error deleting menu item:', error);
-      alert('Failed to delete menu item. Please try again.');
+      showToast('Failed to delete menu item. Please try again.', 'error');
     }
   };
 
@@ -1489,22 +1594,6 @@ export default function OwnerDashboard() {
                       </div>
                     </div>
 
-                    {/* Info Box */}
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                      <div className="flex gap-2">
-                        <div className="text-blue-600 mt-0.5">
-                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                          </svg>
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-sm font-medium text-blue-900">Auto-generated fields</p>
-                          <p className="text-xs text-blue-700 mt-1">
-                            The outlet ID and owner ID will be automatically assigned when you create the outlet.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
 
                     <div className="flex gap-3 pt-4">
                       <button
