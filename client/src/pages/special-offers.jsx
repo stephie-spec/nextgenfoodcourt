@@ -172,8 +172,18 @@ export default function SpecialOffersPage() {
     ];
   }, [offers]);
 
-  const featuredOffer = filteredOffers[0];
-  const secondaryOffers = filteredOffers.slice(1);
+  const featuredOffer = useMemo(() => {
+    // Find tibs dish first, otherwise use first filtered offer
+    const tibsOffer = filteredOffers.find(offer => 
+      offer.title.toLowerCase().includes('tibs')
+    );
+    return tibsOffer || filteredOffers[0];
+  }, [filteredOffers]);
+
+  const secondaryOffers = useMemo(() => {
+    // Exclude the featured offer from secondary list
+    return filteredOffers.filter(offer => offer.id !== featuredOffer?.id);
+  }, [filteredOffers, featuredOffer]);
 
   return (
     <div className="min-h-screen bg-background pt-20">
