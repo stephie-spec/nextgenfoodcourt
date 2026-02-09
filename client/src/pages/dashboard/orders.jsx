@@ -175,7 +175,7 @@ export default function CustomerOrdersPage() {
                               <span className="text-foreground">
                                 {item.name} <span className="text-muted-foreground">×{item.quantity}</span>
                               </span>
-                              <span className="font-semibold">${(item.price * item.quantity).toFixed(2)}</span>
+                              <span className="font-semibold">Ksh{(item.price * item.quantity).toFixed(2)}</span>
                             </div>
                           ))}
                         </div>
@@ -186,7 +186,7 @@ export default function CustomerOrdersPage() {
                     <div className="md:text-right">
                       <p className="text-xs text-muted-foreground mb-1">Total Amount</p>
                       <p className="text-2xl font-bold text-primary">
-                        ${order.total?.toFixed(2) || (order.items?.[0]?.price * order.quantity).toFixed(2) || '0.00'}
+                        Ksh{order.total?.toFixed(2) || (order.items?.[0]?.price * order.quantity).toFixed(2) || '0.00'}
                       </p>
                       {order.estimated && (
                         <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
