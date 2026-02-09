@@ -83,6 +83,7 @@ export default function Sidebar() {
                 src="/qr-code.jpg"
                 alt="QR code to download app"
                 fill
+                sizes="80px"
                 className="object-contain"
               />
             </div>

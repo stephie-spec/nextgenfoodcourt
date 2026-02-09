@@ -241,7 +241,7 @@ export default function Navbar() {
                   </button>
                   <button
                     onClick={() => handleAuthNavigation('register')}
-                    className="flex items-center gap-1 px-3 py-2 bg-accent text-primary-foreground text-xs sm:text-sm font-medium rounded-full hover:bg-accent/90 transition-colors shadow-md"
+                    className="flex items-center gap-1 px-3 py-2 bg-gradient-to-r from-primary via-accent to-primary text-primary-foreground text-xs sm:text-sm font-medium rounded-full hover:shadow-lg hover:scale-105 transition-all shadow-md"
                   >
                     <UserPlus className="w-4 h-4" />
                     <span className="hidden sm:inline">Sign Up</span>

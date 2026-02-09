@@ -20,7 +20,10 @@ export default function PopularItems() {
       try {
         const response = await fetch('/api/menu');
         if (!response.ok) {
-          throw new Error('Failed to fetch items');
+          console.warn('Popular items fetch failed:', response.status);
+          setPopularDishes([]);
+          setLoading(false);
+          return;
         }
         const data = await response.json();
         const processedDishes = data.slice(0, 4).map((menuItem) => ({
@@ -100,6 +103,7 @@ export default function PopularItems() {
                       src={dish.image || "/placeholder.svg"}
                       alt={dish.name}
                       fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                       className="object-cover group-hover:scale-110 transition-transform duration-300"
                       unoptimized
                     />
@@ -145,7 +149,7 @@ export default function PopularItems() {
                     {/* Price and cart controls */}
                     <div className="flex items-center justify-between pt-2 border-t border-border">
                       <span className="text-lg font-bold text-primary">
-                        ${dish.price.toFixed(2)}
+                        Ksh{dish.price.toFixed(2)}
                       </span>
 
                       {quantity > 0 ? (

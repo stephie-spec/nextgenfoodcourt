@@ -195,7 +195,7 @@ export default function CartPage() {
                       <X className="w-4 h-4 text-muted-foreground hover:text-foreground" />
                     </button>
                   </div>
-                  <p className="text-green-600 text-sm">-${promoDiscount.toFixed(2)} discount</p>
+                  <p className="text-green-600 text-sm">-Ksh{promoDiscount.toFixed(2)} discount</p>
                 </div>
               )}
               
@@ -240,7 +240,7 @@ export default function CartPage() {
               {deliveryFee > 0 && (
                 <div className="mt-3 p-2 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
                   <p className="text-xs text-yellow-600">
-                    Add ${(25 - subtotal).toFixed(2)} more for free delivery!
+                    Add Ksh{(25 - subtotal).toFixed(2)} more for free delivery!
                   </p>
                 </div>
               )}
@@ -262,7 +262,7 @@ export default function CartPage() {
                       <span className="text-sm font-medium text-foreground">{addon.name}</span>
                       <p className="text-xs text-muted-foreground">{addon.outlet}</p>
                     </div>
-                    <span className="text-sm font-bold text-primary">+${addon.price.toFixed(2)}</span>
+                    <span className="text-sm font-bold text-primary">+Ksh{addon.price.toFixed(2)}</span>
                   </button>
                 ))}
               </div>
@@ -292,6 +292,7 @@ export default function CartPage() {
                     src={item.image}
                     alt={item.name}
                     fill
+                    sizes="(max-width: 640px) 96px, 128px"
                     className="object-cover"
                   />
                 </div>
@@ -346,7 +347,7 @@ export default function CartPage() {
 
                     {/* Item Total */}
                     <span className="text-lg font-bold text-primary">
-                      ${(item.price * item.quantity).toFixed(2)}
+                      Ksh{(item.price * item.quantity).toFixed(2)}
                     </span>
                   </div>
                 </div>
@@ -380,7 +381,7 @@ export default function CartPage() {
                       {item.quantity}
                     </span>
                     <span className="flex-1 truncate text-muted-foreground">{item.name}</span>
-                    <span className="font-semibold">${(item.price * item.quantity).toFixed(2)}</span>
+                    <span className="font-semibold">Ksh{(item.price * item.quantity).toFixed(2)}</span>
                   </div>
                 ))}
               </div>
@@ -389,25 +390,25 @@ export default function CartPage() {
               <div className="space-y-3 py-4 border-t border-b border-border mb-4">
                 <div className="flex justify-between text-muted-foreground">
                   <span>Subtotal</span>
-                  <span>${subtotal.toFixed(2)}</span>
+                  <span>Ksh{subtotal.toFixed(2)}</span>
                 </div>
                 {promoDiscount > 0 && (
                   <div className="flex justify-between text-green-600">
                     <span>Discount</span>
-                    <span>-${promoDiscount.toFixed(2)}</span>
+                    <span>-Ksh{promoDiscount.toFixed(2)}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-muted-foreground">
                   <span>Delivery</span>
-                  <span>{deliveryFee > 0 ? `$${deliveryFee.toFixed(2)}` : 'FREE'}</span>
+                  <span>{deliveryFee > 0 ? `Ksh${deliveryFee.toFixed(2)}` : 'FREE'}</span>
                 </div>
                 <div className="flex justify-between text-muted-foreground">
                   <span>Tax (8%)</span>
-                  <span>${tax.toFixed(2)}</span>
+                  <span>Ksh{tax.toFixed(2)}</span>
                 </div>
                 <div className="border-t border-border pt-3 flex justify-between text-lg font-bold">
                   <span>Total</span>
-                  <span className="text-primary">${total.toFixed(2)}</span>
+                  <span className="text-primary">Ksh{total.toFixed(2)}</span>
                 </div>
               </div>
 

@@ -23,7 +23,10 @@ export default function FeaturedItems() {
       try {
         const response = await fetch('/api/menu');
         if (!response.ok) {
-          throw new Error('Failed to fetch items');
+          console.warn('Featured items fetch failed:', response.status);
+          setItems([]);
+          setLoading(false);
+          return;
         }
         const data = await response.json();
         const processedItems = data.slice(0, 8).map((menuItem) => ({
@@ -104,6 +107,7 @@ export default function FeaturedItems() {
                       src={item.image || "/placeholder.svg"}
                       alt={item.name}
                       fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                       className="object-cover group-hover:scale-110 transition-transform duration-300"
                       unoptimized
                     />
@@ -142,7 +146,7 @@ export default function FeaturedItems() {
                     {/* Price and cart controls */}
                     <div className="flex items-end justify-between pt-2 border-t border-border">
                       <span className="text-xl font-bold text-primary">
-                        ${item.price.toFixed(2)}
+                        Ksh{item.price.toFixed(2)}
                       </span>
 
                       {quantity > 0 ? (

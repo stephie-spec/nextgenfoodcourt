@@ -59,26 +59,34 @@ class MenuListResource(Resource):
         """
         Get all menu items (outlet ↔ item) with full item details
         """
-        menu_items = MenuOutletItem.query.all()
-        if not menu_items:
-            return {"message": "No menu items found"}, 404
+        try:
+            menu_items = MenuOutletItem.query.all()
+            if not menu_items:
+                return {"message": "No menu items found"}, 404
 
-        return [
-            {
-                "id": menu.id,
-                "outlet_id": menu.outlet_id,
-                "outlet_name": menu.outlet.name if menu.outlet else None,
-                "item_id": menu.item_id,
-                "item_name": menu.item.name if menu.item else None,
-                "image": menu.item.image if menu.item and menu.item.image and menu.item.image.strip() else "default-food.jpg",  
-                "description" : menu.item.description if menu.item else None, 
-                "image_path": menu.item.image if menu.item and menu.item.image and menu.item.image.strip() else "default-food.jpg",
-                "price": float(menu.item.price) if menu.item and menu.item.price else None,
-                "category": menu.item.category_name if menu.item and menu.item.category_name else "Uncategorized",
-                "is_available": menu.item.is_available if menu.item is not None else True,
-            }
-            for menu in menu_items
-        ], 200
+            result = []
+            for menu in menu_items:
+                if not menu.outlet or not menu.item:
+                    continue  # Skip incomplete menu items
+                
+                result.append({
+                    "id": menu.id,
+                    "outlet_id": menu.outlet_id,
+                    "outlet_name": menu.outlet.name,
+                    "item_id": menu.item_id,
+                    "item_name": menu.item.name,
+                    "image": menu.item.image if menu.item.image and menu.item.image.strip() else "default-food.jpg",  
+                    "description": menu.item.description or "", 
+                    "image_path": menu.item.image if menu.item.image and menu.item.image.strip() else "default-food.jpg",
+                    "price": float(menu.item.price) if menu.item.price else 0.0,
+                    "category": menu.item.category_name or "Uncategorized",
+                    "is_available": menu.item.is_available if menu.item.is_available is not None else True,
+                })
+            
+            return result, 200
+        except Exception as e:
+            print(f"Error in MenuListResource.get(): {str(e)}")
+            return {"error": "Internal Server Error", "message": str(e)}, 500
 
     def post(self):
         """
