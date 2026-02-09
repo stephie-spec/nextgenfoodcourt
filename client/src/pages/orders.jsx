@@ -41,7 +41,7 @@ export default function OrdersPage() {
     },
   ];
 
-  // Amber theme for orders section
+  // Amber theme for orders content
   const amberTheme = {
     '--primary': '#FDBA74',
     '--primary-foreground': '#000000',
@@ -52,6 +52,7 @@ export default function OrdersPage() {
     '--ring': '#FDBA74',
     '--border': 'color-mix(in oklab, #FDBA74 12%, var(--background))',
   };
+
 
   const isLoggedIn = status === 'authenticated';
   const token = session?.accessToken || null;
@@ -414,10 +415,10 @@ export default function OrdersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background" style={amberTheme}>
+    <div className="min-h-screen bg-background">
       <Navbar />
 
-      <div className="flex min-h-screen bg-background">
+      <div className="flex min-h-screen bg-background" style={amberTheme}>
         {/* Left Sidebar - Promotional Ads */}
         <aside className="hidden xl:block w-80 p-6 bg-card border-r border-border overflow-y-auto">
           <div className="sticky top-24 space-y-6">

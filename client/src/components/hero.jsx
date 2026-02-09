@@ -181,7 +181,7 @@ useEffect(() => {
                 className="flex items-center justify-center gap-2 px-8 py-4 border-2 border-primary text-primary font-semibold rounded-xl hover:bg-primary/10 transition-colors"
               >
                 <Calendar className="w-5 h-5" />
-                Book a Table
+                Reservation
               </button>
             </div>
           </div>
