@@ -86,12 +86,19 @@ export default function OrdersPage() {
           organizedMenu[outletId] = {
             outletId,
             outletName,
-            items: []
+            items: [],
+            outletImage: null,
+            itemCount: 0
           };
         }
 
         if (menuItem.category) {
           categorySet.add(menuItem.category);
+        }
+
+        organizedMenu[outletId].itemCount += 1;
+        if (organizedMenu[outletId].itemCount === 2) {
+          organizedMenu[outletId].outletImage = getItemImage(menuItem.image_path);
         }
 
         // Add item to outlet
@@ -515,8 +522,20 @@ export default function OrdersPage() {
             {filteredOutlets.length > 0 ? (
               filteredOutlets.map((outlet) => (
                 <section key={outlet.outletId} className="space-y-6">
-                  <div className="rounded-2xl border border-border bg-gradient-to-r from-primary/10 via-background to-background p-6">
-                    <div className="flex items-start justify-between gap-4">
+                  <div className="relative overflow-hidden rounded-2xl border border-border p-6">
+                    {outlet.outletImage && (
+                      <div className="absolute inset-0">
+                        <Image
+                          src={outlet.outletImage}
+                          alt={`${outlet.outletName} dishes`}
+                          fill
+                          sizes="(max-width: 1024px) 100vw, 768px"
+                          className="object-cover"
+                          unoptimized
+                        />
+                      </div>
+                    )}
+                    <div className="relative flex items-start justify-between gap-4">
                       <div>
                         <h2 className="text-2xl font-bold text-foreground">{outlet.outletName}</h2>
                         <p className="text-sm text-muted-foreground">{outlet.items.length} items available</p>
