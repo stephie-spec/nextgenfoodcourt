@@ -30,7 +30,7 @@ export default function OrdersPage() {
     {
       id: 'freedeliv',
       title: 'Free Delivery',
-      description: 'Orders over $30 qualify for free delivery.',
+      description: 'Orders over Ksh30 qualify for free delivery.',
       code: 'FREEDELIV',
     },
     {
@@ -41,15 +41,16 @@ export default function OrdersPage() {
     },
   ];
 
-  const firebrickTheme = {
-    '--primary': '#cd5c5c',
-    '--primary-foreground': '#ffffff',
-    '--secondary': 'color-mix(in oklab, #cd5c5c 8%, var(--background))',
+  // Amber theme for orders section
+  const amberTheme = {
+    '--primary': '#FDBA74',
+    '--primary-foreground': '#000000',
+    '--secondary': 'color-mix(in oklab, #FDBA74 10%, var(--background))',
     '--secondary-foreground': 'var(--foreground)',
-    '--accent': 'color-mix(in oklab, #cd5c5c 15%, var(--background))',
+    '--accent': 'color-mix(in oklab, #FDBA74 20%, var(--background))',
     '--accent-foreground': 'var(--foreground)',
-    '--ring': '#cd5c5c',
-    '--border': 'color-mix(in oklab, #cd5c5c 8%, var(--background))',
+    '--ring': '#FDBA74',
+    '--border': 'color-mix(in oklab, #FDBA74 12%, var(--background))',
   };
 
   const isLoggedIn = status === 'authenticated';
@@ -303,7 +304,7 @@ export default function OrdersPage() {
                 <p className="text-xs text-muted-foreground">{item.outletName}</p>
               </div>
               <div className="text-right">
-                <p className="font-semibold">${(item.price * item.quantity).toFixed(2)}</p>
+                <p className="font-semibold">Ksh{(item.price * item.quantity).toFixed(2)}</p>
                 <p className="text-xs text-muted-foreground">x{item.quantity}</p>
               </div>
               <button
@@ -347,7 +348,7 @@ export default function OrdersPage() {
           ) : (
             <div className="p-2 bg-green-500/10 border border-green-500/30 rounded-lg text-sm">
               <p className="text-green-600 font-semibold">Code Applied!</p>
-              <p className="text-green-600 text-xs">-${promoDiscount.toFixed(2)}</p>
+              <p className="text-green-600 text-xs">-Ksh{promoDiscount.toFixed(2)}</p>
             </div>
           )}
         </div>
@@ -357,25 +358,25 @@ export default function OrdersPage() {
         <div className="space-y-2 py-4 border-b border-border">
           <div className="flex justify-between text-sm text-muted-foreground">
             <span>Subtotal</span>
-            <span>${subtotal.toFixed(2)}</span>
+            <span>Ksh{subtotal.toFixed(2)}</span>
           </div>
           {promoDiscount > 0 && (
             <div className="flex justify-between text-sm text-green-600">
               <span>Discount</span>
-              <span>-${promoDiscount.toFixed(2)}</span>
+              <span>-Ksh{promoDiscount.toFixed(2)}</span>
             </div>
           )}
           <div className="flex justify-between text-sm text-muted-foreground">
             <span>Delivery</span>
-            <span>{deliveryFee > 0 ? `$${deliveryFee.toFixed(2)}` : 'FREE'}</span>
+            <span>{deliveryFee > 0 ? `Ksh${deliveryFee.toFixed(2)}` : 'FREE'}</span>
           </div>
           <div className="flex justify-between text-sm text-muted-foreground">
             <span>Tax (8%)</span>
-            <span>${tax.toFixed(2)}</span>
+            <span>Ksh{tax.toFixed(2)}</span>
           </div>
           <div className="flex justify-between font-bold text-lg pt-2 border-t border-border">
             <span>Total</span>
-            <span className="text-primary">${total.toFixed(2)}</span>
+            <span className="text-primary">Ksh{total.toFixed(2)}</span>
           </div>
         </div>
       )}
@@ -413,7 +414,7 @@ export default function OrdersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background" style={firebrickTheme}>
+    <div className="min-h-screen bg-background" style={amberTheme}>
       <Navbar />
 
       <div className="flex min-h-screen bg-background">
@@ -572,7 +573,7 @@ export default function OrdersPage() {
                               unoptimized
                             />
                             <div className="absolute top-3 left-3 bg-primary/90 text-primary-foreground text-sm font-bold px-3 py-1 rounded-full shadow-lg">
-                              ${item.price?.toFixed(2) || '0.00'}
+                              Ksh{item.price?.toFixed(2) || '0.00'}
                             </div>
                           </div>
 
