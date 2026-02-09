@@ -1,4 +1,5 @@
 import os
+import uuid
 from werkzeug.utils import secure_filename
 from flask_restful import Resource
 from flask import request
