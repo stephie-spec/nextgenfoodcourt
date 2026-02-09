@@ -42,14 +42,14 @@ export default function OrdersPage() {
   ];
 
   const firebrickTheme = {
-    '--primary': '#b22222',
+    '--primary': '#cd5c5c',
     '--primary-foreground': '#ffffff',
-    '--secondary': 'color-mix(in oklab, #b22222 12%, var(--background))',
+    '--secondary': 'color-mix(in oklab, #cd5c5c 8%, var(--background))',
     '--secondary-foreground': 'var(--foreground)',
-    '--accent': 'color-mix(in oklab, #b22222 22%, var(--background))',
+    '--accent': 'color-mix(in oklab, #cd5c5c 15%, var(--background))',
     '--accent-foreground': 'var(--foreground)',
-    '--ring': '#b22222',
-    '--border': 'color-mix(in oklab, #b22222 10%, var(--background))',
+    '--ring': '#cd5c5c',
+    '--border': 'color-mix(in oklab, #cd5c5c 8%, var(--background))',
   };
 
   const isLoggedIn = status === 'authenticated';
