@@ -177,8 +177,8 @@ if (success) {
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             {/* Header */}
             <div className="mb-8">
-              <h1 className="text-4xl font-bold text-foreground mb-2">Book a Table</h1>
-              <p className="text-lg text-muted-foreground">Reserve your spot and pre-order your favorite dishes</p>
+              <h1 className="text-4xl font-bold text-foreground mb-2">Reserve a Table</h1>
+              <p className="text-lg text-muted-foreground">Book your spot and pre-order your favorite dishes</p>
             </div>
 
             {/* Progress Steps */}
