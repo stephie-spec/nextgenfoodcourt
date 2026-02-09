@@ -538,7 +538,7 @@ useEffect(() => {
                             unoptimized
                           />
                           <div className="absolute top-3 left-3 bg-primary/90 text-primary-foreground text-sm font-bold px-3 py-1 rounded-full shadow-lg">
-                            ${item.price.toFixed(2)}
+                            Ksh{item.price.toFixed(2)}
                           </div>
                           {/* <div className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-lg">
                             {item.calories} cal 
@@ -626,7 +626,7 @@ useEffect(() => {
               <ShoppingCart className="w-5 h-5" />
               <span>{cartTotalItems} Items</span>
               <span className="px-2 py-0.5 bg-primary-foreground text-primary rounded-full text-sm">
-                ${(cartTotalItems * 10).toFixed(2)}
+                Ksh{(cartTotalItems * 10).toFixed(2)}
               </span>
             </button>
           </div>
