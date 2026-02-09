@@ -247,9 +247,9 @@ export default function SpecialOffersPage() {
                   <p className="text-sm text-muted-foreground line-clamp-2">{featuredOffer.description}</p>
                   <div className="flex items-center justify-between">
                     <div>
-                      <span className="text-xl font-bold text-primary">${featuredOffer.discountedPrice.toFixed(2)}</span>
+                      <span className="text-xl font-bold text-primary">Ksh{featuredOffer.discountedPrice.toFixed(2)}</span>
                       <span className="text-sm text-muted-foreground line-through ml-2">
-                        ${featuredOffer.originalPrice.toFixed(2)}
+                        Ksh{featuredOffer.originalPrice.toFixed(2)}
                       </span>
                     </div>
                     <button
@@ -363,9 +363,9 @@ export default function SpecialOffersPage() {
 
                     <div className="flex items-center justify-between pt-2 border-t border-border">
                       <div>
-                        <span className="text-lg font-bold text-primary">${offer.discountedPrice.toFixed(2)}</span>
+                        <span className="text-lg font-bold text-primary">Ksh{offer.discountedPrice.toFixed(2)}</span>
                         <span className="text-sm text-muted-foreground line-through ml-2">
-                          ${offer.originalPrice.toFixed(2)}
+                          Ksh{offer.originalPrice.toFixed(2)}
                         </span>
                       </div>
                       <button
