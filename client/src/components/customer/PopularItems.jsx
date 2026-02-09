@@ -149,7 +149,7 @@ export default function PopularItems() {
                     {/* Price and cart controls */}
                     <div className="flex items-center justify-between pt-2 border-t border-border">
                       <span className="text-lg font-bold text-primary">
-                        ${dish.price.toFixed(2)}
+                        Ksh{dish.price.toFixed(2)}
                       </span>
 
                       {quantity > 0 ? (
