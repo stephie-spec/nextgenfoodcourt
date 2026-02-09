@@ -9,7 +9,7 @@ const [currentImageIndex, setCurrentImageIndex] = useState(0);
 const router = useRouter();
 
 //  Fallback images used in the hero section slideshow
-const fallbackImages = ['/food-1.jpg', '/food-2.jpg', '/food-3.jpg', '/food-4.jpg'];
+const fallbackImages = ['/default-food.jpg', '/default-food.jpg', '/default-food.jpg', '/default-food.jpg'];
 const [heroImages, setHeroImages] = useState(fallbackImages);
 
 useEffect(() => {
@@ -18,24 +18,38 @@ useEffect(() => {
     try {
       const response = await fetch('/api/menu');
       if (!response.ok) {
-        throw new Error('Failed to fetch hero images');
+        console.warn('Hero image fetch failed:', response.status);
+        if (isMounted) {
+          setHeroImages(fallbackImages);
+        }
+        return;
       }
       const data = await response.json();
       const unique = new Set();
+      // Get images from first outlet available (Cairo Eats)
       data.forEach((menuItem) => {
         const imagePath = menuItem.image_path;
         const outletName = menuItem.outlet_name;
-        if (outletName !== 'Kinsasha Flavors' || !imagePath || !imagePath.trim()) {
+        if (outletName !== 'Cairo Eats' || !imagePath || !imagePath.trim()) {
           return;
         }
         unique.add(`http://localhost:5555/uploads/${imagePath.replace(/^\/+/, '')}`);
       });
       const selected = Array.from(unique).slice(0, 8);
-      if (isMounted && selected.length > 0) {
-        setHeroImages(selected);
+      console.log('Hero images found:', selected.length, 'from Cairo Eats');
+      if (isMounted) {
+        if (selected.length > 0) {
+          setHeroImages(selected);
+        } else {
+          console.warn('No Cairo Eats images found, using fallback');
+          setHeroImages(fallbackImages);
+        }
       }
     } catch (error) {
       console.error('Error fetching hero images:', error);
+      if (isMounted) {
+        setHeroImages(fallbackImages);
+      }
     }
   };
 
@@ -70,6 +84,7 @@ useEffect(() => {
           src="/kitchen.jpg"
           alt="Professional kitchen with fresh ingredients"
           fill
+          sizes="100vw"
           className="object-cover opacity-35"
           priority
         />
@@ -89,6 +104,7 @@ useEffect(() => {
                   src={image || "/placeholder.svg"}
                   alt={`Delicious dish ${index + 1}`}
                   fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
                   className={`object-cover transition-opacity duration-1000 ${
                     index === currentImageIndex ? 'opacity-100' : 'opacity-0'
                   }`}
