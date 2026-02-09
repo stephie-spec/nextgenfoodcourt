@@ -58,7 +58,11 @@ class FavouriteButton ( Resource ) :
             item.favourites = Item.favourites - 1 if item.favourites > 0 else 0
             db.session.commit()
 
-            return { "message" : f"Removed {item.name} from favourites" }, 200
+            return { 
+                "message": f"Removed {item.name} from favourites",
+                "favourited": False,
+                "favourite_count": item.favourites
+            }, 200
         
         # Adding a new favourite
         new_fav = CustomerFavourite ( customer_id = customer.id, item_id = item_id )
@@ -66,7 +70,11 @@ class FavouriteButton ( Resource ) :
         item.favourites = item.favourites + 1
         db.session.commit()
 
-        return { "message" : f"Added {item.name} to favourites" }, 201
+        return { 
+            "message": f"Added {item.name} to favourites",
+            "favourited": True,
+            "favourite_count": item.favourites
+        }, 201
 
 
 
