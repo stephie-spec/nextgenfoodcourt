@@ -24,6 +24,7 @@ export default function OrdersPage() {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [categories, setCategories] = useState(['All']);
+  const [showAllOutlets, setShowAllOutlets] = useState(false);
 
   const promoAds = [
     {
@@ -149,6 +150,8 @@ export default function OrdersPage() {
       })
       .filter((outlet) => outlet.items.length > 0);
   }, [menuData, searchQuery, selectedCategory]);
+
+  const visibleOutlets = showAllOutlets ? filteredOutlets : filteredOutlets.slice(0, 3);
 
   // Handle item quantity
   const updateItemQuantity = (menuOutletItemId, quantity) => {
@@ -519,10 +522,10 @@ export default function OrdersPage() {
           </div>
 
           <div className="space-y-8 pb-8">
-            {filteredOutlets.length > 0 ? (
-              filteredOutlets.map((outlet) => (
+            {visibleOutlets.length > 0 ? (
+              visibleOutlets.map((outlet) => (
                 <section key={outlet.outletId} className="space-y-6">
-                  <div className="relative overflow-hidden rounded-2xl border border-border p-6">
+                  <div className="relative overflow-hidden rounded-2xl border border-border h-64">
                     {outlet.outletImage && (
                       <div className="absolute inset-0">
                         <Image
@@ -535,15 +538,18 @@ export default function OrdersPage() {
                         />
                       </div>
                     )}
-                    <div className="relative flex items-start justify-between gap-4">
-                      <div>
-                        <h2 className="text-2xl font-bold text-foreground">{outlet.outletName}</h2>
-                        <p className="text-sm text-muted-foreground">{outlet.items.length} items available</p>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                    <div className="relative h-full flex items-end p-6">
+                      <div className="flex items-end justify-between gap-4 w-full">
+                        <div>
+                          <h2 className="text-3xl font-bold text-white drop-shadow-lg">{outlet.outletName}</h2>
+                          <p className="text-sm text-white/90 drop-shadow">{outlet.items.length} items available</p>
+                        </div>
+                        <button className="hidden sm:flex items-center gap-2 text-sm font-semibold text-white hover:text-white/80 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-lg">
+                          View Outlet
+                          <ChevronRight className="w-4 h-4" />
+                        </button>
                       </div>
-                      <button className="hidden sm:flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary/80">
-                        View Outlet
-                        <ChevronRight className="w-4 h-4" />
-                      </button>
                     </div>
                   </div>
 
@@ -620,6 +626,18 @@ export default function OrdersPage() {
               </div>
             )}
           </div>
+
+          {filteredOutlets.length > 3 && (
+            <div className="flex justify-center pb-6">
+              <button
+                onClick={() => setShowAllOutlets((prev) => !prev)}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-border bg-card text-foreground font-semibold hover:bg-secondary transition"
+              >
+                {showAllOutlets ? 'Show Less' : 'View All Outlets'}
+                <ChevronRight className={`w-4 h-4 transition-transform ${showAllOutlets ? '-rotate-90' : 'rotate-90'}`} />
+              </button>
+            </div>
+          )}
 
           <div className="grid md:grid-cols-2 gap-6 mt-12">
             <div className="bg-card rounded-xl p-6 shadow-sm border border-border">
