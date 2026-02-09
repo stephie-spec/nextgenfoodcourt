@@ -241,3 +241,24 @@ class OutletMenu(Resource):
 
         return {"outlet": outlet.name, "menu": menu}, 200
     
+class OwnerOutletsResource(Resource):
+    """Get outlets for the currently authenticated owner"""
+    
+    def get(self):
+        owner = require_owner()
+        
+        if not owner:
+            return {"message": "Unauthorized"}, 401
+        
+        # Get all outlets owned by this owner
+        outlets = Outlet.query.filter_by(owner_id=owner.id).all()
+        
+        outlet_list = [{
+            "id": outlet.id,
+            "name": outlet.name,
+            "category_name": outlet.category_name,
+            "owner_id": outlet.owner_id,
+            "image_path": outlet.image_path if outlet.image_path and outlet.image_path.strip() else 'default-outlet.jpg'
+        } for outlet in outlets]
+        
+        return {"outlets": outlet_list}, 200
