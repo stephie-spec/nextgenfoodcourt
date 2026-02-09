@@ -146,7 +146,7 @@ export default function FeaturedItems() {
                     {/* Price and cart controls */}
                     <div className="flex items-end justify-between pt-2 border-t border-border">
                       <span className="text-xl font-bold text-primary">
-                        ${item.price.toFixed(2)}
+                        Ksh{item.price.toFixed(2)}
                       </span>
 
                       {quantity > 0 ? (
