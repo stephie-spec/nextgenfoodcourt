@@ -168,19 +168,19 @@ if __name__ == "__main__":
         ]
 
         zanzibari_items = [
-            Item(name="Zanzibar Pilau", price=260, description="Aromatic rice with cloves and cardamom", is_available=True,category_name="Rice Dish"),
-            Item(name="Octopus Curry", price=340, description="Tender octopus in spiced coconut curry", is_available=True,category_name="Curry"),
-            Item(name="Urojo Soup", price=200, description="Zanzibari soup with vegetables and meat", is_available=True,category_name="Soup"),
-            Item(name="Coconut Bean Stew", price=180, description="Creamy stew with beans and coconut milk", is_available=True,category_name="Stew"),
-            Item(name="Seafood Mishkaki", price=300, description="Grilled seafood skewers with spice rub", is_available=True,category_name="Grilled Seafood"),
+            Item(name="Zanzibar Pilau",image="taj34.jpg", price=260, description="Aromatic rice with cloves and cardamom", is_available=True,category_name="Rice Dish"),
+            Item(name="Octopus Curry",image="taj35.jpg", price=340, description="Tender octopus in spiced coconut curry", is_available=True,category_name="Curry"),
+            Item(name="Urojo Soup",image="taj36.jpg", price=200, description="Zanzibari soup with vegetables and meat", is_available=True,category_name="Soup"),
+            Item(name="Coconut Bean Stew",image="taj37.jpg", price=180, description="Creamy stew with beans and coconut milk", is_available=True,category_name="Stew"),
+            Item(name="Seafood Mishkaki",image="taj38.jpg", price=300, description="Grilled seafood skewers with spice rub", is_available=True,category_name="Grilled Seafood"),
         ]
 
         tanzanian_items = [
-            Item(name="Ugali & Beef Stew", price=240, description="Corn porridge with rich beef stew", is_available=True,category_name="Stew"),
-            Item(name="Ndizi Nyama", price=280, description="Plantains with grilled meat and onions", is_available=True,category_name="Grilled Meat"),
-            Item(name="Mchuzi wa Samaki", price=260, description="Fish in tomato and spice sauce", is_available=True,category_name="Stew"),
-            Item(name="Chapati", price=100, description="Flatbread cooked with butter and spices", is_available=True,category_name="Bread"),
-            Item(name="Chips Mayai", price=180, description="Fried potatoes with scrambled eggs", is_available=True,category_name="Side Dish"),
+            Item(name="Ugali & Beef Stew",image="taj39.jpg", price=240, description="Corn porridge with rich beef stew", is_available=True,category_name="Stew"),
+            Item(name="Ndizi Nyama",image="taj40.jpg", price=280, description="Plantains with grilled meat and onions", is_available=True,category_name="Grilled Meat"),
+            Item(name="Mchuzi wa Samaki",image="taj41.jpg", price=260, description="Fish in tomato and spice sauce", is_available=True,category_name="Stew"),
+            Item(name="Chapati", image="taj42.jpg", price=100, description="Flatbread cooked with butter and spices", is_available=True,category_name="Bread"),
+            Item(name="Chips Mayai",image="taj43.jpg", price=180, description="Fried potatoes with scrambled eggs", is_available=True,category_name="Side Dish"),
         ]
 
         egyptian_items = [
