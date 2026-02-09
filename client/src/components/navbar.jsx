@@ -64,6 +64,12 @@ export default function Navbar() {
   };
 
   const handleLogout = () => {
+    localStorage.removeItem('auth_token');
+  localStorage.removeItem('user_id');
+  localStorage.removeItem('user_role');
+  localStorage.removeItem('user_name');
+  localStorage.removeItem('user_email');
+
     signOut({ callbackUrl: '/' });
   };
 
