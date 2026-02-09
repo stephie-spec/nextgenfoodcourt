@@ -117,25 +117,25 @@ if __name__ == "__main__":
         print("Creating menu items...")
 
         ethiopian_items = [
-            Item(name="Doro Wat", image="taj14.jpg", price=350, description="Spicy chicken stew simmered in berbere sauce with boiled eggs", is_available=True),
-            Item(name="Injera Platter", image="taj15.jpg", price=300, description="Assorted lentils and vegetables served on traditional injera", is_available=True),
-            Item(name="Kitfo", image="taj16.jpg", price=380, description="Minced beef seasoned with butter and spices", is_available=True),
-            Item(name="Tibs", image="taj17.jpg", price=360, description="Sautéed beef with onions and peppers", is_available=True),
+            Item(name="Doro Wat", image="taj14.jpg", price=350, description="Spicy chicken stew simmered in berbere sauce with boiled eggs", is_available=True, category_name="Stew"),
+            Item(name="Injera Platter", image="taj15.jpg", price=300, description="Assorted lentils and vegetables served on traditional injera", is_available=True,category_name="Platter"),
+            Item(name="Kitfo", image="taj16.jpg", price=380, description="Minced beef seasoned with butter and spices", is_available=True,category_name="Raw Meat"),
+            Item(name="Tibs", image="taj17.jpg", price=360, description="Sautéed beef with onions and peppers", is_available=True,category_name="Sautéed Meat"),
         ]
 
         nigerian_items = [
-            Item(name="Jollof Rice", image="taj10.jpg", price=250, description="Smoky Nigerian jollof with grilled chicken and plantains", is_available=True),
-            Item(name="Suya Skewers", image="taj11.jpg", price=200, description="Spiced grilled beef with peanut seasoning and onions", is_available=True),
-            Item(name="Egusi Soup", image="taj12.jpg", price=280, description="Melon seed soup with assorted meat and fish",  is_available=True),
-            Item(name="Pounded Yam", image="taj13.jpg", price=220, description="Smooth pounded yam with rich vegetable soup", is_available=True),
+            Item(name="Jollof Rice", image="taj10.jpg", price=250, description="Smoky Nigerian jollof with grilled chicken and plantains", is_available=True,category_name="Rice Dish"),
+            Item(name="Suya Skewers", image="taj11.jpg", price=200, description="Spiced grilled beef with peanut seasoning and onions", is_available=True,category_name="Grilled Meat"),
+            Item(name="Egusi Soup", image="taj12.jpg", price=280, description="Melon seed soup with assorted meat and fish",  is_available=True,category_name="Soup"),
+            Item(name="Pounded Yam", image="taj13.jpg", price=220, description="Smooth pounded yam with rich vegetable soup", is_available=True,category_name="Side Dish"),
         ]
 
         swahili_items = [
-            Item(name="Pilau Rice", image="taj18.jpg", price=220, description="Aromatic rice with spices and meat", is_available=True),
-            Item(name="Biriani ya Pwani", image="taj19.jpg", price=300, description="Coastal biryani with seafood and aromatic spices", is_available=True),
-            Item(name="Samaki wa Kupaka", image="taj20.jpg", price=320, description="Fish cooked in coconut milk sauce", is_available=True),
-            Item(name="Viazi Karai", image="taj21.jpg", price=180, description="Crispy fried potatoes with spices", is_available=True),
-            Item(name="Mahamri", image="taj18.jpg", price=120, description="Sweet fried dough pastry", is_available=True),
+            Item(name="Pilau Rice", image="taj18.jpg", price=220, description="Aromatic rice with spices and meat", is_available=True,category_name="Rice Dish"),
+            Item(name="Biriani ya Pwani", image="taj19.jpg", price=300, description="Coastal biryani with seafood and aromatic spices", is_available=True,category_name="Rice Dish"),
+            Item(name="Samaki wa Kupaka", image="taj20.jpg", price=320, description="Fish cooked in coconut milk sauce", is_available=True,category_name="Fish Dish"),
+            Item(name="Viazi Karai", image="taj21.jpg", price=180, description="Crispy fried potatoes with spices", is_available=True,category_name="Side Dish"),
+            Item(name="Mahamri", image="taj18.jpg", price=120, description="Sweet fried dough pastry", is_available=True,category_name="Dessert"),
         ]
 
         all_items = ethiopian_items + nigerian_items + swahili_items
@@ -145,50 +145,50 @@ if __name__ == "__main__":
         print("Creating additional menu items...")
 
         kenyan_items = [
-            Item(name="Nyama Choma", image="taj22.jpg", price=420, description="Roasted goat meat with ugali and kachumbari", is_available=True),
-            Item(name="Ugali & Sukuma Wiki", image="taj24.jpg", price=180, description="Boiled maize and beans with vegetables", is_available=True),
-            Item(name="Githeri", image="taj23.jpg", price=200, description="Collard greens sautéed with onions and tomatoes", is_available=True),
-            Item(name="Mandazi", image="taj25.jpg", price=120, description="Fried dough bread with coconut and spices", is_available=True),
+            Item(name="Nyama Choma", image="taj22.jpg", price=420, description="Roasted goat meat with ugali and kachumbari", is_available=True,category_name="Grilled Meat"),
+            Item(name="Ugali & Sukuma Wiki", image="taj24.jpg", price=180, description="Collard greens sautéed with onions and tomatoes", is_available=True,category_name="Vegetables"),
+            Item(name="Githeri", image="taj23.jpg", price=200, description="Boiled maize and beans with vegetables", is_available=True,category_name="Stew"),
+            Item(name="Mandazi", image="taj25.jpg", price=120, description="Fried dough bread with coconut and spices", is_available=True,category_name="Dessert"),
         ]
 
         southafrican_items = [
-            Item(name="Bobotie", image="taj26.jpg", price=340, description="Spiced minced meat topped with egg custard", is_available=True),
-            Item(name="Bunny Chow", image="taj27.jpg", price=300, description="Curry served in a hollowed loaf of bread", is_available=True),
-            Item(name="Boerewors", image="taj28.jpg", price=280, description="Traditional South African farmer's sausage", is_available=True),
-            Item(name="Pap & Chakalaka", image="taj29.jpg", price=200, description="Corn porridge with vegetable relish", is_available=True),
-            Item(name="Malva Pudding", image="taj26.jpg", price=160, description="Sweet spongy pudding with apricots", is_available=True),
+            Item(name="Bobotie", image="taj26.jpg", price=340, description="Spiced minced meat topped with egg custard", is_available=True,category_name="Casserole"),
+            Item(name="Bunny Chow", image="taj27.jpg", price=300, description="Curry served in a hollowed loaf of bread", is_available=True,category_name="Street Food"),
+            Item(name="Boerewors", image="taj28.jpg", price=280, description="Traditional South African farmer's sausage", is_available=True,category_name="Grilled Meat"),
+            Item(name="Pap & Chakalaka", image="taj29.jpg", price=200, description="Corn porridge with vegetable relish", is_available=True,category_name="Side Dish"),
+            Item(name="Malva Pudding", image="taj26.jpg", price=160, description="Sweet spongy pudding with apricots", is_available=True, category_name="Dessert"),
         ]
 
         congolese_items = [
-            Item(name="Moambe Chicken", image="taj31.jpg", price=320, description="Chicken in palm butter sauce with rice", is_available=True),
-            Item(name="Fufu & Palm Nut Soup", image="taj30.jpg", price=260, description="Cassava fufu with palm nut soup and fish", is_available=True),
-            Item(name="Grilled Tilapia", image="taj32.jpg", price=300, description="Fresh tilapia grilled with spices and lemon", is_available=True),
-            Item(name="Kwanga", image="taj33.jpg", price=140, description="Fermented cassava bread with savory stew", is_available=True),
-            Item(name="Saka Saka", image="taj30.jpg", price=200, description="Spinach cooked with cassava leaves and peanut", is_available=True),
+            Item(name="Moambe Chicken", image="taj31.jpg", price=320, description="Chicken in palm butter sauce with rice", is_available=True,category_name="Stew"),
+            Item(name="Fufu & Palm Nut Soup", image="taj30.jpg", price=260, description="Cassava fufu with palm nut soup and fish", is_available=True,category_name="Traditional"),
+            Item(name="Grilled Tilapia", image="taj32.jpg", price=300, description="Fresh tilapia grilled with spices and lemon", is_available=True,category_name="Grilled Fish"),
+            Item(name="Kwanga", image="taj33.jpg", price=140, description="Fermented cassava bread with savory stew", is_available=True,category_name="Side Dish"),
+            Item(name="Saka Saka", image="taj30.jpg", price=200, description="Spinach cooked with cassava leaves and peanut", is_available=True,category_name="Side Dish"),
         ]
 
         zanzibari_items = [
-            Item(name="Zanzibar Pilau", price=260, description="Aromatic rice with cloves and cardamom", is_available=True),
-            Item(name="Octopus Curry", price=340, description="Tender octopus in spiced coconut curry", is_available=True),
-            Item(name="Urojo Soup", price=200, description="Zanzibari soup with vegetables and meat", is_available=True),
-            Item(name="Coconut Bean Stew", price=180, description="Creamy stew with beans and coconut milk", is_available=True),
-            Item(name="Seafood Mishkaki", price=300, description="Grilled seafood skewers with spice rub", is_available=True),
+            Item(name="Zanzibar Pilau", price=260, description="Aromatic rice with cloves and cardamom", is_available=True,category_name="Rice Dish"),
+            Item(name="Octopus Curry", price=340, description="Tender octopus in spiced coconut curry", is_available=True,category_name="Curry"),
+            Item(name="Urojo Soup", price=200, description="Zanzibari soup with vegetables and meat", is_available=True,category_name="Soup"),
+            Item(name="Coconut Bean Stew", price=180, description="Creamy stew with beans and coconut milk", is_available=True,category_name="Stew"),
+            Item(name="Seafood Mishkaki", price=300, description="Grilled seafood skewers with spice rub", is_available=True,category_name="Grilled Seafood"),
         ]
 
         tanzanian_items = [
-            Item(name="Ugali & Beef Stew", price=240, description="Corn porridge with rich beef stew", is_available=True),
-            Item(name="Ndizi Nyama", price=280, description="Plantains with grilled meat and onions", is_available=True),
-            Item(name="Mchuzi wa Samaki", price=260, description="Fish in tomato and spice sauce", is_available=True),
-            Item(name="Chapati", price=100, description="Flatbread cooked with butter and spices", is_available=True),
-            Item(name="Chips Mayai", price=180, description="Fried potatoes with scrambled eggs", is_available=True),
+            Item(name="Ugali & Beef Stew", price=240, description="Corn porridge with rich beef stew", is_available=True,category_name="Stew"),
+            Item(name="Ndizi Nyama", price=280, description="Plantains with grilled meat and onions", is_available=True,category_name="Grilled Meat"),
+            Item(name="Mchuzi wa Samaki", price=260, description="Fish in tomato and spice sauce", is_available=True,category_name="Stew"),
+            Item(name="Chapati", price=100, description="Flatbread cooked with butter and spices", is_available=True,category_name="Bread"),
+            Item(name="Chips Mayai", price=180, description="Fried potatoes with scrambled eggs", is_available=True,category_name="Side Dish"),
         ]
 
         egyptian_items = [
-            Item(name="Koshari", image="taj18.jpg", price=220, description="Egyptian comfort food with rice, lentils, and pasta", is_available=True),
-            Item(name="Shawarma", image="taj19.jpg", price=240, description="Slow-roasted meat with tahini and pickles in pita", is_available=True),
-            Item(name="Falafel", image="taj20.jpg", price=180, description="Crispy chickpea fritters with tahini sauce", is_available=True),
-            Item(name="Molokhia", image="taj21.jpg", price=260, description="Jute leaf soup with rabbit and rice", is_available=True),
-            Item(name="Feteer Meshaltet", image="taj18.jpg", price=200, description="Flaky pastry layered with honey and cheese", is_available=True),
+            Item(name="Koshari", image="taj18.jpg", price=220, description="Egyptian comfort food with rice, lentils, and pasta", is_available=True,category_name="Street Food"),
+            Item(name="Shawarma", image="taj19.jpg", price=240, description="Slow-roasted meat with tahini and pickles in pita", is_available=True,category_name="Street Food"),
+            Item(name="Falafel", image="taj20.jpg", price=180, description="Crispy chickpea fritters with tahini sauce", is_available=True,category_name="Street Food"),
+            Item(name="Molokhia", image="taj21.jpg", price=260, description="Jute leaf soup with rabbit and rice", is_available=True,category_name="Soup"),
+            Item(name="Feteer Meshaltet", image="taj18.jpg", price=200, description="Flaky pastry layered with honey and cheese", is_available=True,category_name="Pastry"),
         ]
 
         additional_items = (
