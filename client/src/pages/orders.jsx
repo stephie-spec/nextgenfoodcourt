@@ -202,6 +202,81 @@ export default function OrdersPage() {
     }
   };
 
+  // Submit order to backend
+  const handleOrderSubmit = async () => {
+    if (!isLoggedIn) {
+      setOrderMessage('Please log in to place an order');
+      return;
+    }
+
+    if (orderItems.length === 0) {
+      setOrderMessage('Please add items to your order');
+      return;
+    }
+
+    setIsLoading(true);
+    setOrderMessage('');
+
+    try {
+      const customerId = session?.user?.id || session?.sub;
+      
+      console.log('Session details:', { 
+        sessionUser: session?.user, 
+        sessionSub: session?.sub,
+        customerId, 
+        type: typeof customerId,
+        asInt: parseInt(customerId)
+      });
+      console.log('Order items:', orderItems);
+      
+      if (!customerId) {
+        setOrderMessage('Unable to identify customer. Please log in again.');
+        setIsLoading(false);
+        return;
+      }
+
+      // Create orders for each item
+      const orderPromises = orderItems.map(item => {
+        const orderPayload = {
+          customer_id: parseInt(customerId),
+          menu_outlet_item_id: item.menuOutletItemId,
+          quantity: item.quantity
+        };
+        
+        console.log('Order payload:', orderPayload);
+        return createOrder(orderPayload, token);
+      });
+
+      const results = await Promise.all(orderPromises);
+      console.log('Order results:', results);
+      
+      const allSuccessful = results.every(r => r && (r.status === 201 || r.status === 200));
+      
+      if (allSuccessful) {
+        setOrderMessage('✓ Order placed successfully!');
+        setSelectedItems({});
+        setPromoApplied(false);
+        setPromoDiscount(0);
+        setPromoCode('');
+        setTimeout(() => setOrderMessage(''), 3000);
+      } else {
+        const failedResults = results.filter(r => !r || (r.status !== 201 && r.status !== 200));
+        setOrderMessage(`Some orders failed. ${failedResults.length} items could not be ordered.`);
+      }
+    } catch (error) {
+      console.error('Error placing order:', error);
+      
+      // Check if it's a customer not found error
+      if (error.message.includes('Customer with id') && error.message.includes('not found')) {
+        setOrderMessage('Your session has expired. Please log in again.');
+      } else {
+        setOrderMessage(`Failed to place order: ${error.message}`);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const orderSummary = (
     <div className="bg-card rounded-2xl border border-border p-5 space-y-4 shadow-sm">
       <div className="flex items-center gap-2">
@@ -322,81 +397,6 @@ export default function OrdersPage() {
       )}
     </div>
   );
-
-  // Submit order to backend
-  const handleOrderSubmit = async () => {
-    if (!isLoggedIn) {
-      setOrderMessage('Please log in to place an order');
-      return;
-    }
-
-    if (orderItems.length === 0) {
-      setOrderMessage('Please add items to your order');
-      return;
-    }
-
-    setIsLoading(true);
-    setOrderMessage('');
-
-    try {
-      const customerId = session?.user?.id || session?.sub;
-      
-      console.log('Session details:', { 
-        sessionUser: session?.user, 
-        sessionSub: session?.sub,
-        customerId, 
-        type: typeof customerId,
-        asInt: parseInt(customerId)
-      });
-      console.log('Order items:', orderItems);
-      
-      if (!customerId) {
-        setOrderMessage('Unable to identify customer. Please log in again.');
-        setIsLoading(false);
-        return;
-      }
-
-      // Create orders for each item
-      const orderPromises = orderItems.map(item => {
-        const orderPayload = {
-          customer_id: parseInt(customerId),
-          menu_outlet_item_id: item.menuOutletItemId,
-          quantity: item.quantity
-        };
-        
-        console.log('Order payload:', orderPayload);
-        return createOrder(orderPayload, token);
-      });
-
-      const results = await Promise.all(orderPromises);
-      console.log('Order results:', results);
-      
-      const allSuccessful = results.every(r => r && (r.status === 201 || r.status === 200));
-      
-      if (allSuccessful) {
-        setOrderMessage('✓ Order placed successfully!');
-        setSelectedItems({});
-        setPromoApplied(false);
-        setPromoDiscount(0);
-        setPromoCode('');
-        setTimeout(() => setOrderMessage(''), 3000);
-      } else {
-        const failedResults = results.filter(r => !r || (r.status !== 201 && r.status !== 200));
-        setOrderMessage(`Some orders failed. ${failedResults.length} items could not be ordered.`);
-      }
-    } catch (error) {
-      console.error('Error placing order:', error);
-      
-      // Check if it's a customer not found error
-      if (error.message.includes('Customer with id') && error.message.includes('not found')) {
-        setOrderMessage('Your session has expired. Please log in again.');
-      } else {
-        setOrderMessage(`Failed to place order: ${error.message}`);
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   if (!mounted) {
     return null;
