@@ -191,6 +191,17 @@ export default function OrdersPage() {
   const tax = (subtotal - promoDiscount) * 0.08;
   const total = subtotal - promoDiscount + deliveryFee + tax;
 
+  // Apply promo code
+  const applyPromoCode = () => {
+    if (promoCode.toUpperCase() === 'SAVE10') {
+      setPromoDiscount(subtotal * 0.10);
+      setPromoApplied(true);
+    } else if (promoCode.toUpperCase() === 'FREEDELIV') {
+      setPromoDiscount(deliveryFee);
+      setPromoApplied(true);
+    }
+  };
+
   const orderSummary = (
     <div className="bg-card rounded-2xl border border-border p-5 space-y-4 shadow-sm">
       <div className="flex items-center gap-2">
@@ -311,17 +322,6 @@ export default function OrdersPage() {
       )}
     </div>
   );
-
-  // Apply promo code
-  const applyPromoCode = () => {
-    if (promoCode.toUpperCase() === 'SAVE10') {
-      setPromoDiscount(subtotal * 0.10);
-      setPromoApplied(true);
-    } else if (promoCode.toUpperCase() === 'FREEDELIV') {
-      setPromoDiscount(deliveryFee);
-      setPromoApplied(true);
-    }
-  };
 
   // Submit order to backend
   const handleOrderSubmit = async () => {
