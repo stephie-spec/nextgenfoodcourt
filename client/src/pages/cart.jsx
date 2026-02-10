@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ShoppingCart, Trash2, Plus, Minus, ArrowLeft, ArrowRight, Store, Clock, MapPin, Phone, CreditCard, Shield, Truck, Star, Info, Tag, X } from 'lucide-react';
 import { useCart } from '@/lib/CartContext';
-import { outletsData } from '@/lib/menuData';
+// import { outletsData } from '@/lib/menuData';
 import Navbar from '@/components/navbar';
 
 export default function CartPage() {
@@ -14,36 +14,59 @@ export default function CartPage() {
   const [promoApplied, setPromoApplied] = useState(false);
   const [promoDiscount, setPromoDiscount] = useState(0);
 
-  // Get item details from composite ID and outletsData
+  // Fetch menu data from backend and build a lookup map
+  const [menuData, setMenuData] = useState([]);
+  const [menuMap, setMenuMap] = useState({});
+  const [loadingMenu, setLoadingMenu] = useState(true);
+  const [menuError, setMenuError] = useState(null);
+
+  useEffect(() => {
+    const fetchMenu = async () => {
+      try {
+        setLoadingMenu(true);
+        setMenuError(null);
+        const res = await fetch('/api/menu');
+        if (!res.ok) throw new Error('Failed to fetch menu');
+        const data = await res.json();
+        setMenuData(data);
+        // Build a map: key = `${outlet_id}-${item_name}`
+        const map = {};
+        data.forEach(item => {
+          // Use backend outlet_id and item_name for key
+          const key = `${item.outlet_id || item.outletId}-${item.item_name || item.name}`;
+          map[key] = item;
+        });
+        setMenuMap(map);
+      } catch (err) {
+        setMenuError(err.message);
+      } finally {
+        setLoadingMenu(false);
+      }
+    };
+    fetchMenu();
+  }, []);
+
+  // Get item details from backend menuMap
   const getItemDetails = (compositeId) => {
-    // Parse composite ID: "outletId-itemName"
+    // compositeId: "outletId-itemName"
     const parts = compositeId.split('-');
     if (parts.length < 2) {
       return { name: 'Unknown Item', outlet: 'Unknown Outlet', price: 0, image: '/placeholder.svg', category: 'Unknown', prepTime: 'N/A' };
     }
-    
-    const outletId = parseInt(parts[0]);
-    const itemName = parts.slice(1).join('-'); // In case item name has hyphens
-    
-    // Find the outlet
-    const outlet = outletsData.find(o => o.outletId === outletId);
-    if (!outlet) {
+    const outletId = parts[0];
+    const itemName = parts.slice(1).join('-');
+    const key = `${outletId}-${itemName}`;
+    const item = menuMap[key];
+    if (!item) {
       return { name: 'Unknown Item', outlet: 'Unknown Outlet', price: 0, image: '/placeholder.svg', category: 'Unknown', prepTime: 'N/A' };
     }
-    
-    // Find the item in the outlet
-    const item = outlet.items.find(i => i.name === itemName);
-    if (!item) {
-      return { name: 'Unknown Item', outlet: outlet.outletName, price: 0, image: '/placeholder.svg', category: 'Unknown', prepTime: 'N/A' };
-    }
-    
     return {
-      name: item.name,
-      outlet: outlet.outletName,
+      name: item.item_name || item.name,
+      outlet: item.outlet_name || item.outlet,
       price: item.price,
-      image: item.image,
-      category: 'Food Item',
-      prepTime: outlet.deliveryTime,
+      image: item.image_path ? `http://localhost:5555/uploads/${item.image_path.replace(/^\/+/, '')}` : '/placeholder.svg',
+      category: item.category || 'Food Item',
+      prepTime: item.prep_time || item.prepTime || 'N/A',
       calories: item.calories,
       description: item.description,
     };
@@ -65,6 +88,21 @@ export default function CartPage() {
       quantity,
       ...getItemDetails(id),
     }));
+
+  if (loadingMenu) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <span className="text-lg text-muted-foreground">Loading menu...</span>
+      </div>
+    );
+  }
+  if (menuError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <span className="text-lg text-red-500">{menuError}</span>
+      </div>
+    );
+  }
 
   const subtotal = cartItemList.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const deliveryFee = subtotal > 25 ? 0 : 4.99;
@@ -269,7 +307,7 @@ export default function CartPage() {
             </div>
 
             {/* Customer Support */}
-            <div className="bg-gradient-to-br from-primary/10 to-accent/10 rounded-xl border border-border p-5">
+            <div className="bg-linear-to-br from-primary/10 to-accent/10 rounded-xl border border-border p-5">
               <h3 className="font-semibold text-foreground mb-2">Need Help?</h3>
               <p className="text-sm text-muted-foreground mb-3">Our customer support team is available 24/7</p>
               <button className="w-full py-2.5 bg-primary text-primary-foreground font-semibold rounded-lg hover:bg-primary/90 transition-colors flex items-center justify-center gap-2">
@@ -287,13 +325,18 @@ export default function CartPage() {
                 className="bg-background rounded-xl border border-border p-4 flex gap-4 hover:border-primary transition-colors"
               >
                 {/* Item Image */}
-                <div className="relative w-24 h-24 sm:w-32 sm:h-32 flex-shrink-0 rounded-lg overflow-hidden bg-muted">
+                <div className="relative w-24 h-24 sm:w-32 sm:h-32 shrink-0 rounded-lg overflow-hidden bg-muted">
                   <Image
-                    src={item.image}
+                    src={
+                      item.image && !item.image.startsWith('http')
+                        ? `http://localhost:5555/uploads/${item.image.replace(/^\/+/, '')}`
+                        : item.image
+                    }
                     alt={item.name}
                     fill
                     sizes="(max-width: 640px) 96px, 128px"
                     className="object-cover"
+                    unoptimized
                   />
                 </div>
 
