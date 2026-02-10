@@ -16,9 +16,9 @@ export default function CheckoutPage() {
   const [selectedPayment, setSelectedPayment] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
-  const [orderData, setOrderData] = useState(null);
   const [checkoutData, setCheckoutData] = useState(null);
   const [orderId, setOrderId] = useState(null);
+  const [menuItems, setMenuItems] = useState([]);
 
   useEffect(() => {
     // Load checkout data from sessionStorage
@@ -29,6 +29,21 @@ export default function CheckoutPage() {
       // Redirect to cart if no checkout data
       router.push('/cart');
     }
+
+    // Fetch menu items to get their IDs
+    const fetchMenuItems = async () => {
+      try {
+        const res = await fetch('/api/menu');
+        if (res.ok) {
+          const items = await res.json();
+          setMenuItems(items);
+        }
+      } catch (error) {
+        console.error('Error fetching menu items:', error);
+      }
+    };
+
+    fetchMenuItems();
   }, [router]);
 
   const paymentMethods = [
@@ -77,42 +92,45 @@ export default function CheckoutPage() {
     setIsProcessing(true);
 
     try {
-      // Prepare order data for backend
-      const orderPayload = {
-        customer_id: session.user.id,
-        table_number: checkoutData.tableNumber,
-        payment_method: selectedPayment,
-        total_amount: checkoutData.total,
-        items: checkoutData.items.map(item => ({
-          item_name: item.name,
-          quantity: item.quantity,
-          price: item.price,
-          outlet: item.outlet,
-        })),
-        promo_code: checkoutData.promoCode,
-        discount_amount: checkoutData.promoDiscount,
-        delivery_fee: checkoutData.deliveryFee,
-        tax_amount: checkoutData.tax,
-      };
+      // Find menu item IDs for each cart item
+      const orderPromises = checkoutData.items.map(async (cartItem) => {
+        // Find the menu item that matches this cart item
+        const menuItem = menuItems.find(
+          m => m.item_name === cartItem.name && m.outlet_name === cartItem.outlet
+        );
 
-      console.log('Creating order:', orderPayload);
+        if (!menuItem) {
+          throw new Error(`Menu item not found: ${cartItem.name} at ${cartItem.outlet}`);
+        }
 
-      // Create order in backend
-      const response = await createOrder(orderPayload, session.accessToken);
+        // Create individual order for each item
+        const orderPayload = {
+          customer_id: parseInt(session.user.id),
+          menu_outlet_item_id: menuItem.id,
+          quantity: cartItem.quantity,
+        };
+
+        console.log('Creating order:', orderPayload);
+        return createOrder(orderPayload, session.accessToken);
+      });
+
+      // Wait for all orders to be created
+      const results = await Promise.all(orderPromises);
       
-      if (response.status === 201 || response.status === 200) {
-        setOrderId(response.data.id || response.data.order_id);
+      if (results.length > 0 && (results[0].status === 201 || results[0].status === 200)) {
+        // Use the first order ID as reference
+        setOrderId(results[0].data.id);
         setOrderPlaced(true);
         
         // Clear cart and checkout data
         clearCart();
         sessionStorage.removeItem('checkoutData');
       } else {
-        throw new Error('Failed to create order');
+        throw new Error('Failed to create orders');
       }
     } catch (error) {
       console.error('Error creating order:', error);
-      alert('Failed to place order. Please try again.');
+      alert(`Failed to place order: ${error.message}`);
     } finally {
       setIsProcessing(false);
     }
