@@ -5,7 +5,8 @@ import Image from 'next/image'; // Optimized image handling
 import { Star, TrendingUp, Plus, Minus, ShoppingCart } from 'lucide-react'; // Icons for UI accents
 import { useCart } from '@/lib/CartContext'; // Cart context for shared state
 
-export default function PopularItems() {
+export default function PopularItems() { // Now modified to show top four favourited dishes.
+
   // Use CartContext instead of local state
   const { cartItems, addToCart, removeFromCart, getItemQuantity } = useCart();
   
@@ -16,42 +17,49 @@ export default function PopularItems() {
 
   // Fetch popular items from backend API
   useEffect(() => {
-    const fetchPopularItems = async () => {
+    const fetchTopFavourites = async () => {
+
       try {
-        const response = await fetch('/api/menu');
+        const response = await fetch('http://localhost:5555/api/items/top_favourites');
+
         if (!response.ok) {
-          console.warn('Popular items fetch failed:', response.status);
-          setPopularDishes([]);
-          setLoading(false);
-          return;
+          throw new Error('Failed to fetch top favourite items');
         }
+
         const data = await response.json();
-        const processedDishes = data.slice(0, 4).map((menuItem) => ({
-          id: menuItem.item_id,
-          name: menuItem.item_name,
-          outlet: menuItem.outlet_name,
-          price: menuItem.price || 0,
-          rating: Math.floor(Math.random() * 5) + 1,
+
+        const processedDishes = data.map((item) => ({
+
+          id : item.id,
+          name : item.name,
+          outlet : item.outlet_name,
+          price : item.price || 0,
+          rating: ((Math.random() * (4.9 - 4.5)) + 4.5).toFixed(1),
           reviews: Math.floor(Math.random() * (300 - 100) + 100),
-          image: menuItem.image_path
-            ? `http://localhost:5555/uploads/${menuItem.image_path.replace(/^\/+/, '')}`
+          category : item.category_name,
+          image: item.image
+            ? `http://localhost:5555/uploads/${item.image.replace(/^\/+/, '')}`
             : '/placeholder.svg',
           tag: 'Customer Favorite',
         }));
+
         setPopularDishes(processedDishes);
         setLoading(false);
+
       } catch (error) {
+
         console.error('Error fetching popular items:', error);
         setPopularDishes([]);
         setLoading(false);
+
       }
     };
 
-    fetchPopularItems();
+    fetchTopFavourites ();
   }, []);
 
   // Temporary mock data for popular dishes
-  const mockPopularDishes = [];
+  // const mockPopularDishes = [];
 
   // Handle add to cart
   const handleAddToCart = (dish) => {

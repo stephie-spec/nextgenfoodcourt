@@ -96,33 +96,17 @@ class TopFavourites(Resource):
             .all()
         )
 
-        customer = require_customer()
-        favorite_ids = set()
-        if customer:
-            favorite_ids = {
-                fav.item_id
-                for fav in CustomerFavourite.query.filter_by(customer_id=customer.id).all()
+        return [
+            {
+                "id" : item.id,
+                "name" : item.name,
+                "price" : item.price,
+                "image" : item.image,
+                "description" : item.description,
+                "category_name" : item.category_name,
+                "favourite_count" : favourite_count
             }
-
-        response = []
-        for item, favourite_count in top_items:
-            menu_link = MenuOutletItem.query.filter_by(item_id=item.id).first()
-            outlet = Outlet.query.get(menu_link.outlet_id) if menu_link else None
-
-            response.append(
-                {
-                    "id": item.id,
-                    "name": item.name,
-                    "price": item.price,
-                    "image": item.image,
-                    "image_path": item.image,
-                    "favourite_count": favourite_count,
-                    "is_favorite": item.id in favorite_ids,
-                    "outlet_id": menu_link.outlet_id if menu_link else None,
-                    "outlet_name": outlet.name if outlet else None
-                }
-            )
-
-        return response, 200
+            for item, favourite_count in top_items
+        ], 200
 
     
