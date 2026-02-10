@@ -93,10 +93,10 @@ export default function CartPage() {
   // Popular add-ons
   const [selectedAddons, setSelectedAddons] = useState({});
   const popularAddons = [
-    { id: 201, name: 'Extra Sauce', price: 1.50, outlet: 'All Outlets' },
-    { id: 202, name: 'Extra Rice', price: 3.00, outlet: 'Naija Kitchen' },
-    { id: 203, name: 'Grilled Chicken', price: 5.99, outlet: 'Lagos Grill' },
-    { id: 204, name: 'Fresh Juice', price: 2.99, outlet: 'Congo Cafe' },
+    { id: 201, name: 'Extra Sauce', price: 50, outlet: 'All Outlets' },
+    { id: 202, name: 'Extra Rice', price: 300, outlet: 'Zanzibari Spice House' },
+    { id: 203, name: 'Grilled Chicken', price: 599, outlet: 'Lagos Grill' },
+    { id: 204, name: 'Fresh Juice', price: 120, outlet: 'Capetown Kitchen' },
   ];
 
   const toggleAddon = (addonId) => {
@@ -383,21 +383,23 @@ export default function CartPage() {
                 key={item.id}
                 className="bg-background rounded-xl border border-border p-4 flex gap-4 hover:border-primary transition-colors"
               >
-                {/* Item Image */}
-                <div className="relative w-24 h-24 sm:w-32 sm:h-32 shrink-0 rounded-lg overflow-hidden bg-muted">
-                  <Image
-                    src={
-                      item.image && !item.image.startsWith('http')
-                        ? `http://localhost:5555/uploads/${item.image.replace(/^\/+/, '')}`
-                        : item.image
-                    }
-                    alt={item.name}
-                    fill
-                    sizes="(max-width: 640px) 96px, 128px"
-                    className="object-cover"
-                    unoptimized
-                  />
-                </div>
+                {/* Item Image - Only show for non-add-ons */}
+                {item.category !== 'Add-on' && (
+                  <div className="relative w-24 h-24 sm:w-32 sm:h-32 shrink-0 rounded-lg overflow-hidden bg-muted">
+                    <Image
+                      src={
+                        item.image && !item.image.startsWith('http')
+                          ? `http://localhost:5555/uploads/${item.image.replace(/^\/+/, '')}`
+                          : item.image
+                      }
+                      alt={item.name}
+                      fill
+                      sizes="(max-width: 640px) 96px, 128px"
+                      className="object-cover"
+                      unoptimized
+                    />
+                  </div>
+                )}
 
                 {/* Item Details */}
                 <div className="flex-1 min-w-0">
