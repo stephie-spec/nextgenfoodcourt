@@ -17,7 +17,7 @@ export default function PopularItems() { // Now modified to show top four favour
 
   // Fetch top four favourited items from TopFavourites resource in favourites.py.
   useEffect(() => {
-    
+
     const fetchTopFavourites = async () => {
 
       try {
@@ -43,6 +43,9 @@ export default function PopularItems() { // Now modified to show top four favour
             : '/placeholder.svg',
           tag: 'Customer Favorite',
         }));
+
+        // Console data for debugging purposes.
+        console.log('Fetched popular dishes:', processedDishes);
 
         setPopularDishes(processedDishes);
         setLoading(false);
