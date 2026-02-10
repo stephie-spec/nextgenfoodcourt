@@ -46,9 +46,27 @@ export default function CartPage() {
     fetchMenu();
   }, []);
 
-  // Get item details from backend menuMap
+  // Get item details from backend menuMap or from add-ons
   const getItemDetails = (compositeId) => {
-    // compositeId: "outletId-itemName"
+    // Handle add-ons: compositeId = "addon-{addonId}"
+    if (compositeId.startsWith('addon-')) {
+      const addonId = parseInt(compositeId.replace('addon-', ''));
+      const addon = popularAddons.find(a => a.id === addonId);
+      if (addon) {
+        return {
+          name: addon.name,
+          outlet: addon.outlet,
+          price: addon.price,
+          image: '/placeholder.svg',
+          category: 'Add-on',
+          prepTime: 'N/A',
+          calories: 0,
+          description: addon.name,
+        };
+      }
+      return { name: 'Unknown Add-on', outlet: 'Unknown Outlet', price: 0, image: '/placeholder.svg', category: 'Add-on', prepTime: 'N/A' };
+    }
+    // Handle regular menu items: compositeId = "outletId-itemName"
     const parts = compositeId.split('-');
     if (parts.length < 2) {
       return { name: 'Unknown Item', outlet: 'Unknown Outlet', price: 0, image: '/placeholder.svg', category: 'Unknown', prepTime: 'N/A' };
@@ -73,12 +91,31 @@ export default function CartPage() {
   };
 
   // Popular add-ons
+  const [selectedAddons, setSelectedAddons] = useState({});
   const popularAddons = [
     { id: 201, name: 'Extra Sauce', price: 1.50, outlet: 'All Outlets' },
     { id: 202, name: 'Extra Rice', price: 3.00, outlet: 'Naija Kitchen' },
     { id: 203, name: 'Grilled Chicken', price: 5.99, outlet: 'Lagos Grill' },
     { id: 204, name: 'Fresh Juice', price: 2.99, outlet: 'Congo Cafe' },
   ];
+
+  const toggleAddon = (addonId) => {
+    setSelectedAddons(prev => ({
+      ...prev,
+      [addonId]: !prev[addonId],
+    }));
+  };
+
+  const addSelectedAddonsToCart = () => {
+    Object.keys(selectedAddons).forEach(addonId => {
+      if (selectedAddons[addonId]) {
+        // Use composite ID: "addon-{addonId}"
+        const compositeId = `addon-${addonId}`;
+        addToCart(compositeId);
+      }
+    });
+    setSelectedAddons({});
+  };
 
   // Calculate totals
   const cartItemList = Object.entries(cartItems)
@@ -294,16 +331,38 @@ export default function CartPage() {
                 {popularAddons.map((addon) => (
                   <button
                     key={addon.id}
-                    className="w-full flex items-center justify-between p-2 bg-secondary/50 rounded-lg hover:bg-secondary transition-colors text-left"
+                    onClick={() => toggleAddon(addon.id)}
+                    className={`w-full flex items-center justify-between p-3 rounded-lg transition-all ${
+                      selectedAddons[addon.id]
+                        ? 'bg-primary text-primary-foreground border border-primary'
+                        : 'bg-secondary/50 text-foreground hover:bg-secondary border border-border'
+                    }`}
                   >
-                    <div>
-                      <span className="text-sm font-medium text-foreground">{addon.name}</span>
-                      <p className="text-xs text-muted-foreground">{addon.outlet}</p>
+                    <div className="flex items-center gap-3">
+                      <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
+                        selectedAddons[addon.id]
+                          ? 'bg-primary-foreground border-primary-foreground'
+                          : 'border-muted-foreground'
+                      }`}>
+                        {selectedAddons[addon.id] && <span className="text-xs font-bold text-primary">✓</span>}
+                      </div>
+                      <div className="text-left">
+                        <span className="text-sm font-medium">{addon.name}</span>
+                        <p className="text-xs opacity-75">{addon.outlet}</p>
+                      </div>
                     </div>
-                    <span className="text-sm font-bold text-primary">+Ksh{addon.price.toFixed(2)}</span>
+                    <span className="text-sm font-bold">+Ksh{addon.price.toFixed(2)}</span>
                   </button>
                 ))}
               </div>
+              {Object.values(selectedAddons).some(v => v) && (
+                <button
+                  onClick={addSelectedAddonsToCart}
+                  className="w-full mt-4 py-2.5 bg-accent text-accent-foreground font-semibold rounded-lg hover:bg-accent/90 transition-colors"
+                >
+                  Add Selected Add-ons to Cart
+                </button>
+              )}
             </div>
 
             {/* Customer Support */}
