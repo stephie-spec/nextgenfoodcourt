@@ -125,6 +125,22 @@ export default function CartPage() {
     setCheckoutLoading(true);
     // Simulate loading time for smooth transition
     await new Promise(resolve => setTimeout(resolve, 800));
+    
+    // Pass cart data and table number to checkout page
+    const checkoutData = {
+      items: cartItemList,
+      tableNumber: selectedTable,
+      subtotal,
+      deliveryFee,
+      tax,
+      total,
+      promoDiscount,
+      promoCode: promoApplied ? promoCode : null,
+    };
+    
+    // Store in sessionStorage for checkout page
+    sessionStorage.setItem('checkoutData', JSON.stringify(checkoutData));
+    
     router.push('/checkout');
   };
 
