@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ShoppingCart, Trash2, Plus, Minus, ArrowLeft, ArrowRight, Store, Clock, MapPin, Phone, CreditCard, Shield, Truck, Star, Info, Tag, X, Loader } from 'lucide-react';
+import { ShoppingCart, Trash2, Plus, Minus, ArrowLeft, ArrowRight, Store, Clock, MapPin, Phone, CreditCard, Shield, Truck, Star, Info, Tag, X, Loader, AlertCircle } from 'lucide-react';
 import { useCart } from '@/lib/CartContext';
 // import { outletsData } from '@/lib/menuData';
 import Navbar from '@/components/navbar';
@@ -16,6 +16,7 @@ export default function CartPage() {
   const [promoApplied, setPromoApplied] = useState(false);
   const [promoDiscount, setPromoDiscount] = useState(0);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [selectedTable, setSelectedTable] = useState('');
 
   // Fetch menu data from backend and build a lookup map
   const [menuData, setMenuData] = useState([]);
@@ -527,7 +528,7 @@ export default function CartPage() {
               </div>
 
               {/* Payment Methods */}
-              <div className="mb-4">
+              <div className="mb-6">
                 <p className="text-xs text-muted-foreground mb-2">Accepted Payment Methods</p>
                 <div className="flex gap-2">
                   <div className="flex-1 p-2 bg-secondary rounded-lg flex items-center justify-center">
@@ -542,10 +543,33 @@ export default function CartPage() {
                 </div>
               </div>
 
+              {/* Table Number Selection */}
+              <div className="mb-6">
+                <label className="block text-sm font-semibold text-foreground mb-3">Table Number</label>
+                <select
+                  value={selectedTable}
+                  onChange={(e) => setSelectedTable(e.target.value)}
+                  className="w-full px-4 py-3 bg-background border border-border rounded-lg text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                >
+                  <option value="">Select your table number...</option>
+                  {Array.from({ length: 20 }, (_, i) => i + 1).map((table) => (
+                    <option key={table} value={table}>
+                      Table {table}
+                    </option>
+                  ))}
+                </select>
+                {!selectedTable && (
+                  <p className="text-xs text-amber-600 mt-2 flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" />
+                    Please select a table to continue
+                  </p>
+                )}
+              </div>
+
               {/* Checkout Button */}
               <button
                 onClick={handleCheckout}
-                disabled={checkoutLoading || cartTotalItems === 0}
+                disabled={checkoutLoading || cartTotalItems === 0 || !selectedTable}
                 className="w-full py-3 sm:py-4 px-4 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 disabled:bg-primary/50 disabled:cursor-not-allowed transition-colors mb-3 flex items-center justify-center gap-2"
               >
                 {checkoutLoading ? (
