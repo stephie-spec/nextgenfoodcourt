@@ -156,7 +156,7 @@ if __name__ == "__main__":
             Item(name="Bunny Chow", image="taj27.jpg", price=300, description="Curry served in a hollowed loaf of bread", is_available=True,category_name="Street Food"),
             Item(name="Boerewors", image="taj28.jpg", price=280, description="Traditional South African farmer's sausage", is_available=True,category_name="Grilled Meat"),
             Item(name="Pap & Chakalaka", image="taj29.jpg", price=200, description="Corn porridge with vegetable relish", is_available=True,category_name="Side Dish"),
-            Item(name="Malva Pudding", image="taj26.jpg", price=160, description="Sweet spongy pudding with apricots", is_available=True, category_name="Dessert"),
+            Item(name="Malva Pudding", image="taj45.jpg", price=160, description="Sweet spongy pudding with apricots", is_available=True, category_name="Dessert"),
         ]
 
         congolese_items = [
@@ -188,7 +188,7 @@ if __name__ == "__main__":
             Item(name="Shawarma", image="taj19.jpg", price=240, description="Slow-roasted meat with tahini and pickles in pita", is_available=True,category_name="Street Food"),
             Item(name="Falafel", image="taj20.jpg", price=180, description="Crispy chickpea fritters with tahini sauce", is_available=True,category_name="Street Food"),
             Item(name="Molokhia", image="taj21.jpg", price=260, description="Jute leaf soup with rabbit and rice", is_available=True,category_name="Soup"),
-            Item(name="Feteer Meshaltet", image="taj18.jpg", price=200, description="Flaky pastry layered with honey and cheese", is_available=True,category_name="Pastry"),
+            Item(name="Feteer Meshaltet", image="taj44.jpg", price=200, description="Flaky pastry layered with honey and cheese", is_available=True,category_name="Pastry"),
         ]
 
         additional_items = (

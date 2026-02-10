@@ -57,13 +57,18 @@ export default function Testimonials() {
 
     async function load() {
       try {
-        const res = await fetch(url);
+        const res = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
 
         // Group testimonials by outlet_id
         const grouped = {};
-        (data.testimonials || []).forEach((t) => {
+        (data.testimonials || data || []).forEach((t) => {
           const outletId = t.outlet_id || 0;
           if (!grouped[outletId]) {
             grouped[outletId] = {
@@ -84,9 +89,10 @@ export default function Testimonials() {
 
         if (mounted) {
           setTestimonialsByOutlet(grouped);
+          setError(null);
         }
       } catch (err) {
-        console.error('Failed to load testimonials', err);
+        console.error('Failed to load testimonials:', err);
         if (mounted) {
           setError(String(err));
           // Use fallback so UI still renders sensibly during development
@@ -100,7 +106,7 @@ export default function Testimonials() {
     load();
 
     return () => { mounted = false; };
-  }, []);
+  }, [API_BASE, fallbackMock]);
 
   /** Active outlet data based on selection */
   const outletKeys = Object.keys(testimonialsByOutlet);

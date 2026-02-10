@@ -1,61 +1,148 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ShoppingCart, Trash2, Plus, Minus, ArrowLeft, ArrowRight, Store, Clock, MapPin, Phone, CreditCard, Shield, Truck, Star, Info, Tag, X } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { ShoppingCart, Trash2, Plus, Minus, ArrowLeft, ArrowRight, Store, Clock, MapPin, Phone, CreditCard, Shield, Truck, Star, Info, Tag, X, Loader, AlertCircle } from 'lucide-react';
 import { useCart } from '@/lib/CartContext';
-import { outletsData } from '@/lib/menuData';
+// import { outletsData } from '@/lib/menuData';
 import Navbar from '@/components/navbar';
 
 export default function CartPage() {
+  const router = useRouter();
   const { cartItems, cartTotalItems, addToCart, removeFromCart, updateQuantity, clearCart } = useCart();
   const [promoCode, setPromoCode] = useState('');
   const [promoApplied, setPromoApplied] = useState(false);
   const [promoDiscount, setPromoDiscount] = useState(0);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [selectedTable, setSelectedTable] = useState('');
 
-  // Get item details from composite ID and outletsData
+  // Fetch menu data from backend and build a lookup map
+  const [menuData, setMenuData] = useState([]);
+  const [menuMap, setMenuMap] = useState({});
+  const [loadingMenu, setLoadingMenu] = useState(true);
+  const [menuError, setMenuError] = useState(null);
+
+  useEffect(() => {
+    const fetchMenu = async () => {
+      try {
+        setLoadingMenu(true);
+        setMenuError(null);
+        const res = await fetch('/api/menu');
+        if (!res.ok) throw new Error('Failed to fetch menu');
+        const data = await res.json();
+        setMenuData(data);
+        // Build a map: key = `${outlet_id}-${item_name}`
+        const map = {};
+        data.forEach(item => {
+          // Use backend outlet_id and item_name for key
+          const key = `${item.outlet_id || item.outletId}-${item.item_name || item.name}`;
+          map[key] = item;
+        });
+        setMenuMap(map);
+      } catch (err) {
+        setMenuError(err.message);
+      } finally {
+        setLoadingMenu(false);
+      }
+    };
+    fetchMenu();
+  }, []);
+
+  // Get item details from backend menuMap or from add-ons
   const getItemDetails = (compositeId) => {
-    // Parse composite ID: "outletId-itemName"
+    // Handle add-ons: compositeId = "addon-{addonId}"
+    if (compositeId.startsWith('addon-')) {
+      const addonId = parseInt(compositeId.replace('addon-', ''));
+      const addon = popularAddons.find(a => a.id === addonId);
+      if (addon) {
+        return {
+          name: addon.name,
+          outlet: addon.outlet,
+          price: addon.price,
+          image: '/placeholder.svg',
+          category: 'Add-on',
+          prepTime: 'N/A',
+          calories: 0,
+          description: addon.name,
+        };
+      }
+      return { name: 'Unknown Add-on', outlet: 'Unknown Outlet', price: 0, image: '/placeholder.svg', category: 'Add-on', prepTime: 'N/A' };
+    }
+    // Handle regular menu items: compositeId = "outletId-itemName"
     const parts = compositeId.split('-');
     if (parts.length < 2) {
       return { name: 'Unknown Item', outlet: 'Unknown Outlet', price: 0, image: '/placeholder.svg', category: 'Unknown', prepTime: 'N/A' };
     }
-    
-    const outletId = parseInt(parts[0]);
-    const itemName = parts.slice(1).join('-'); // In case item name has hyphens
-    
-    // Find the outlet
-    const outlet = outletsData.find(o => o.outletId === outletId);
-    if (!outlet) {
+    const outletId = parts[0];
+    const itemName = parts.slice(1).join('-');
+    const key = `${outletId}-${itemName}`;
+    const item = menuMap[key];
+    if (!item) {
       return { name: 'Unknown Item', outlet: 'Unknown Outlet', price: 0, image: '/placeholder.svg', category: 'Unknown', prepTime: 'N/A' };
     }
-    
-    // Find the item in the outlet
-    const item = outlet.items.find(i => i.name === itemName);
-    if (!item) {
-      return { name: 'Unknown Item', outlet: outlet.outletName, price: 0, image: '/placeholder.svg', category: 'Unknown', prepTime: 'N/A' };
-    }
-    
     return {
-      name: item.name,
-      outlet: outlet.outletName,
+      name: item.item_name || item.name,
+      outlet: item.outlet_name || item.outlet,
       price: item.price,
-      image: item.image,
-      category: 'Food Item',
-      prepTime: outlet.deliveryTime,
+      image: item.image_path ? `http://localhost:5555/uploads/${item.image_path.replace(/^\/+/, '')}` : '/placeholder.svg',
+      category: item.category || 'Food Item',
+      prepTime: item.prep_time || item.prepTime || 'N/A',
       calories: item.calories,
       description: item.description,
     };
   };
 
   // Popular add-ons
+  const [selectedAddons, setSelectedAddons] = useState({});
   const popularAddons = [
-    { id: 201, name: 'Extra Sauce', price: 1.50, outlet: 'All Outlets' },
-    { id: 202, name: 'Extra Rice', price: 3.00, outlet: 'Naija Kitchen' },
-    { id: 203, name: 'Grilled Chicken', price: 5.99, outlet: 'Lagos Grill' },
-    { id: 204, name: 'Fresh Juice', price: 2.99, outlet: 'Congo Cafe' },
+    { id: 201, name: 'Extra Sauce', price: 50, outlet: 'All Outlets' },
+    { id: 202, name: 'Extra Rice', price: 300, outlet: 'Zanzibari Spice House' },
+    { id: 203, name: 'Grilled Chicken', price: 599, outlet: 'Lagos Grill' },
+    { id: 204, name: 'Fresh Juice', price: 120, outlet: 'Capetown Kitchen' },
   ];
+
+  const toggleAddon = (addonId) => {
+    setSelectedAddons(prev => ({
+      ...prev,
+      [addonId]: !prev[addonId],
+    }));
+  };
+
+  const addSelectedAddonsToCart = () => {
+    Object.keys(selectedAddons).forEach(addonId => {
+      if (selectedAddons[addonId]) {
+        // Use composite ID: "addon-{addonId}"
+        const compositeId = `addon-${addonId}`;
+        addToCart(compositeId);
+      }
+    });
+    setSelectedAddons({});
+  };
+
+  const handleCheckout = async () => {
+    setCheckoutLoading(true);
+    // Simulate loading time for smooth transition
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    // Pass cart data and table number to checkout page
+    const checkoutData = {
+      items: cartItemList,
+      tableNumber: selectedTable,
+      subtotal,
+      deliveryFee,
+      tax,
+      total,
+      promoDiscount,
+      promoCode: promoApplied ? promoCode : null,
+    };
+    
+    // Store in sessionStorage for checkout page
+    sessionStorage.setItem('checkoutData', JSON.stringify(checkoutData));
+    
+    router.push('/checkout');
+  };
 
   // Calculate totals
   const cartItemList = Object.entries(cartItems)
@@ -65,6 +152,21 @@ export default function CartPage() {
       quantity,
       ...getItemDetails(id),
     }));
+
+  if (loadingMenu) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <span className="text-lg text-muted-foreground">Loading menu...</span>
+      </div>
+    );
+  }
+  if (menuError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <span className="text-lg text-red-500">{menuError}</span>
+      </div>
+    );
+  }
 
   const subtotal = cartItemList.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const deliveryFee = subtotal > 25 ? 0 : 4.99;
@@ -256,20 +358,42 @@ export default function CartPage() {
                 {popularAddons.map((addon) => (
                   <button
                     key={addon.id}
-                    className="w-full flex items-center justify-between p-2 bg-secondary/50 rounded-lg hover:bg-secondary transition-colors text-left"
+                    onClick={() => toggleAddon(addon.id)}
+                    className={`w-full flex items-center justify-between p-3 rounded-lg transition-all ${
+                      selectedAddons[addon.id]
+                        ? 'bg-primary text-primary-foreground border border-primary'
+                        : 'bg-secondary/50 text-foreground hover:bg-secondary border border-border'
+                    }`}
                   >
-                    <div>
-                      <span className="text-sm font-medium text-foreground">{addon.name}</span>
-                      <p className="text-xs text-muted-foreground">{addon.outlet}</p>
+                    <div className="flex items-center gap-3">
+                      <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
+                        selectedAddons[addon.id]
+                          ? 'bg-primary-foreground border-primary-foreground'
+                          : 'border-muted-foreground'
+                      }`}>
+                        {selectedAddons[addon.id] && <span className="text-xs font-bold text-primary">✓</span>}
+                      </div>
+                      <div className="text-left">
+                        <span className="text-sm font-medium">{addon.name}</span>
+                        <p className="text-xs opacity-75">{addon.outlet}</p>
+                      </div>
                     </div>
-                    <span className="text-sm font-bold text-primary">+Ksh{addon.price.toFixed(2)}</span>
+                    <span className="text-sm font-bold">+Ksh{addon.price.toFixed(2)}</span>
                   </button>
                 ))}
               </div>
+              {Object.values(selectedAddons).some(v => v) && (
+                <button
+                  onClick={addSelectedAddonsToCart}
+                  className="w-full mt-4 py-2.5 bg-accent text-accent-foreground font-semibold rounded-lg hover:bg-accent/90 transition-colors"
+                >
+                  Add Selected Add-ons to Cart
+                </button>
+              )}
             </div>
 
             {/* Customer Support */}
-            <div className="bg-gradient-to-br from-primary/10 to-accent/10 rounded-xl border border-border p-5">
+            <div className="bg-linear-to-br from-primary/10 to-accent/10 rounded-xl border border-border p-5">
               <h3 className="font-semibold text-foreground mb-2">Need Help?</h3>
               <p className="text-sm text-muted-foreground mb-3">Our customer support team is available 24/7</p>
               <button className="w-full py-2.5 bg-primary text-primary-foreground font-semibold rounded-lg hover:bg-primary/90 transition-colors flex items-center justify-center gap-2">
@@ -286,16 +410,23 @@ export default function CartPage() {
                 key={item.id}
                 className="bg-background rounded-xl border border-border p-4 flex gap-4 hover:border-primary transition-colors"
               >
-                {/* Item Image */}
-                <div className="relative w-24 h-24 sm:w-32 sm:h-32 flex-shrink-0 rounded-lg overflow-hidden bg-muted">
-                  <Image
-                    src={item.image}
-                    alt={item.name}
-                    fill
-                    sizes="(max-width: 640px) 96px, 128px"
-                    className="object-cover"
-                  />
-                </div>
+                {/* Item Image - Only show for non-add-ons */}
+                {item.category !== 'Add-on' && (
+                  <div className="relative w-24 h-24 sm:w-32 sm:h-32 shrink-0 rounded-lg overflow-hidden bg-muted">
+                    <Image
+                      src={
+                        item.image && !item.image.startsWith('http')
+                          ? `http://localhost:5555/uploads/${item.image.replace(/^\/+/, '')}`
+                          : item.image
+                      }
+                      alt={item.name}
+                      fill
+                      sizes="(max-width: 640px) 96px, 128px"
+                      className="object-cover"
+                      unoptimized
+                    />
+                  </div>
+                )}
 
                 {/* Item Details */}
                 <div className="flex-1 min-w-0">
@@ -413,7 +544,7 @@ export default function CartPage() {
               </div>
 
               {/* Payment Methods */}
-              <div className="mb-4">
+              <div className="mb-6">
                 <p className="text-xs text-muted-foreground mb-2">Accepted Payment Methods</p>
                 <div className="flex gap-2">
                   <div className="flex-1 p-2 bg-secondary rounded-lg flex items-center justify-center">
@@ -428,9 +559,43 @@ export default function CartPage() {
                 </div>
               </div>
 
+              {/* Table Number Selection */}
+              <div className="mb-6">
+                <label className="block text-sm font-semibold text-foreground mb-3">Table Number</label>
+                <select
+                  value={selectedTable}
+                  onChange={(e) => setSelectedTable(e.target.value)}
+                  className="w-full px-4 py-3 bg-background border border-border rounded-lg text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                >
+                  <option value="">Select your table number...</option>
+                  {Array.from({ length: 20 }, (_, i) => i + 1).map((table) => (
+                    <option key={table} value={table}>
+                      Table {table}
+                    </option>
+                  ))}
+                </select>
+                {!selectedTable && (
+                  <p className="text-xs text-amber-600 mt-2 flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" />
+                    Please select a table to continue
+                  </p>
+                )}
+              </div>
+
               {/* Checkout Button */}
-              <button className="w-full py-4 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition-colors mb-3">
-                Proceed to Checkout
+              <button
+                onClick={handleCheckout}
+                disabled={checkoutLoading || cartTotalItems === 0 || !selectedTable}
+                className="w-full py-3 sm:py-4 px-4 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 disabled:bg-primary/50 disabled:cursor-not-allowed transition-colors mb-3 flex items-center justify-center gap-2"
+              >
+                {checkoutLoading ? (
+                  <>
+                    <Loader className="w-5 h-5 animate-spin" />
+                    <span>Processing...</span>
+                  </>
+                ) : (
+                  'Proceed to Checkout'
+                )}
               </button>
 
               {/* Continue Shopping */}
