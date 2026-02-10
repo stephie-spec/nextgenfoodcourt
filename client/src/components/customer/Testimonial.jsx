@@ -86,7 +86,7 @@ export default function Testimonials() {
           setTestimonialsByOutlet(grouped);
         }
       } catch (err) {
-        console.error('Failed to load testimonials', err);
+        console.error('Failed to load testimonials:', err);
         if (mounted) {
           setError(String(err));
           // Use fallback so UI still renders sensibly during development
@@ -100,7 +100,7 @@ export default function Testimonials() {
     load();
 
     return () => { mounted = false; };
-  }, []);
+  }, [API_BASE, fallbackMock]);
 
   /** Active outlet data based on selection */
   const outletKeys = Object.keys(testimonialsByOutlet);
