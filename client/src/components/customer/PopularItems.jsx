@@ -15,8 +15,9 @@ export default function PopularItems() { // Now modified to show top four favour
   // Loading state while fetching data
   const [loading, setLoading] = useState(true);
 
-  // Fetch popular items from backend API
+  // Fetch top four favourited items from TopFavourites resource in favourites.py.
   useEffect(() => {
+    
     const fetchTopFavourites = async () => {
 
       try {
