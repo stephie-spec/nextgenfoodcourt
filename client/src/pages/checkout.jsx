@@ -1,18 +1,35 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { ArrowLeft, CreditCard, Smartphone, DollarSign, Wallet, AlertCircle, CheckCircle2, Lock } from 'lucide-react';
 import { useCart } from '@/lib/CartContext';
+import { createOrder } from '@/lib/apiHelper';
 import Navbar from '@/components/navbar';
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { cartTotalItems } = useCart();
+  const { data: session } = useSession();
+  const { clearCart } = useCart();
   const [selectedPayment, setSelectedPayment] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
+  const [orderData, setOrderData] = useState(null);
+  const [checkoutData, setCheckoutData] = useState(null);
+  const [orderId, setOrderId] = useState(null);
+
+  useEffect(() => {
+    // Load checkout data from sessionStorage
+    const data = sessionStorage.getItem('checkoutData');
+    if (data) {
+      setCheckoutData(JSON.parse(data));
+    } else {
+      // Redirect to cart if no checkout data
+      router.push('/cart');
+    }
+  }, [router]);
 
   const paymentMethods = [
     {
@@ -51,11 +68,54 @@ export default function CheckoutPage() {
       return;
     }
 
+    if (!session?.user?.id || !session?.accessToken) {
+      alert('Please log in to complete your order');
+      router.push('/login');
+      return;
+    }
+
     setIsProcessing(true);
-    // Simulate payment processing
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    setIsProcessing(false);
-    setOrderPlaced(true);
+
+    try {
+      // Prepare order data for backend
+      const orderPayload = {
+        customer_id: session.user.id,
+        table_number: checkoutData.tableNumber,
+        payment_method: selectedPayment,
+        total_amount: checkoutData.total,
+        items: checkoutData.items.map(item => ({
+          item_name: item.name,
+          quantity: item.quantity,
+          price: item.price,
+          outlet: item.outlet,
+        })),
+        promo_code: checkoutData.promoCode,
+        discount_amount: checkoutData.promoDiscount,
+        delivery_fee: checkoutData.deliveryFee,
+        tax_amount: checkoutData.tax,
+      };
+
+      console.log('Creating order:', orderPayload);
+
+      // Create order in backend
+      const response = await createOrder(orderPayload, session.accessToken);
+      
+      if (response.status === 201 || response.status === 200) {
+        setOrderId(response.data.id || response.data.order_id);
+        setOrderPlaced(true);
+        
+        // Clear cart and checkout data
+        clearCart();
+        sessionStorage.removeItem('checkoutData');
+      } else {
+        throw new Error('Failed to create order');
+      }
+    } catch (error) {
+      console.error('Error creating order:', error);
+      alert('Failed to place order. Please try again.');
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleContinueShopping = () => {
@@ -78,11 +138,19 @@ export default function CheckoutPage() {
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Order ID:</span>
-                  <span className="font-semibold">#OD{Date.now().toString().slice(-6)}</span>
+                  <span className="font-semibold">#{orderId || Date.now().toString().slice(-6)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Table Number:</span>
+                  <span className="font-semibold">Table {checkoutData?.tableNumber}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Payment Method:</span>
-                  <span className="font-semibold capitalize">{selectedPayment}</span>
+                  <span className="font-semibold capitalize">{selectedPayment?.replace('-', ' ')}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Total Amount:</span>
+                  <span className="font-semibold">Ksh {checkoutData?.total?.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Estimated Delivery:</span>
@@ -106,6 +174,17 @@ export default function CheckoutPage() {
               </Link>
             </div>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!checkoutData) {
+    return (
+      <div className="min-h-screen bg-background pt-20">
+        <Navbar />
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
+          <p className="text-muted-foreground">Loading checkout...</p>
         </div>
       </div>
     );
@@ -176,25 +255,39 @@ export default function CheckoutPage() {
             <div className="sticky top-24 bg-background rounded-xl border border-border p-6">
               <h3 className="font-bold text-foreground mb-4">Order Summary</h3>
 
-              <div className="space-y-3 pb-4 border-b border-border">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Items ({cartTotalItems})</span>
-                  <span className="font-semibold text-foreground">Ksh 1,250.00</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Delivery</span>
-                  <span className="font-semibold text-foreground">Ksh 99.00</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Tax (8%)</span>
-                  <span className="font-semibold text-foreground">Ksh 108.00</span>
-                </div>
-              </div>
+              {checkoutData && (
+                <>
+                  <div className="space-y-3 pb-4 border-b border-border">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Table Number</span>
+                      <span className="font-semibold text-foreground">Table {checkoutData.tableNumber}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Items ({checkoutData.items.length})</span>
+                      <span className="font-semibold text-foreground">Ksh {checkoutData.subtotal.toFixed(2)}</span>
+                    </div>
+                    {checkoutData.promoDiscount > 0 && (
+                      <div className="flex justify-between text-sm text-green-600">
+                        <span>Discount ({checkoutData.promoCode})</span>
+                        <span>-Ksh {checkoutData.promoDiscount.toFixed(2)}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Delivery</span>
+                      <span className="font-semibold text-foreground">Ksh {checkoutData.deliveryFee.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Tax (8%)</span>
+                      <span className="font-semibold text-foreground">Ksh {checkoutData.tax.toFixed(2)}</span>
+                    </div>
+                  </div>
 
-              <div className="pt-4 pb-6 border-b border-border flex justify-between">
-                <span className="font-bold text-foreground">Total</span>
-                <span className="font-bold text-primary text-lg">Ksh 1,457.00</span>
-              </div>
+                  <div className="pt-4 pb-6 border-b border-border flex justify-between">
+                    <span className="font-bold text-foreground">Total</span>
+                    <span className="font-bold text-primary text-lg">Ksh {checkoutData.total.toFixed(2)}</span>
+                  </div>
+                </>
+              )}
 
               <button
                 onClick={handlePayment}
