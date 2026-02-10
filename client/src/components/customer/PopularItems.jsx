@@ -44,9 +44,6 @@ export default function PopularItems() { // Now modified to show top four favour
           tag: 'Customer Favorite',
         }));
 
-        // Console data for debugging purposes.
-        console.log('Fetched popular dishes:', processedDishes);
-
         setPopularDishes(processedDishes);
         setLoading(false);
 
@@ -62,8 +59,6 @@ export default function PopularItems() { // Now modified to show top four favour
     fetchTopFavourites ();
   }, []);
 
-  // Temporary mock data for popular dishes
-  // const mockPopularDishes = [];
 
   // Handle add to cart
   const handleAddToCart = (dish) => {
