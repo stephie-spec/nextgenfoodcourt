@@ -96,10 +96,13 @@ class TopFavourites(Resource):
 
         return [
             {
-                "id": item.id,
-                "name": item.name,
-                "price": item.price,
-                "favourite_count": favourite_count
+                "id" : item.id,
+                "name" : item.name,
+                "price" : item.price,
+                "image" : item.image,
+                "description" : item.description,
+                "category_name" : item.category_name,
+                "favourite_count" : favourite_count
             }
             for item, favourite_count in top_items
         ], 200
