@@ -114,7 +114,6 @@ class TopFavourites(Resource):
                     "category_name" : item.category_name,
                     "favourite_count" : favourite_count
                 }
-                # for item, favourite_count in top_items
             ])
         
         return results, 200
