@@ -97,10 +97,13 @@ class TopFavourites(Resource):
         )
 
         results = []
+
         for item, favourite_count in top_items :
             outlet = None
+
             if item.menu_links :
-                outlet =  item.menu_links.outlet # To return the linked outlet for each item, if it is found.
+                outlet =  item.menu_links[0].outlet # To return the linked outlet for each item, if it is found.
+
         results.append ( [
             {
                 "id" : item.id,
