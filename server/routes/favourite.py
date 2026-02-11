@@ -1,7 +1,7 @@
 
 from flask import request
 from flask_restful import Resource
-from models import db, Item, CustomerFavourite
+from models import db, Item, CustomerFavourite, MenuOutletItem, Outlet
 from auth.permissions import require_customer
 from sqlalchemy import func # SQLAlchemy function imports - to be removed later
 
@@ -25,9 +25,11 @@ class CustomerFavourites ( Resource ) :
                 "name" : fav.item.name,
                 "description" : fav.item.description,
                 "image" : fav.item.image,
+                "image_path" : fav.item.image,
                 "price" : fav.item.price,
                 "is_available" : fav.item.is_available,
-                "favourites_count" : fav.item.favourites
+                "favourites_count" : fav.item.favourites,
+                "is_favorite" : True
             }
             for fav in favourites ]
             
@@ -55,7 +57,7 @@ class FavouriteButton ( Resource ) :
         if current_fav :
 
             db.session.delete ( current_fav )
-            item.favourites = Item.favourites - 1 if item.favourites > 0 else 0
+            item.favourites = item.favourites - 1 if item.favourites > 0 else 0
             db.session.commit()
 
             return { 
@@ -94,14 +96,33 @@ class TopFavourites(Resource):
             .all()
         )
 
-        return [
-            {
-                "id": item.id,
-                "name": item.name,
-                "price": item.price,
-                "favourite_count": favourite_count
+        customer = require_customer()
+        favorite_ids = set()
+        if customer:
+            favorite_ids = {
+                fav.item_id
+                for fav in CustomerFavourite.query.filter_by(customer_id=customer.id).all()
             }
-            for item, favourite_count in top_items
-        ], 200
+
+        response = []
+        for item, favourite_count in top_items:
+            menu_link = MenuOutletItem.query.filter_by(item_id=item.id).first()
+            outlet = Outlet.query.get(menu_link.outlet_id) if menu_link else None
+
+            response.append(
+                {
+                    "id": item.id,
+                    "name": item.name,
+                    "price": item.price,
+                    "image": item.image,
+                    "image_path": item.image,
+                    "favourite_count": favourite_count,
+                    "is_favorite": item.id in favorite_ids,
+                    "outlet_id": menu_link.outlet_id if menu_link else None,
+                    "outlet_name": outlet.name if outlet else None
+                }
+            )
+
+        return response, 200
 
     
