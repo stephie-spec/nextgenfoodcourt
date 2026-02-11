@@ -110,6 +110,7 @@ export default function PopularItems() { // Now modified to show top four favour
                       src={dish.image || "/placeholder.svg"}
                       alt={dish.name}
                       fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                       className="object-cover group-hover:scale-110 transition-transform duration-300"
                       unoptimized
                     />
@@ -155,7 +156,7 @@ export default function PopularItems() { // Now modified to show top four favour
                     {/* Price and cart controls */}
                     <div className="flex items-center justify-between pt-2 border-t border-border">
                       <span className="text-lg font-bold text-primary">
-                        ${dish.price.toFixed(2)}
+                        Ksh{dish.price.toFixed(2)}
                       </span>
 
                       {quantity > 0 ? (

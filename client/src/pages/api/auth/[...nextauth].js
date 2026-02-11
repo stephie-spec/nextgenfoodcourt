@@ -16,11 +16,11 @@ export const authOptions = {
         if (credentials.role === 'customer') {
           endpoint = 'http://localhost:5555/api/customer/login';
         } else if (credentials.role === 'owner') {
-          endpoint = 'http://localhost:5555/api/owner/login'; 
+          endpoint = 'http://localhost:5555/api/owner/login';
         } else {
           return null;
         }
-        
+
         try {
           const response = await fetch(endpoint, {
             method: 'POST',
@@ -37,14 +37,37 @@ export const authOptions = {
           }
 
           const data = await response.json();
-          
+
           if (data.token) {
             // Store token in localStorage for API calls
             if (typeof window !== 'undefined') {
+              // Clear all old auth data
+              localStorage.removeItem('auth_token');
+              localStorage.removeItem('user_id');
+              localStorage.removeItem('user_role');
+              localStorage.removeItem('user_name');
+              localStorage.removeItem('user_email');
+
+              // Store new auth data
               localStorage.setItem('auth_token', data.token);
               localStorage.setItem('user_role', credentials.role);
+
+              // Get the correct ID from the response
+              const userId = data.customer?.id || data.owner?.id;
+              console.log('Login response ID:', userId, 'Data:', data);
+
+              if (userId) {
+                localStorage.setItem('user_id', userId.toString());
+                console.log('Stored user_id:', userId);
+              } else {
+                console.error('No user ID in login response!', data);
+              }
+
+              // Store other user info
+              localStorage.setItem('user_name', data.customer?.name || data.owner?.name || '');
+              localStorage.setItem('user_email', data.customer?.email || data.owner?.email || '');
             }
-            
+
             return {
               id: data.customer?.id?.toString() || data.owner?.id?.toString(),
               email: data.customer?.email || data.owner?.email,

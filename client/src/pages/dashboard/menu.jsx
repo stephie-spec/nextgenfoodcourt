@@ -175,7 +175,9 @@ useEffect(() => {
       ]);
 
       if (!outletsRes.ok || !menuRes.ok) {
-        throw new Error('Failed to fetch backend menu or outlets');
+        console.warn('Menu fetch failed:', { outletsOk: outletsRes.ok, menuOk: menuRes.ok });
+        setMenuOutlets([]);
+        return;
       }
 
       const outletsDataBackend = await outletsRes.json();
@@ -299,18 +301,30 @@ useEffect(() => {
 // Fetch customer's favourites and add into menuOutlets - to persist the red heart button.
 
 useEffect(() => {
-  if (!token || !isLoggedIn) return;
+  if (!token || !isLoggedIn) {
+    console.log('Skipping favourites fetch: not authenticated');
+    return;
+  }
 
   const fetchCustomerFavourites = async () => {
     try {
       const response = await fetch('http://localhost:5555/api/customer/favourites', {
         headers: {
           Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
       });
 
+      // If not authorized or no favourites, just continue gracefully
+      if (response.status === 401) {
+        console.log('Favourites fetch unauthorized, continuing without');
+        return;
+      }
+
       if (!response.ok) {
-        throw new Error('Failed to fetch customer favourites');
+        const errorText = await response.text();
+        console.warn(`Favourites API responded with ${response.status}: ${errorText}`);
+        return;
       }
 
       const data = await response.json();
@@ -329,9 +343,10 @@ useEffect(() => {
         }))
       );
 
-      console.log('✓ Loaded customer favourites:', favouritedItemIds);
+      console.log('✓ Loaded customer favourites:', favouritedItemIds.size);
     } catch (error) {
       console.error('Error fetching customer favourites:', error);
+      // Don't throw - just log and continue
     }
   };
 
@@ -444,6 +459,7 @@ useEffect(() => {
                       src={outlet.coverImage}
                       alt={outlet.outletName}
                       fill
+                      sizes="100vw"
                       className="object-cover opacity-30"
                       unoptimized
                     />
@@ -458,6 +474,7 @@ useEffect(() => {
                           src={outlet.image}
                           alt={outlet.outletName}
                           fill
+                          sizes="(max-width: 640px) 64px, 80px"
                           className="object-cover"
                           unoptimized
                         />
@@ -516,11 +533,12 @@ useEffect(() => {
                             src={item.image}
                             alt={item.name}
                             fill
+                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                             className="object-cover group-hover:scale-110 transition-transform duration-500"
                             unoptimized
                           />
                           <div className="absolute top-3 left-3 bg-primary/90 text-primary-foreground text-sm font-bold px-3 py-1 rounded-full shadow-lg">
-                            ${item.price.toFixed(2)}
+                            Ksh{item.price.toFixed(2)}
                           </div>
                           {/* <div className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-lg">
                             {item.calories} cal 
@@ -608,7 +626,7 @@ useEffect(() => {
               <ShoppingCart className="w-5 h-5" />
               <span>{cartTotalItems} Items</span>
               <span className="px-2 py-0.5 bg-primary-foreground text-primary rounded-full text-sm">
-                ${(cartTotalItems * 10).toFixed(2)}
+                Ksh{(cartTotalItems * 10).toFixed(2)}
               </span>
             </button>
           </div>

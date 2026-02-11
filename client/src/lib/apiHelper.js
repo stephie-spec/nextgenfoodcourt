@@ -35,62 +35,63 @@ export const apiHelper = {
       });
   },
 
-  // Get all orders (for owners - all orders)
-  getOrders: () => {
-    const token = localStorage.getItem('auth_token');
+  // Get orders for owner's outlets
+  getOrders: (token, ownerId) => {
+    console.log('Getting owner orders with token:', token ? 'Exists' : 'Missing');
+    console.log('Owner ID:', ownerId);
 
-    // First, test if server is reachable
-    console.log('Testing connection to:', `${API_BASE}/api/orders`);
+    if (!token || !ownerId) {
+      console.log('Missing token or owner ID');
+      return Promise.resolve([]);
+    }
 
-    // Use the simplest possible approach
-    return fetch(`${API_BASE}/api/orders`, {
+    return fetch(`${API_BASE}/api/orders/owner/${ownerId}`, {
       method: 'GET',
       headers: {
-        'Content-Type': 'application/json',
-        ...(token && { 'Authorization': `Bearer ${token}` })
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
       },
       mode: 'cors'
     })
       .then(res => {
-        console.log('Response received:', {
-          status: res.status,
-          statusText: res.statusText,
-          ok: res.ok,
-          url: res.url
-        });
-
+        console.log('Owner orders response status:', res.status);
         if (!res.ok) {
-          // Try to get error details
-          return res.text().then(text => {
-            console.log('Error response body:', text);
-            throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-          });
+          console.log('Owner orders API failed:', res.status);
+          return [];
         }
-
         return res.json();
       })
       .then(data => {
-        console.log('Success - Orders data:', data);
-        return Array.isArray(data) ? data : [];
+        console.log('Owner orders raw data:', data);
+
+        const orders = Array.isArray(data) ? data : (data.orders || []);
+
+        console.log(`Found ${orders.length} orders for owner`);
+
+        return orders.map(order => ({
+          id: order.id,
+          created_at: order.created_at,
+          estimated_status: order.status || 'pending',
+          total: order.total || 0,
+          items: order.items || [],
+          outlet: {
+            id: order.outlet_id || null,
+            name: order.outlet_name || 'Unknown Outlet',
+            category_name: order.outlet_category || '—'
+          },
+          outlet_name: order.outlet_name || 'Unknown Outlet',
+          customer_name: order.customer_name || 'Customer',
+          customer_id: order.customer_id,
+          delivery_time: '25-35 mins'
+        }));
       })
       .catch(error => {
-        console.error('Fetch error details:', {
-          message: error.message,
-          name: error.name,
-          stack: error.stack
-        });
-
-        // Test if server is even reachable
-        fetch(`${API_BASE}/api/outlets`)
-          .then(testRes => console.log('Outlets test:', testRes.status))
-          .catch(testErr => console.log('Server unreachable:', testErr));
-
+        console.error('Error fetching owner orders:', error);
         return [];
       });
   },
 
   // Get orders for current customer
-  // update getCustomerOrders to accept token
   getCustomerOrders: (token, customerId) => {
     console.log('Getting orders with token:', token ? 'Exists' : 'Missing');
     console.log('Customer ID:', customerId);
@@ -154,24 +155,66 @@ export const apiHelper = {
   getOwnerOutlets: () => {
     const token = localStorage.getItem('auth_token');
 
+    console.log('Getting owner outlets with token:', token ? 'Exists' : 'Missing');
+
+    if (!token) {
+      console.log('Missing authentication token');
+      return Promise.resolve([]);
+    }
+
+    // Use the new dedicated endpoint
     return fetch(`${API_BASE}/api/owner/outlets`, {
-      headers: token ? {
-        'Authorization': `Bearer ${token}`
-      } : {}
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
     })
       .then(res => {
-        if (!res.ok) {
-          console.log('Owner Outlets API failed:', res.status);
-          return [];
+        console.log('Owner outlets response status:', res.status);
+
+        if (res.status === 401) {
+          console.error('Unauthorized - token might be invalid or expired');
+          return { outlets: [] };
         }
+
+        if (!res.ok) {
+          console.error('Owner Outlets API failed:', res.status, res.statusText);
+          return { outlets: [] };
+        }
+
         return res.json();
+      })
+      .then(data => {
+        console.log('Owner outlets data:', data);
+
+        // Get outlets array from response
+        const ownerOutlets = data.outlets || [];
+
+        console.log(`Found ${ownerOutlets.length} outlets for owner`);
+
+        // Format outlets like the existing getOutlets function
+        return ownerOutlets.map((outlet, index) => ({
+          id: outlet.id || index + 1,
+          name: outlet.name || `Outlet ${index + 1}`,
+          category_name: outlet.category_name || 'African Cuisine',
+          description: `Authentic ${outlet.category_name || 'African'} cuisine prepared by expert chefs.`,
+          rating: outlet.rating ?? 0,
+          reviews: outlet.reviews ?? 0,
+          isOpen: outlet.isOpen !== undefined ? outlet.isOpen : true,
+          isFavorite: outlet.isFavorite ?? false,
+          today_orders: outlet.today_orders ?? 0,
+          today_revenue: outlet.today_revenue ?? 0,
+          total_orders: outlet.total_orders ?? 0,
+          tags: [outlet.category_name || 'African', 'Traditional', 'Authentic'],
+          image_path: outlet.image_path || 'default-food.jpg',
+          owner_id: outlet.owner_id // Keep the owner_id
+        }));
       })
       .catch(error => {
         console.error('Error fetching owner outlets:', error);
         return [];
       });
   },
-
   // Helper functions
   getUserRole: () => {
     return localStorage.getItem('user_role');
@@ -214,27 +257,7 @@ export const createOrder = async (orderData, token) => {
   }
 };
 
-// Get customer orders
-export const getCustomerOrders = async (customerId, token) => {
-  try {
-    const response = await fetch(`${API_BASE}/api/orders`, {
-      method: 'GET',
-      headers: {
-        ...(token && { 'Authorization': `Bearer ${token}` })
-      }
-    });
 
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
-
-    const orders = await response.json();
-    return orders.filter(order => order.customer_id === customerId);
-  } catch (error) {
-    console.error('Error fetching customer orders:', error);
-    throw error;
-  }
-};
 
 // Get menu items for outlet
 export const getMenuItems = async (outletId) => {

@@ -5,12 +5,12 @@ import { useRouter } from 'next/router';
 import Navbar from '@/components/navbar';
 import AuthGuard from '@/components/AuthGuard';
 import { useSession } from 'next-auth/react';
-import { 
-  Store, 
-  Package, 
-  Upload, 
-  Plus, 
-  Edit2, 
+import {
+  Store,
+  Package,
+  Upload,
+  Plus,
+  Edit2,
   Trash2,
   ArrowLeft,
   Save,
@@ -32,29 +32,29 @@ const getOutletImage = (imagePath) => {
 
 const getMenuItemImage = (imagePath) => {
   if (!imagePath) return 'https://placehold.co/400';
-  
+
   if (imagePath.startsWith('http')) {
     return imagePath;
   }
-  
+
   if (imagePath === 'default-food.jpg') {
     return `${API_BASE}/uploads/default-food.jpg`;
   }
-  
+
   return `${API_BASE}/uploads/${imagePath.replace(/^\/+/, '')}`;
 };
 
 // function to get auth token
 function getAuthToken() {
   if (typeof window === 'undefined') return null;
-  
+
   // multiple token storage locations
   let token = localStorage.getItem('token');
-  
+
   if (!token) {
     token = localStorage.getItem('auth_token');
   }
-  
+
   if (!token) {
     try {
       const authData = localStorage.getItem('auth');
@@ -66,7 +66,7 @@ function getAuthToken() {
       console.log('Error parsing auth data:', e);
     }
   }
-  
+
   console.log('getAuthToken result:', token ? 'Token found' : 'No token found');
   return token;
 }
@@ -82,6 +82,9 @@ export default function OutletManage() {
   const [isEditingOutlet, setIsEditingOutlet] = useState(false);
   const [showAddItemModal, setShowAddItemModal] = useState(false);
   const [showEditItemModal, setShowEditItemModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showDeleteOutletModal, setShowDeleteOutletModal] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState({ id: null, name: '' });
   const [editingItem, setEditingItem] = useState(null);
 
   const [editedOutlet, setEditedOutlet] = useState({
@@ -100,6 +103,65 @@ export default function OutletManage() {
     image_preview: '',
     image: ''
   });
+
+  const showToast = (message, type = 'info') => {
+    // Remove any existing toasts
+    const existingToasts = document.querySelectorAll('.custom-toast');
+    existingToasts.forEach(toast => toast.remove());
+
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.className = `custom-toast fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg flex items-center gap-3 transform transition-all duration-300 translate-y-0 opacity-100 ${getToastClasses(type)}`;
+
+    // Add icon based on type
+    const icon = getToastIcon(type);
+    toast.innerHTML = `
+    ${icon}
+    <span class="font-medium">${message}</span>
+    <button class="ml-4 text-lg hover:opacity-80" onclick="this.parentElement.remove()">&times;</button>
+  `;
+
+    document.body.appendChild(toast);
+
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+      if (toast.parentElement) {
+        toast.style.transform = 'translateY(-20px)';
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+      }
+    }, 5000);
+  };
+
+  const getToastClasses = (type) => {
+    switch (type) {
+      case 'success':
+        return 'bg-green-50 border border-green-200 text-green-800';
+      case 'error':
+        return 'bg-red-50 border border-red-200 text-red-800';
+      case 'warning':
+        return 'bg-yellow-50 border border-yellow-200 text-yellow-800';
+      case 'info':
+        return 'bg-blue-50 border border-blue-200 text-blue-800';
+      default:
+        return 'bg-gray-50 border border-gray-200 text-gray-800';
+    }
+  };
+
+  const getToastIcon = (type) => {
+    switch (type) {
+      case 'success':
+        return '<svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
+      case 'error':
+        return '<svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>';
+      case 'warning':
+        return '<svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.998-.833-2.732 0L4.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path></svg>';
+      case 'info':
+        return '<svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+      default:
+        return '<svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+    }
+  };
 
   // Fetch outlet data and menu items
   useEffect(() => {
@@ -137,7 +199,7 @@ export default function OutletManage() {
 
         if (menuRes.ok) {
           const allMenuData = await menuRes.json();
-          
+
           const thisOutletItems = allMenuData
             .filter(entry => {
               const itemOutletId = entry.outlet_id || entry.items?.outlet_id;
@@ -159,7 +221,8 @@ export default function OutletManage() {
               }
 
               return {
-                id: entry.items?.item_id || entry.item_id,
+                id: entry.id,
+                item_id: entry.items?.item_id || entry.item_id,
                 name: entry.items?.item_name || entry.item_name || 'Unnamed Item',
                 price: Number(entry.items?.price || entry.price || 0),
                 category: entry.items?.category || entry.category || 'Main Course',
@@ -168,14 +231,14 @@ export default function OutletManage() {
                 image_filename: entry.image || entry.items?.image || 'default-food.jpg'
               };
             });
-          
+
           setMenuItems(thisOutletItems);
         }
 
         setLoading(false);
       } catch (error) {
         console.error('Error fetching data:', error);
-        alert('Failed to load outlet data');
+        showToast('Failed to load outlet data', 'error');
         setLoading(false);
       }
     };
@@ -187,7 +250,7 @@ export default function OutletManage() {
   const refreshMenuItems = async () => {
     try {
       const token = getAuthToken();
-      
+
       const menuRes = await fetch(`${API_BASE}/api/menu`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -196,7 +259,7 @@ export default function OutletManage() {
 
       if (menuRes.ok) {
         const allMenuData = await menuRes.json();
-        
+
         const thisOutletItems = allMenuData
           .filter(entry => {
             const itemOutletId = entry.outlet_id || entry.items?.outlet_id;
@@ -217,7 +280,8 @@ export default function OutletManage() {
             }
 
             return {
-              id: entry.items?.item_id || entry.item_id,
+              id: entry.id,
+              item_id: entry.items?.item_id || entry.item_id,
               name: entry.items?.item_name || entry.item_name || 'Unnamed Item',
               price: Number(entry.items?.price || entry.price || 0),
               category: entry.items?.category || entry.category || 'Main Course',
@@ -226,14 +290,14 @@ export default function OutletManage() {
               image_filename: entry.image || entry.items?.image || 'default-food.jpg'
             };
           });
-        
+
         setMenuItems(thisOutletItems);
       }
     } catch (error) {
       console.error('Error refreshing menu items:', error);
     }
   };
-// Update outlet - SENDS FORMDATA
+  // Update outlet - SENDS FORMDATA
   const handleUpdateOutlet = async (e) => {
     e.preventDefault();
 
@@ -241,16 +305,16 @@ export default function OutletManage() {
       const token = getAuthToken();
 
       if (!token) {
-        alert("You must be logged in to update an outlet");
+        showToast("You must be logged in to update an outlet", 'error');
         return;
       }
 
       console.log('Updating outlet with token:', token ? 'Present' : 'Missing');
-      
+
       const formData = new FormData();
       formData.append('name', editedOutlet.name);
       formData.append('category_name', editedOutlet.category_name);
-      
+
       if (editedOutlet.image_file) {
         formData.append('image', editedOutlet.image_file);
       }
@@ -272,7 +336,7 @@ export default function OutletManage() {
           image_file: null,
           image_preview: ''
         });
-        alert('Outlet updated successfully!');
+        showToast('Outlet updated successfully!', 'success');
       } else {
         const errorData = await response.json().catch(() => ({}));
         console.error('Update failed:', response.status, errorData);
@@ -280,20 +344,20 @@ export default function OutletManage() {
       }
     } catch (error) {
       console.error('Error updating outlet:', error);
-      alert(`Failed to update outlet: ${error.message}`);
+      showToast(`Failed to update outlet: ${error.message}`, 'error');
     }
   };
 
   // Handle image upload
   const handleImageUpload = (file, type = 'outlet') => {
     if (file.size > 5 * 1024 * 1024) {
-      alert('File size too large. Please choose an image under 5MB.');
+      showToast('File size too large. Please choose an image under 5MB.', 'error');
       return;
     }
 
     const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp'];
     if (!allowedTypes.includes(file.type)) {
-      alert("Invalid file type. Please upload PNG, JPEG, GIF, or WebP images.");
+      showToast("Invalid file type. Please upload PNG, JPEG, GIF, or WebP images.", 'error');
       return;
     }
 
@@ -329,10 +393,10 @@ export default function OutletManage() {
       const token = getAuthToken();
 
       if (!token) {
-        alert("You must be logged in to add menu items");
+        showToast("You must be logged in to add menu items", 'error');
         return;
       }
-      
+
       const formData = new FormData();
       formData.append('name', newMenuItem.name);
       formData.append('price', parseFloat(newMenuItem.price));
@@ -366,14 +430,14 @@ export default function OutletManage() {
         });
 
         setShowAddItemModal(false);
-        alert('Menu item added successfully!');
+        showToast('Menu item added successfully!', 'success');
       } else {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.message || 'Failed to add menu item');
       }
     } catch (error) {
       console.error('Error adding menu item:', error);
-      alert(`Failed to add menu item: ${error.message}`);
+      showToast(`Failed to add menu item: ${error.message}`, 'error');
     }
   };
 
@@ -402,7 +466,7 @@ export default function OutletManage() {
       const token = getAuthToken();
 
       if (!token) {
-        alert("You must be logged in to update menu items");
+        showToast("You must be logged in to update menu items", 'error');
         return;
       }
 
@@ -439,30 +503,34 @@ export default function OutletManage() {
         });
         setEditingItem(null);
         setShowEditItemModal(false);
-        alert('Menu item updated successfully!');
+        showToast('Menu item updated successfully!', 'success');
       } else {
         throw new Error('Failed to update menu item');
       }
     } catch (error) {
       console.error('Error updating menu item:', error);
-      alert('Failed to update menu item. Please try again.');
+      showToast('Failed to update menu item. Please try again.', 'error');
     }
   };
-  // Delete menu item
-  const handleDeleteMenuItem = async (itemId, itemName) => {
-    if (!confirm(`Are you sure you want to delete "${itemName}"?`)) {
-      return;
-    }
+
+  const handleDeleteClick = (menuId, itemName) => {
+    setItemToDelete({ id: menuId, name: itemName });   // ← rename to menuId for clarity
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteMenuItem = async () => {   // ← no need for params anymore
+    if (!itemToDelete.id) return;
 
     try {
       const token = getAuthToken();
-
       if (!token) {
-        alert("You must be logged in to delete menu items");
+        showToast("You must be logged in to delete menu items", 'error');
         return;
       }
-      
-      const response = await fetch(`${API_BASE}/api/menu/${itemId}`, {
+
+      console.log('Deleting menu entry with ID:', itemToDelete.id);
+
+      const response = await fetch(`${API_BASE}/api/menu/${itemToDelete.id}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -470,34 +538,38 @@ export default function OutletManage() {
       });
 
       if (response.ok) {
-        setMenuItems(prevItems => prevItems.filter(item => item.id !== itemId));
-        alert('Menu item deleted successfully!');
+        setMenuItems(prevItems => prevItems.filter(item => item.menu_id !== itemToDelete.id));
+        showToast('Menu item deleted successfully!', 'success');
       } else {
         const errorData = await response.json().catch(() => ({}));
+        console.error('Delete failed:', response.status, errorData);
         throw new Error(errorData.message || 'Failed to delete menu item');
       }
     } catch (error) {
       console.error('Error deleting menu item:', error);
-      alert(`Failed to delete menu item: ${error.message}`);
+      showToast(`Failed to delete menu item: ${error.message}`, 'error');
+    } finally {
+      setShowDeleteModal(false);
+      setItemToDelete({ id: null, name: '' });
     }
   };
-  
-// Delete outlet
-  const handleDeleteOutlet = async () => {
-    if (!confirm(`Are you sure you want to delete "${outlet.name}"? This action cannot be undone.`)) {
-      return;
-    }
 
+  const handleDeleteOutletClick = () => {
+    setShowDeleteOutletModal(true);
+  };
+
+  // Delete outlet
+  const handleDeleteOutlet = async () => {
     try {
       const token = getAuthToken();
 
       if (!token) {
-        alert("You must be logged in to delete outlets");
+        showToast("You must be logged in to delete outlets", 'error');
         return;
       }
-      
+
       console.log('Deleting outlet with token:', token ? 'Present' : 'Missing');
-      
+
       const response = await fetch(`${API_BASE}/api/outlets/${outletId}`, {
         method: 'DELETE',
         headers: {
@@ -506,7 +578,7 @@ export default function OutletManage() {
       });
 
       if (response.ok) {
-        alert('Outlet deleted successfully!');
+        showToast('Outlet deleted successfully!', 'success');
         router.push('/dashboard/owner');
       } else {
         const errorData = await response.json().catch(() => ({}));
@@ -515,7 +587,9 @@ export default function OutletManage() {
       }
     } catch (error) {
       console.error('Error deleting outlet:', error);
-      alert(`Failed to delete outlet: ${error.message}`);
+      showToast(`Failed to delete outlet: ${error.message}`, 'error');
+    } finally {
+      setShowDeleteOutletModal(false);
     }
   };
 
@@ -619,11 +693,10 @@ export default function OutletManage() {
                     <div>
                       <label className="block text-sm font-medium mb-2">Image</label>
                       <div
-                        className={`border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-colors ${
-                          editedOutlet.image_preview 
-                            ? 'border-primary bg-primary/5' 
+                        className={`border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-colors ${editedOutlet.image_preview
+                            ? 'border-primary bg-primary/5'
                             : 'border-gray-300 hover:border-gray-400 hover:bg-gray-50'
-                        }`}
+                          }`}
                         onClick={() => document.getElementById('outletImg').click()}
                         onDragOver={(e) => {
                           e.preventDefault();
@@ -760,7 +833,7 @@ export default function OutletManage() {
 
                     <div className="pt-4 border-t">
                       <button
-                        onClick={handleDeleteOutlet}
+                        onClick={handleDeleteOutletClick}
                         className="w-full py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 flex items-center justify-center gap-2"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -842,11 +915,10 @@ export default function OutletManage() {
 
                               {/* Availability and Actions */}
                               <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
-                                <span className={`px-2 py-1 rounded text-xs flex items-center gap-1 ${
-                                  item.is_available
+                                <span className={`px-2 py-1 rounded text-xs flex items-center gap-1 ${item.is_available
                                     ? 'bg-green-100 text-green-800'
                                     : 'bg-red-100 text-red-800'
-                                }`}>
+                                  }`}>
                                   {item.is_available ? (
                                     <>
                                       <CheckCircle className="w-3 h-3" />
@@ -867,7 +939,7 @@ export default function OutletManage() {
                                     <Edit className="w-4 h-4" />
                                   </button>
                                   <button
-                                    onClick={() => handleDeleteMenuItem(item.id)}
+                                    onClick={() => handleDeleteClick(item.id, item.name)}
                                     className="p-1.5 text-red-600 hover:bg-red-50 rounded"
                                   >
                                     <Trash2 className="w-4 h-4" />
@@ -927,11 +999,10 @@ export default function OutletManage() {
 
                               {/* Availability */}
                               <td className="py-4 px-4">
-                                <span className={`px-2 py-1 rounded text-xs flex items-center gap-1 w-fit ${
-                                  item.is_available
+                                <span className={`px-2 py-1 rounded text-xs flex items-center gap-1 w-fit ${item.is_available
                                     ? 'bg-green-100 text-green-800'
                                     : 'bg-red-100 text-red-800'
-                                }`}>
+                                  }`}>
                                   {item.is_available ? (
                                     <>
                                       <CheckCircle className="w-3 h-3" />
@@ -957,7 +1028,7 @@ export default function OutletManage() {
                                     <span className="sr-only">Edit</span>
                                   </button>
                                   <button
-                                    onClick={() => handleDeleteMenuItem(item.id)}
+                                    onClick={() => handleDeleteClick(item.id, item.name)}
                                     className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors"
                                   >
                                     <Trash2 className="w-4 h-4" />
@@ -1056,11 +1127,10 @@ export default function OutletManage() {
                       Item Image
                     </label>
                     <div
-                      className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
-                        newMenuItem.image_preview || newMenuItem.image
+                      className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${newMenuItem.image_preview || newMenuItem.image
                           ? 'border-primary bg-primary/5'
                           : 'border-gray-300 hover:border-gray-400 hover:bg-gray-50'
-                      }`}
+                        }`}
                       onClick={() => document.getElementById('itemFileInput').click()}
                       onDragOver={(e) => {
                         e.preventDefault();
@@ -1321,6 +1391,95 @@ export default function OutletManage() {
             </div>
           </div>
         )}
+
+        {showDeleteModal && (
+          <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
+            {/* Backdrop */}
+            <div
+              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+              onClick={() => setShowDeleteModal(false)}
+            />
+
+            {/* Modal */}
+            <div className="relative bg-white rounded-xl shadow-lg w-full max-w-sm p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold text-gray-900">Confirm Delete</h3>
+                <button
+                  onClick={() => setShowDeleteModal(false)}
+                  className="p-1 hover:bg-gray-100 rounded"
+                >
+                  <X className="w-5 h-5 text-gray-500" />
+                </button>
+              </div>
+
+              <div className="mb-6">
+                <div className="flex items-center justify-center w-12 h-12 bg-red-100 rounded-full mx-auto mb-4">
+                  <Trash2 className="w-6 h-6 text-red-600" />
+                </div>
+                <p className="text-center text-gray-700">
+                  Are you sure you want to delete
+                </p>
+                <p className="text-center font-bold text-gray-900 text-lg mt-1">
+                  "{itemToDelete.name || 'this item'}"?
+                </p>
+                <p className="text-center text-sm text-gray-500 mt-2">
+                  This action cannot be undone.
+                </p>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowDeleteModal(false)}
+                  className="flex-1 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteMenuItem}
+                  className="flex-1 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showDeleteOutletModal && (
+          <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
+            <div
+              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+              onClick={() => setShowDeleteOutletModal(false)}
+            />
+
+            <div className="relative bg-white rounded-xl shadow-lg w-full max-w-sm p-6">
+              <div className="text-center mb-6">
+                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Store className="w-6 h-6 text-red-600" />
+                </div>
+                <h3 className="text-lg font-bold text-gray-900 mb-2">Delete {outlet?.name}?</h3>
+                <p className="text-gray-600">This will permanently delete the outlet and all its menu items.</p>
+                <p className="text-sm text-red-600 font-medium mt-2">This action cannot be undone.</p>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowDeleteOutletModal(false)}
+                  className="flex-1 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteOutlet}
+                  className="flex-1 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
       </div>
     </AuthGuard>
   );

@@ -84,16 +84,16 @@ export default function DashboardLayout({ children, title }) {
                 <nav className="space-y-2">
                   {sidebarItems.map((item, index) => {
                     const Icon = item.icon;
-                    const isActive = item.exact 
-    ? pathname === item.href // Exact match for dashboard
-    : pathname === item.href || pathname?.startsWith(`${item.href}/`);
+                    const isActive = item.exact
+                      ? pathname === item.href // Exact match for dashboard
+                      : pathname === item.href || pathname?.startsWith(`${item.href}/`);
                     return (
                       <Link
                         key={index}
                         href={item.href}
                         className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive
-                            ? 'bg-primary text-white'
-                            : 'text-foreground hover:bg-secondary'
+                          ? 'bg-primary text-white'
+                          : 'text-foreground hover:bg-secondary'
                           }`}
                       >
                         <Icon className="w-5 h-5" />
@@ -119,7 +119,7 @@ export default function DashboardLayout({ children, title }) {
                         </div>
                         <div className="flex justify-between items-center">
                           <span className="text-sm text-foreground">Revenue</span>
-                          <span className="font-bold text-green-500">$1,240</span>
+                          <span className="font-bold text-green-500">Ksh 1,240</span>
                         </div>
                       </>
                     ) : (

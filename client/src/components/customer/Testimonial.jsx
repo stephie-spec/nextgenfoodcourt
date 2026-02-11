@@ -47,6 +47,9 @@ export default function Testimonials() {
   /** Currently selected outlet index */
   const [selectedOutlet, setSelectedOutlet] = useState(0);
 
+  /** Toggle expanded outlet list */
+  const [expandOutlets, setExpandOutlets] = useState(false);
+
   /** Loading state for async fetch */
   const [loading, setLoading] = useState(true);
 
@@ -57,13 +60,18 @@ export default function Testimonials() {
 
     async function load() {
       try {
-        const res = await fetch(url);
+        const res = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
 
         // Group testimonials by outlet_id
         const grouped = {};
-        (data.testimonials || []).forEach((t) => {
+        (data.testimonials || data || []).forEach((t) => {
           const outletId = t.outlet_id || 0;
           if (!grouped[outletId]) {
             grouped[outletId] = {
@@ -84,9 +92,10 @@ export default function Testimonials() {
 
         if (mounted) {
           setTestimonialsByOutlet(grouped);
+          setError(null);
         }
       } catch (err) {
-        console.error('Failed to load testimonials', err);
+        console.error('Failed to load testimonials:', err);
         if (mounted) {
           setError(String(err));
           // Use fallback so UI still renders sensibly during development
@@ -100,7 +109,7 @@ export default function Testimonials() {
     load();
 
     return () => { mounted = false; };
-  }, []);
+  }, [API_BASE, fallbackMock]);
 
   /** Active outlet data based on selection */
   const outletKeys = Object.keys(testimonialsByOutlet);
@@ -108,6 +117,11 @@ export default function Testimonials() {
 
   /** Extract outlet names for the selector buttons */
   const outletList = outletKeys.length ? outletKeys.map(k => testimonialsByOutlet[k].outlet) : [];
+
+  /** Number of outlets to show initially */
+  const INITIAL_DISPLAY = 2;
+  const hasMore = outletList.length > INITIAL_DISPLAY;
+  const visibleOutlets = expandOutlets ? outletList : outletList.slice(0, INITIAL_DISPLAY);
 
   return (
     <section
@@ -146,34 +160,55 @@ export default function Testimonials() {
               </div>
             )}
 
-            <div className="mb-10 sm:mb-12 flex flex-wrap gap-2 sm:gap-3">
+            {/* Segmented Control with Inline More Expansion */}
+            <div className="mb-10 sm:mb-12 flex flex-wrap items-center gap-2 sm:gap-3">
               {outletList.length ? (
-                  outletList.map((outlet, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setSelectedOutlet(index)}
-                    className={`px-4 sm:px-6 py-2 sm:py-3 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-300 ${
-                      selectedOutlet === index
-                        ? 'bg-primary text-primary-foreground shadow-lg'
-                        : 'bg-secondary text-foreground hover:bg-secondary/80'
-                    }`}
-                  >
-                    {outlet}
-                  </button>
-                ))
+                <>
+                  {/* Segmented Control Container */}
+                  <div className="inline-flex items-center gap-1 p-1 bg-secondary/40 rounded-lg border border-border">
+                    {visibleOutlets.map((outlet, idx) => {
+                      const actualIndex = outletList.indexOf(outlet);
+                      
+                      return (
+                        <button
+                          key={actualIndex}
+                          onClick={() => setSelectedOutlet(actualIndex)}
+                          className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold rounded-md transition-all duration-300 whitespace-nowrap ${
+                            selectedOutlet === actualIndex
+                              ? 'bg-primary text-primary-foreground shadow-md'
+                              : 'text-foreground hover:bg-secondary/50'
+                          }`}
+                        >
+                          {outlet}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* More Button - inline expansion */}
+                  {hasMore && (
+                    <button
+                      onClick={() => setExpandOutlets(!expandOutlets)}
+                      className="inline-flex items-center gap-1 px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-primary hover:text-primary/80 transition-colors rounded-lg hover:bg-primary/10"
+                    >
+                      <span>{expandOutlets ? '−' : '+'}</span>
+                      <span className="hidden sm:inline">{expandOutlets ? 'Less' : `More (${outletList.length - INITIAL_DISPLAY})`}</span>
+                      <span className="sm:hidden">{expandOutlets ? 'Less' : 'More'}</span>
+                    </button>
+                  )}
+                </>
               ) : (
                 <p className="text-sm text-muted-foreground">No testimonials available.</p>
               )}
-              {/* Add Review button - placed next to outlet selector */}
-              <div className="ml-auto flex items-center gap-3">
-                <button
-                  onClick={() => { setShowForm((s) => !s); setSuccessMsg(null); setError(null); }}
-                  className="ml-2 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-primary to-accent text-white shadow-lg hover:scale-105 transform transition"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span className="text-sm font-semibold">Add Review</span>
-                </button>
-              </div>
+              
+              {/* Add Review button - placed after segmented control */}
+              <button
+                onClick={() => { setShowForm((s) => !s); setSuccessMsg(null); setError(null); }}
+                className="ml-auto inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-primary to-accent text-white shadow-lg hover:scale-105 transform transition"
+              >
+                <Plus className="w-4 h-4" />
+                <span className="text-sm font-semibold">Add Review</span>
+              </button>
             </div>
 
             {/* Optional Add Review form */}
