@@ -14,6 +14,8 @@ flask-restful = "*"
 flask-cors = "*"
 werkzeug = "*"
 pyjwt = "*"
+qrcode = {extras = ["pil"], version = "*"}
+
 
 [dev-packages]
 
