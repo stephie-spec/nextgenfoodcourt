@@ -47,51 +47,52 @@ class ListOutlets(Resource):
             "name": outlet.name,
             "category_name": outlet.category_name,
             "owner_id": outlet.owner_id,
-            "image_path": outlet.image_path if outlet.image_path and outlet.image_path.strip() else 'default-outlet.jpg'
+            "image_path": outlet.image_path if outlet.image_path and outlet.image_path.strip() else 'default-food.jpg'
         } for outlet in outlets]
 
         return {"outlets": outlet_list}, 200
     
     # Create a new outlet - Owner-only route
-    def post (self) :
-
+    def post(self):
         owner = require_owner()
-
         if not owner:
             return {"message": "Unauthorized"}, 401
-        
-        # Check if request contains files (multipart/form-data)
-        if 'image' in request.files:
-            # Get data from form
+
+        content_type = request.headers.get('Content-Type', '').lower()
+
+        name = None
+        category_name = None
+        image_filename = "default-food.jpg"
+
+        # Handle multipart/form-data (with or without image)
+        if 'multipart/form-data' in content_type:
             name = request.form.get('name')
             category_name = request.form.get('category_name')
-            image_file = request.files['image']
-            
-            # Validate required fields
-            if not name or not category_name:
-                return {"message": "Name and category_name are required"}, 400
-            
-            # Save image and get filename
-            image_filename = save_outlet_image(image_file, name)
-            
-            if not image_filename:
-                return {"message": "Invalid image file"}, 400
-                
-        else:
-            # Get data from JSON (no image uploaded)
+            image_file = request.files.get('image')
+
+            if image_file and allowed_file(image_file.filename):
+                image_filename = save_outlet_image(image_file, name or "outlet")
+                if not image_filename:
+                    return {"message": "Invalid image file"}, 400
+
+        # Handle application/json (no image)
+        elif 'application/json' in content_type:
             data = request.get_json()
-            
             if not data:
                 return {"message": "No data provided"}, 400
-                
             name = data.get("name")
             category_name = data.get("category_name")
-            image_filename = data.get("image_path", "default-outlet.jpg")
-            
-            if not name or not category_name:
-                return {"message": "Name and category_name are required"}, 400
+            # image can be passed as path if needed, but usually not
+            image_filename = data.get("image_path", "default-food.jpg")
 
-        # Create outlet
+        else:
+            return {"message": "Unsupported Media Type. Use multipart/form-data or application/json"}, 415
+
+        # Common validation
+        if not name or not category_name:
+            return {"message": "Name and category_name are required"}, 400
+
+        # Create the outlet
         outlet = Outlet(
             name=name,
             category_name=category_name,
@@ -258,7 +259,7 @@ class OwnerOutletsResource(Resource):
             "name": outlet.name,
             "category_name": outlet.category_name,
             "owner_id": outlet.owner_id,
-            "image_path": outlet.image_path if outlet.image_path and outlet.image_path.strip() else 'default-outlet.jpg'
+            "image_path": outlet.image_path if outlet.image_path and outlet.image_path.strip() else 'default-food.jpg'
         } for outlet in outlets]
         
         return {"outlets": outlet_list}, 200
