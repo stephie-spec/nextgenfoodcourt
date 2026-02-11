@@ -19,6 +19,8 @@ export default function CheckoutPage() {
   const [checkoutData, setCheckoutData] = useState(null);
   const [orderId, setOrderId] = useState(null);
   const [menuItems, setMenuItems] = useState([]);
+  const [qrCode, setQrCode] = useState(null);
+  const [loadingQR, setLoadingQR] = useState(false);
   const [formData, setFormData] = useState({
     phoneNumber: '',
     cardNumber: '',
@@ -90,6 +92,31 @@ export default function CheckoutPage() {
     }));
   };
 
+  const generateOrderQR = async (orderIdValue) => {
+    setLoadingQR(true);
+    try {
+      const response = await fetch(`http://localhost:5555/api/qr/order/${orderIdValue}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          include_details: true,
+          base_url: 'http://localhost:3000',
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setQrCode(data.qr);
+      }
+    } catch (error) {
+      console.error('Error generating QR code:', error);
+    } finally {
+      setLoadingQR(false);
+    }
+  };
+
   const handlePayment = async () => {
     if (!selectedPayment) {
       alert('Please select a payment method');
@@ -139,8 +166,12 @@ export default function CheckoutPage() {
       
       if (results.length > 0 && (results[0].status === 201 || results[0].status === 200)) {
         // Use the first order ID as reference
-        setOrderId(results[0].data.id);
+        const newOrderId = results[0].data.id;
+        setOrderId(newOrderId);
         setOrderPlaced(true);
+        
+        // Generate QR code for the order
+        generateOrderQR(newOrderId);
         
         // Clear cart and checkout data
         clearCart();
@@ -196,6 +227,26 @@ export default function CheckoutPage() {
                 </div>
               </div>
             </div>
+
+            {/* QR Code Section */}
+            {qrCode && (
+              <div className="bg-white rounded-xl p-6 mb-8 border border-border text-center">
+                <h3 className="font-semibold text-foreground mb-3">Order QR Code</h3>
+                <p className="text-sm text-muted-foreground mb-4">Scan this code to track your order</p>
+                <div className="flex justify-center">
+                  <img src={qrCode} alt="Order QR Code" className="w-48 h-48" />
+                </div>
+                <p className="text-xs text-muted-foreground mt-3">
+                  Show this QR code when picking up your order
+                </p>
+              </div>
+            )}
+
+            {loadingQR && !qrCode && (
+              <div className="bg-white rounded-xl p-6 mb-8 border border-border text-center">
+                <p className="text-sm text-muted-foreground">Generating QR code...</p>
+              </div>
+            )}
 
             <div className="flex flex-col sm:flex-row gap-4">
               <button
