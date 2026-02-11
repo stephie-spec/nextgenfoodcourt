@@ -172,7 +172,7 @@ export default function Footer() {
         {/* Copyright */}
         <div className="pt-8 text-center text-sm text-muted-foreground">
           <p>
-            © {currentYear} Nextgen Food Court. All rights reserved. | Made with ❤️ for food lovers
+            © {currentYear} Nextgen Food Court. All rights reserved. | Made with love for food lovers
           </p>
         </div>
       </div>
