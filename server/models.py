@@ -9,7 +9,9 @@ from extensions import db
 
 class OrderStatus(enum.Enum):
     pending = "pending"
+    confirmed = "confirmed"
     completed = "completed"
+    cancelled = "cancelled"
 
 class Testimonial(db.Model):
     __tablename__ = "testimonials"

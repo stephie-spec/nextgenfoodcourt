@@ -9,7 +9,7 @@ export default function OutletCard({ outlet, isOwner = false }) {
   const router = useRouter();
   // outlet images url path
   const getOutletImage = (imagePath) => {
-    const finalImage = imagePath || 'default-outlet.jpg';
+    const finalImage = imagePath || 'default-food.jpg';
     return `http://localhost:5555/uploads/${finalImage.replace(/^\/+/, '')}`;
   };
 
@@ -47,8 +47,8 @@ export default function OutletCard({ outlet, isOwner = false }) {
         />
         <div className="absolute top-3 left-3">
           <span className={`px-3 py-1.5 rounded-full text-xs font-medium ${outlet.isOpen
-              ? 'bg-green-100 text-green-800'
-              : 'bg-gray-100 text-gray-800'
+            ? 'bg-green-100 text-green-800'
+            : 'bg-gray-100 text-gray-800'
             }`}>
             {outlet.isOpen ? 'Open Now' : 'Closed'}
           </span>
@@ -62,8 +62,8 @@ export default function OutletCard({ outlet, isOwner = false }) {
             <h3 className="font-bold text-lg text-gray-900">{outlet.name}</h3>
             <div className="flex items-center gap-1">
               <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-              <span className="font-bold">{outlet.rating || 4.5}</span>
-              <span className="text-gray-500 text-sm">({outlet.reviews || '120+'})</span>
+              <span className="font-bold">{outlet.rating > 0 ? outlet.rating.toFixed(1) : 'New'}</span>
+              <span className="text-gray-500 text-sm">({outlet.reviews || 0})</span>
             </div>
           </div>
 
@@ -105,7 +105,7 @@ export default function OutletCard({ outlet, isOwner = false }) {
               <div className="flex items-center justify-center gap-1 mb-1">
                 <CheckCircle className="w-4 h-4 text-green-500" />
                 <p className="text-lg font-bold text-gray-900">
-                  {outlet.rating || 4.5}★
+                  {outlet.rating > 0 ? `${outlet.rating.toFixed(1)}★` : 'New'}
                 </p>
               </div>
               <p className="text-xs text-gray-600">Rating</p>
@@ -130,7 +130,7 @@ export default function OutletCard({ outlet, isOwner = false }) {
                     console.error('Cannot navigate: no outlet ID');
                   }
                 }}
-                className="block w-full py-2 px-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis text-center"
+                className="block w-full py-2 px-6 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis text-center"
               >
                 Manage
               </Link>
