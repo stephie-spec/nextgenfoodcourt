@@ -584,7 +584,7 @@ export default function OwnerDashboard() {
                 <div className="space-y-4 sm:space-y-6">
                   {orders.slice(0, 3).map(order => (
                     <div key={order.id} className="border-b border-gray-200 last:border-0 pb-4 sm:pb-0 sm:border-0">
-                      <OrderCard order={order} isOwner={true} />
+                      <OrderCard order={order} isOwner={true} onOrderUpdate={handleOrderUpdate} />
                     </div>
                   ))}
                 </div>
