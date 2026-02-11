@@ -51,6 +51,15 @@ export default function CustomerDashboard() {
       });
   }, [session]);
 
+    const handleOrderUpdate = (updatedOrder) => {
+    setOrders(prevOrders =>
+      prevOrders.map(order =>
+        order.id === updatedOrder.id ? updatedOrder : order
+      )
+    );
+  }
+
+
   const activeOrders = Array.isArray(orders)
     ? orders.filter(o => o.estimated_status !== 'completed')
     : [];
@@ -227,7 +236,7 @@ export default function CustomerDashboard() {
                     }
                   })
                   .map(order => (
-                    <OrderCard key={order.id} order={order} isOwner={false} />
+                    <OrderCard key={order.id} order={order} isOwner={false} onOrderUpdate={handleOrderUpdate} />
                   ))}
 
                 {pastOrders.length === 0 && (
