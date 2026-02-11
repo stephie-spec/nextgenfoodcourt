@@ -198,15 +198,15 @@ export const apiHelper = {
           name: outlet.name || `Outlet ${index + 1}`,
           category_name: outlet.category_name || 'African Cuisine',
           description: `Authentic ${outlet.category_name || 'African'} cuisine prepared by expert chefs.`,
-          rating: outlet.rating || (4.5 + (Math.random() * 0.5)).toFixed(1),
-          reviews: outlet.reviews || Math.floor(Math.random() * 150) + 50,
+          rating: outlet.rating ?? 0,
+          reviews: outlet.reviews ?? 0,
           isOpen: outlet.isOpen !== undefined ? outlet.isOpen : true,
-          isFavorite: Math.random() > 0.5,
-          today_orders: outlet.today_orders || Math.floor(Math.random() * 30) + 5,
-          today_revenue: outlet.today_revenue || (Math.random() * 1000) + 500,
-          total_orders: outlet.total_orders || Math.floor(Math.random() * 200) + 50,
+          isFavorite: outlet.isFavorite ?? false,
+          today_orders: outlet.today_orders ?? 0,
+          today_revenue: outlet.today_revenue ?? 0,
+          total_orders: outlet.total_orders ?? 0,
           tags: [outlet.category_name || 'African', 'Traditional', 'Authentic'],
-          image_path: outlet.image_path || 'default-outlet.jpg',
+          image_path: outlet.image_path || 'default-food.jpg',
           owner_id: outlet.owner_id // Keep the owner_id
         }));
       })
