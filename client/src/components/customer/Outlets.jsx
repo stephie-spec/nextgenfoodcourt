@@ -10,16 +10,25 @@ export default function OutletsShowcase() {
   const [outlets, setOutlets] = useState([]);
   // Loading state for async fetch
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  // Fetch outlets (mocked for now)
+  // Fetch outlets from backend
   useEffect(() => {
     const fetchOutlets = async () => {
       try {
-        // TODO: Replace mock data with backend API call
-        setOutlets(mockOutlets);
-        setLoading(false);
+        setError('');
+        const response = await fetch('http://localhost:5555/api/outlets');
+        if (!response.ok) {
+          throw new Error('Failed to fetch outlets');
+        }
+        const data = await response.json();
+        const outletsList = data.outlets || data;
+        const shuffled = outletsList.sort(() => Math.random() - 0.5);
+        setOutlets(shuffled.slice(0, 4));
       } catch (error) {
         console.error('Error fetching outlets:', error);
+        setError('Failed to load outlets');
+      } finally {
         setLoading(false);
       }
     };
@@ -27,49 +36,10 @@ export default function OutletsShowcase() {
     fetchOutlets();
   }, []);
 
-  // Temporary mock outlets data
-  const mockOutlets = [
-    {
-      id: 1,
-      name: 'Addis Kitchen',
-      cuisine: 'Ethiopian',
-      image: '/outlet-showcase-1.jpg',
-      location: 'Level 2 - Court A',
-      hours: '10:00 AM - 10:00 PM',
-      phone: '+1 (555) 123-4501',
-      description: 'Authentic Ethiopian cuisine with traditional injera bread and aromatic spices.',
-    },
-    {
-      id: 2,
-      name: 'Lagos Grill',
-      cuisine: 'Nigerian',
-      image: '/outlet-showcase-2.jpg',
-      location: 'Level 2 - Court B',
-      hours: '10:00 AM - 10:00 PM',
-      phone: '+1 (555) 123-4502',
-      description: 'Experience vibrant Nigerian flavors with our signature jollof rice and grilled specialties.',
-    },
-    {
-      id: 3,
-      name: 'Nairobi Flame',
-      cuisine: 'Kenyan',
-      image: '/outlet-showcase-3.jpg',
-      location: 'Level 2 - Court C',
-      hours: '10:00 AM - 10:00 PM',
-      phone: '+1 (555) 123-4503',
-      description: 'Traditional Kenyan grilled meats cooked over charcoal, served fresh and smoky.',
-    },
-    {
-      id: 4,
-      name: 'Kinshasa Kitchen',
-      cuisine: 'Congolese',
-      image: '/outlet-showcase-4.jpg',
-      location: 'Level 2 - Court D',
-      hours: '10:00 AM - 10:00 PM',
-      phone: '+1 (555) 123-4504',
-      description: 'Authentic Congolese dishes featuring traditional cooking methods and fresh ingredients.',
-    },
-  ];
+  const getOutletImage = (imagePath) => {
+    const finalImage = imagePath || 'default-outlet.jpg';
+    return `http://localhost:5555/uploads/${finalImage.replace(/^\/+/, '')}`;
+  };
 
   return (
     // Outlets showcase section
@@ -96,6 +66,11 @@ export default function OutletsShowcase() {
               <p className="text-muted-foreground">Loading outlets...</p>
             </div>
           )}
+          {!loading && error && (
+            <div className="flex justify-center items-center py-12">
+              <p className="text-muted-foreground">{error}</p>
+            </div>
+          )}
 
           {/* Outlets grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
@@ -107,15 +82,16 @@ export default function OutletsShowcase() {
                 {/* Outlet image */}
                 <div className="relative h-32 sm:h-40 overflow-hidden bg-muted">
                   <Image
-                    src={outlet.image || "/placeholder.svg"}
+                    src={getOutletImage(outlet.image_path)}
                     alt={outlet.name}
                     fill
                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                     className="object-cover group-hover:scale-110 transition-transform duration-300"
+                    unoptimized
                   />
                   {/* Cuisine badge */}
                   <div className="absolute top-3 left-3 bg-accent/90 backdrop-blur text-white text-xs font-bold px-3 py-1 rounded-full">
-                    {outlet.cuisine}
+                    {outlet.category_name || 'Food'}
                   </div>
                 </div>
 
@@ -129,15 +105,15 @@ export default function OutletsShowcase() {
                   <div className="space-y-2 border-t border-border pt-3">
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <MapPin className="w-4 h-4 text-primary" />
-                      <span>{outlet.location}</span>
+                      <span>{outlet.location || 'Food Court Level 1'}</span>
                     </div>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Clock className="w-4 h-4 text-primary" />
-                      <span>{outlet.hours}</span>
+                      <span>{outlet.hours || '10:00 AM - 10:00 PM'}</span>
                     </div>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Phone className="w-4 h-4 text-primary" />
-                      <span>{outlet.phone}</span>
+                      <span>{outlet.phone || 'Contact us'}</span>
                     </div>
                   </div>
 
