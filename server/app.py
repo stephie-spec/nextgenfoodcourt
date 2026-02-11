@@ -24,9 +24,13 @@ from routes.table_booking import (
     AvailableTablesResource
 )
 from routes.favourite import CustomerFavourites, FavouriteButton, TopFavourites
+from routes.qr_code import QRCodeResource, OrderQRCodeResource, PaymentQRCodeResource, HomePageQRResource
 
 def create_app():
     app = Flask(__name__, static_url_path='/uploads', static_folder=os.path.abspath('../photos'))
+    
+    # app.config['SQLALCHEMY_DATABASE_URI'] = ("postgresql+psycopg2://otiende:12345678@localhost:5432/nextgen_food_court_db")
+
 
     # CONFIG
     app.config["SECRET_KEY"] = "super-secret-key-change-me"
@@ -73,9 +77,25 @@ def create_app():
     api.add_resource(TableBookingResource, "/api/table-bookings/<int:booking_id>")
     api.add_resource(AvailableTablesResource, "/api/table-bookings/available-tables")
 
+    # QR Code generation endpoints
+    api.add_resource(QRCodeResource, "/api/qr/generate")
+    api.add_resource(OrderQRCodeResource, "/api/qr/order/<int:order_id>")
+    api.add_resource(PaymentQRCodeResource, "/api/qr/payment")
+    api.add_resource(HomePageQRResource, "/api/qr/homepage")
+
     return app
 
 
 app = create_app()
 if __name__ == "__main__":
     app.run(debug=True, port=5555)
+
+
+
+
+# CREATE DATABASE nextgen_food_court_db;
+# CREATE USER otiende WITH PASSWORD '12345678';
+# GRANT ALL PRIVILEGES ON DATABASE nextgen_food_court_db TO otiende;
+# GRANT ALL ON SCHEMA public TO otiende;
+# ALTER SCHEMA public OWNER TO otiende;
+# ALTER DATABASE nextgen_food_court_db OWNER TO otiende;
