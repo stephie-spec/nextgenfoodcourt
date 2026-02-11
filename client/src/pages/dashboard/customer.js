@@ -52,11 +52,11 @@ export default function CustomerDashboard() {
   }, [session]);
 
   const activeOrders = Array.isArray(orders)
-    ? orders.filter(o => o.estimated_status !== 'delivered')
+    ? orders.filter(o => o.estimated_status !== 'completed')
     : [];
 
   const pastOrders = Array.isArray(orders)
-    ? orders.filter(o => o.estimated_status === 'delivered')
+    ? orders.filter(o => o.estimated_status === 'completed')
     : [];
 
   return (
