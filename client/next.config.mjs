@@ -4,7 +4,6 @@ const nextConfig = {
   reactCompiler: true,
   reactStrictMode: true,
   images: {
-    domains: ['localhost', '127.0.0.1'],
     remotePatterns: [
       {
         protocol: 'http',
