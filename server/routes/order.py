@@ -14,6 +14,11 @@ def serialize_order(order):
     item_price = order.menu_outlet_item.item.price
     total_price = item_price * order.quantity
 
+    # Get table booking if exists
+    table_number = None
+    if order.table_booking:
+        table_number = order.table_booking.table_number
+
     return {
         "id": order.id,
         "customer_id": order.customer_id,
@@ -33,7 +38,8 @@ def serialize_order(order):
             "image_path": item.image if item.image and item.image.strip() else 'default-food.jpg'
         }
     ],
-    "total": total_price
+    "total": total_price,
+    "table_number": table_number
 
     }
 
