@@ -102,6 +102,9 @@ class OrderResource(Resource):
             if not isinstance(data["quantity"], int) or data["quantity"] <= 0:
                 return {"error": "Invalid quantity"}, 400
             order.quantity = data["quantity"]
+            # Recalculate total
+            item_price = order.menu_outlet_item.item.price
+            order.total = item_price * order.quantity
 
         if "status" in data:
             try:
