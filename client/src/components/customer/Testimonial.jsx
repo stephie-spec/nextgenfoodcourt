@@ -109,7 +109,7 @@ export default function Testimonials() {
     load();
 
     return () => { mounted = false; };
-  }, [API_BASE, fallbackMock]);
+  }, [API_BASE]);
 
   /** Active outlet data based on selection */
   const outletKeys = Object.keys(testimonialsByOutlet);
