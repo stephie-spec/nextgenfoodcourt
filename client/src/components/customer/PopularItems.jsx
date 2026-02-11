@@ -21,8 +21,10 @@ export default function PopularItems() { // Now modified to show top four favour
     const fetchTopFavourites = async () => {
 
       try {
-        const response = await fetch('http://localhost:5555/api/items/top_favourites');
-
+        const token = localStorage.getItem('auth_token');
+        const response = await fetch('http://localhost:5555/api/items/top_favourites', {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        });
         if (!response.ok) {
           throw new Error('Failed to fetch top favourite items');
         }
@@ -41,7 +43,8 @@ export default function PopularItems() { // Now modified to show top four favour
           image: item.image
             ? `http://localhost:5555/uploads/${item.image.replace(/^\/+/, '')}`
             : '/placeholder.svg',
-          tag: 'Customer Favorite',
+          tag: menuItem.is_favorite ? 'Your Favorite' : 'Customer Favorite',
+          isFavorite: menuItem.is_favorite
         }));
 
         setPopularDishes(processedDishes);
@@ -83,7 +86,7 @@ export default function PopularItems() { // Now modified to show top four favour
               Customer Favorites
             </h3>
             <p className="text-base sm:text-lg text-muted-foreground max-w-2xl">
-              Discover the dishes that have captured our customers' hearts.
+              Discover the dishes that have captured our customers&apos; hearts.
             </p>
           </div>
 
