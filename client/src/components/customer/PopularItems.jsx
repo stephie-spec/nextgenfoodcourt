@@ -18,7 +18,10 @@ export default function PopularItems() {
   useEffect(() => {
     const fetchPopularItems = async () => {
       try {
-        const response = await fetch('/api/menu');
+        const token = localStorage.getItem('auth_token');
+        const response = await fetch('http://localhost:5555/api/items/top_favourites', {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        });
         if (!response.ok) {
           console.warn('Popular items fetch failed:', response.status);
           setPopularDishes([]);
@@ -27,16 +30,21 @@ export default function PopularItems() {
         }
         const data = await response.json();
         const processedDishes = data.slice(0, 4).map((menuItem) => ({
-          id: menuItem.item_id,
-          name: menuItem.item_name,
-          outlet: menuItem.outlet_name,
+          id: menuItem.outlet_id && menuItem.name
+            ? `${menuItem.outlet_id}-${menuItem.name}`
+            : `item-${menuItem.id}`,
+          itemId: menuItem.id,
+          outletId: menuItem.outlet_id,
+          name: menuItem.name,
+          outlet: menuItem.outlet_name || 'Food Court',
           price: menuItem.price || 0,
-          rating: Math.random() * (4.9 - 4.5) + 4.5,
+          rating: Math.floor(Math.random() * 5) + 1,
           reviews: Math.floor(Math.random() * (300 - 100) + 100),
           image: menuItem.image_path
             ? `http://localhost:5555/uploads/${menuItem.image_path.replace(/^\/+/, '')}`
             : '/placeholder.svg',
-          tag: 'Customer Favorite',
+          tag: menuItem.is_favorite ? 'Your Favorite' : 'Customer Favorite',
+          isFavorite: menuItem.is_favorite
         }));
         setPopularDishes(processedDishes);
         setLoading(false);
@@ -76,7 +84,7 @@ export default function PopularItems() {
               Customer Favorites
             </h3>
             <p className="text-base sm:text-lg text-muted-foreground max-w-2xl">
-              Discover the dishes that have captured our customers' hearts.
+              Discover the dishes that have captured our customers&apos; hearts.
             </p>
           </div>
 
