@@ -30,7 +30,9 @@ export default function FeaturedItems() {
         }
         const data = await response.json();
         const processedItems = data.slice(0, 8).map((menuItem) => ({
-          id: menuItem.item_id,
+          id: `${menuItem.outlet_id}-${menuItem.item_name}`,
+          itemId: menuItem.item_id,
+          outletId: menuItem.outlet_id,
           name: menuItem.item_name,
           outlet: menuItem.outlet_name,
           description: `${menuItem.category || 'Special'} from ${menuItem.outlet_name}`,
