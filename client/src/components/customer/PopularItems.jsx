@@ -67,6 +67,7 @@ export default function PopularItems() { // Now modified to show top four favour
 
   // Handle add to cart
   const handleAddToCart = (dish) => {
+    console.log(`Adding to cart: "${dish.id}" (outlet: ${dish.outlet}, item: ${dish.name})`);
     addToCart(dish.id);
   };
 
