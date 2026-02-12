@@ -20,8 +20,11 @@ export default function CheckoutPage() {
   const [orderId, setOrderId] = useState(null);
   const [qrCode, setQrCode] = useState(null);
   const [loadingQR, setLoadingQR] = useState(false);
+  const [trackingCode, setTrackingCode] = useState(null);
   const [formData, setFormData] = useState({
     phoneNumber: '',
+    guestName: '',
+    guestEmail: '',
     cardNumber: '',
     cardName: '',
     expiryDate: '',
@@ -107,10 +110,13 @@ export default function CheckoutPage() {
       return;
     }
 
-    if (!session?.user?.id || !session?.accessToken) {
-      alert('Please log in to complete your order');
-      router.push('/login');
-      return;
+    // Allow guest checkout: if user not logged in, require guest name and phone/email
+    const isLoggedIn = !!(session?.user?.id && session?.accessToken);
+    if (!isLoggedIn) {
+      if (!formData.guestName || !formData.phoneNumber) {
+        alert('Enter your name and phone number to checkout as a guest');
+        return;
+      }
     }
 
     setIsProcessing(true);
@@ -134,25 +140,36 @@ export default function CheckoutPage() {
       const orderPromises = menuCartItems.map(async (cartItem) => {
         // Create individual order for each item
         const orderPayload = {
-          customer_id: parseInt(session.user.id),
           menu_outlet_item_id: cartItem.menu_outlet_item_id,
           quantity: cartItem.quantity,
         };
 
+        if (isLoggedIn) {
+          orderPayload.customer_id = parseInt(session.user.id);
+        } else {
+          // include guest details so backend can associate and return a tracking code
+          orderPayload.guest_name = formData.guestName;
+          orderPayload.guest_email = formData.guestEmail || null;
+          orderPayload.guest_phone = formData.phoneNumber;
+        }
+
         console.log('Creating order:', orderPayload);
-        return createOrder(orderPayload, session.accessToken);
+        return createOrder(orderPayload, isLoggedIn ? session.accessToken : null);
       });
 
       // Wait for all orders to be created
       const results = await Promise.all(orderPromises);
       
       if (results.length > 0 && (results[0].status === 201 || results[0].status === 200)) {
-        // Use the first order ID as reference
-        const newOrderId = results[0].data.id;
+        // Use the first order ID/tracking code as reference
+        const resp = results[0].data;
+        const newOrderId = resp.id;
+        const tcode = resp.tracking_code || resp.trackingCode || resp.trackingCode || null;
         setOrderId(newOrderId);
+        setTrackingCode(tcode);
         setOrderPlaced(true);
-        
-        // Generate QR code for the order
+
+        // Generate QR code for the order (order id works for QR generation)
         generateOrderQR(newOrderId);
         
         // Clear cart and checkout data
@@ -191,6 +208,12 @@ export default function CheckoutPage() {
                   <span className="text-muted-foreground">Order ID:</span>
                   <span className="font-semibold">#{orderId || Date.now().toString().slice(-6)}</span>
                 </div>
+                {trackingCode && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Tracking Code:</span>
+                    <span className="font-semibold">{trackingCode}</span>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Table Number:</span>
                   <span className="font-semibold">Table {checkoutData?.tableNumber}</span>
@@ -323,6 +346,45 @@ export default function CheckoutPage() {
                 handlePayment();
               }}
             >
+              {!session?.user?.id && (
+                <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                  <h3 className="font-semibold mb-3">Checkout as Guest</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium text-gray-700">Full Name</label>
+                      <input
+                        name="guestName"
+                        value={formData.guestName}
+                        onChange={handleInputChange}
+                        className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2"
+                        placeholder="Your full name"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-700">Phone Number</label>
+                      <input
+                        name="phoneNumber"
+                        value={formData.phoneNumber}
+                        onChange={handleInputChange}
+                        className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2"
+                        placeholder="+254 7xx xxx xxx"
+                        required
+                      />
+                    </div>
+                    <div className="sm:col-span-2">
+                      <label className="text-sm font-medium text-gray-700">Email (optional)</label>
+                      <input
+                        name="guestEmail"
+                        value={formData.guestEmail}
+                        onChange={handleInputChange}
+                        className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2"
+                        placeholder="you@example.com"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
               <div className="mb-8">
                 <h2 className="text-lg font-semibold mb-4">Select Payment Method</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
