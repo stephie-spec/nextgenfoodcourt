@@ -66,32 +66,65 @@ export default function CartPage() {
           prepTime: 'N/A',
           calories: 0,
           description: addon.name,
+          menu_outlet_item_id: null,
         };
       }
-      return { name: 'Unknown Add-on', outlet: 'Unknown Outlet', price: 0, image: '/placeholder.svg', category: 'Add-on', prepTime: 'N/A' };
+      return { name: 'Unknown Add-on', outlet: 'Unknown Outlet', price: 0, image: '/placeholder.svg', category: 'Add-on', prepTime: 'N/A', menu_outlet_item_id: null };
     }
-    // Handle regular menu items: compositeId = "outletId-itemName"
+    
+    // Try to parse as a direct MenuOutletItem ID (numeric)
+    const asNumber = parseInt(compositeId);
+    if (!isNaN(asNumber)) {
+      // Look for item by MenuOutletItem.id
+      const item = menuData.find(m => m.id === asNumber);
+      if (item) {
+        return {
+          name: item.item_name || item.name,
+          outlet: item.outlet_name || item.outlet,
+          price: item.price,
+          image: item.image_path ? `http://localhost:5555/uploads/${item.image_path.replace(/^\/+/, '')}` : '/placeholder.svg',
+          category: item.category || 'Food Item',
+          prepTime: item.prep_time || item.prepTime || 'N/A',
+          calories: item.calories,
+          description: item.description,
+          menu_outlet_item_id: item.id,
+        };
+      }
+    }
+    
+    // Handle composite ID format: compositeId = "outletId-itemName"
     const parts = compositeId.split('-');
-    if (parts.length < 2) {
-      return { name: 'Unknown Item', outlet: 'Unknown Outlet', price: 0, image: '/placeholder.svg', category: 'Unknown', prepTime: 'N/A' };
+    if (parts.length >= 2) {
+      const outletId = parts[0];
+      const itemName = parts.slice(1).join('-');
+      const key = `${outletId}-${itemName}`;
+      let item = menuMap[key];
+      
+      // If not found in map, search in menuData
+      if (!item && menuData.length > 0) {
+        item = menuData.find(m => 
+          (m.outlet_id == outletId || m.outletId == outletId) && 
+          (m.item_name === itemName || m.name === itemName)
+        );
+      }
+      
+      if (item) {
+        return {
+          name: item.item_name || item.name,
+          outlet: item.outlet_name || item.outlet,
+          price: item.price,
+          image: item.image_path ? `http://localhost:5555/uploads/${item.image_path.replace(/^\/+/, '')}` : '/placeholder.svg',
+          category: item.category || 'Food Item',
+          prepTime: item.prep_time || item.prepTime || 'N/A',
+          calories: item.calories,
+          description: item.description,
+          menu_outlet_item_id: item.id,
+        };
+      }
     }
-    const outletId = parts[0];
-    const itemName = parts.slice(1).join('-');
-    const key = `${outletId}-${itemName}`;
-    const item = menuMap[key];
-    if (!item) {
-      return { name: 'Unknown Item', outlet: 'Unknown Outlet', price: 0, image: '/placeholder.svg', category: 'Unknown', prepTime: 'N/A' };
-    }
-    return {
-      name: item.item_name || item.name,
-      outlet: item.outlet_name || item.outlet,
-      price: item.price,
-      image: item.image_path ? `http://localhost:5555/uploads/${item.image_path.replace(/^\/+/, '')}` : '/placeholder.svg',
-      category: item.category || 'Food Item',
-      prepTime: item.prep_time || item.prepTime || 'N/A',
-      calories: item.calories,
-      description: item.description,
-    };
+    
+    // Item not found
+    return { name: 'Unknown Item', outlet: 'Unknown Outlet', price: 0, image: '/placeholder.svg', category: 'Unknown', prepTime: 'N/A', menu_outlet_item_id: null };
   };
 
   // Popular add-ons
@@ -144,14 +177,24 @@ export default function CartPage() {
     router.push('/checkout');
   };
 
-  // Calculate totals
+  // Calculate totals - only compute after menu is loaded
   const cartItemList = Object.entries(cartItems)
     .filter(([_, quantity]) => typeof quantity === 'number')
-    .map(([id, quantity]) => ({
-      id,
-      quantity,
-      ...getItemDetails(id),
-    }));
+    .map(([id, quantity]) => {
+      const itemDetails = getItemDetails(id);
+      // Log if item not found for debugging
+      if (!itemDetails.menu_outlet_item_id) {
+        console.warn(`Item not found in menu: cart ID "${id}"`, {
+          cartIds: Object.keys(cartItems),
+          availableKeys: Object.keys(menuMap).slice(0, 5),
+        });
+      }
+      return {
+        id,
+        quantity,
+        ...itemDetails,
+      };
+    });
 
   if (loadingMenu) {
     return (
@@ -199,7 +242,7 @@ export default function CartPage() {
           <div className="text-center">
             <ShoppingCart className="w-24 h-24 mx-auto text-muted-foreground/30 mb-6" />
             <h1 className="text-3xl font-bold text-foreground mb-4">Your Cart is Empty</h1>
-            <p className="text-muted-foreground mb-8">Looks like you haven't added any items to your cart yet.</p>
+            <p className="text-muted-foreground mb-8">Looks like you haven&apos;t added any items to your cart yet.</p>
             <Link 
               href="/dashboard/menu"
               className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition-colors"
@@ -210,7 +253,7 @@ export default function CartPage() {
 
             {/* Empty Cart Tips */}
             <div className="mt-12 p-6 bg-secondary/30 rounded-xl">
-              <h3 className="font-semibold text-foreground mb-4">While you're here...</h3>
+              <h3 className="font-semibold text-foreground mb-4">While you&apos;re here...</h3>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-left">
                 <Link href="/special-offers" className="p-4 bg-background rounded-lg hover:border-primary border border-border transition-colors">
                   <Tag className="w-8 h-8 text-accent mb-2" />
