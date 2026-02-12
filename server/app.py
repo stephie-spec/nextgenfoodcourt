@@ -21,7 +21,8 @@ from routes.testimonial import TestimonialListResource, TestimonialResource
 from routes.table_booking import (
     TableBookingListResource,
     TableBookingResource,
-    AvailableTablesResource
+    AvailableTablesResource,
+    CustomerTableBookingsResource
 )
 from routes.favourite import CustomerFavourites, FavouriteButton, TopFavourites
 
@@ -73,6 +74,8 @@ def create_app():
     api.add_resource(TableBookingListResource, "/api/table-bookings")
     api.add_resource(TableBookingResource, "/api/table-bookings/<int:booking_id>")
     api.add_resource(AvailableTablesResource, "/api/table-bookings/available-tables")
+    api.add_resource(CustomerTableBookingsResource, '/api/customer/<int:customer_id>/table-bookings')
+
 
     return app
 
