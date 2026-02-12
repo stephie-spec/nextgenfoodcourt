@@ -36,9 +36,13 @@ export default function CartPage() {
         // Build a map: key = `${outlet_id}-${item_name}`
         const map = {};
         data.forEach(item => {
-          // Use backend outlet_id and item_name for key
-          const key = `${item.outlet_id || item.outletId}-${item.item_name || item.name}`;
+          // Use backend outlet_id and item_name for key - convert outlet_id to string for consistency
+          const key = `${String(item.outlet_id)}-${item.item_name}`;
           map[key] = item;
+        });
+        console.log(`✓ MenuMap built with ${Object.keys(map).length} items`, {
+          keys: Object.keys(map).slice(0, 20),
+          total: data.length,
         });
         setMenuMap(map);
       } catch (err) {
@@ -97,18 +101,42 @@ export default function CartPage() {
     if (parts.length >= 2) {
       const outletId = parts[0];
       const itemName = parts.slice(1).join('-');
+      // Build the key with consistent format (string outlet_id)
       const key = `${outletId}-${itemName}`;
+      
       let item = menuMap[key];
+      console.log(`Looking up: "${key}"`, { found: !!item });
       
       // If not found in map, search in menuData
+      // IMPORTANT: Only search within the specific outlet to avoid cross-outlet matches
       if (!item && menuData.length > 0) {
-        item = menuData.find(m => 
-          (m.outlet_id == outletId || m.outletId == outletId) && 
-          (m.item_name === itemName || m.name === itemName)
-        );
+        item = menuData.find(m => {
+          const mOutletId = String(m.outlet_id);
+          const mItemName = m.item_name;
+          // Match BOTH outlet_id AND item_name exactly
+          const exactMatch = mOutletId === outletId && mItemName === itemName;
+          if (exactMatch) {
+            console.log(`Found exact match in menuData for outlet ${outletId}: ${itemName}`);
+          }
+          return exactMatch;
+        });
+      }
+      
+      // If still not found, try case-insensitive match WITHIN SAME OUTLET
+      if (!item && menuData.length > 0) {
+        item = menuData.find(m => {
+          const mOutletId = String(m.outlet_id);
+          const mItemName = (m.item_name || '').trim();
+          const caseInsensitiveMatch = mOutletId === outletId && mItemName.toLowerCase() === itemName.toLowerCase();
+          if (caseInsensitiveMatch) {
+            console.log(`Found case-insensitive match in menuData for outlet ${outletId}`);
+          }
+          return caseInsensitiveMatch;
+        });
       }
       
       if (item) {
+        console.log(`✓ Resolved ${compositeId} to: ${item.item_name} from ${item.outlet_name} (MenuOutletItem ID: ${item.id})`);
         return {
           name: item.item_name || item.name,
           outlet: item.outlet_name || item.outlet,
@@ -120,6 +148,13 @@ export default function CartPage() {
           description: item.description,
           menu_outlet_item_id: item.id,
         };
+      } else {
+        console.error(`✗ Failed to find: "${key}"`, {
+          outletId,
+          itemName,
+          menuDataLength: menuData.length,
+          itemsInOutlet: menuData.filter(m => String(m.outlet_id) === outletId).length,
+        });
       }
     }
     
@@ -186,8 +221,12 @@ export default function CartPage() {
       if (!itemDetails.menu_outlet_item_id) {
         console.warn(`Item not found in menu: cart ID "${id}"`, {
           cartIds: Object.keys(cartItems),
-          availableKeys: Object.keys(menuMap).slice(0, 5),
+          menuDataLength: menuData.length,
+          menuMapKeys: Object.keys(menuMap).slice(0, 10),
+          searchedKey: id.includes('-') ? id : 'numeric-id',
         });
+      } else {
+        console.log(`✓ Found item: ${itemDetails.name} from ${itemDetails.outlet} (cart ID: "${id}")`);
       }
       return {
         id,
