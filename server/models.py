@@ -232,7 +232,7 @@ class TableBooking(db.Model):
     duration = db.Column(db.Interval)
     status = db.Column(Enum(BookingStatus), default=BookingStatus.pending)
     booking_date = db.Column(db.DateTime)
-    special_requests = db.Column(db.Text, nullable=True)
+    special_requests = db.Column(db.String, nullable=True)
 
     order = db.relationship(
         "Order",

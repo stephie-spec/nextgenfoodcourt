@@ -95,8 +95,8 @@ class TestimonialResource(Resource):
         return {
             "id": testimonial.id,
             "outlet_id": testimonial.outlet_id,
-            "outlet_name": testimonial.outlet.name,
-            "customer_name": testimonial.customer_name  if testimonial .outlet else None,
+            "outlet_name": testimonial.outlet.name if testimonial.outlet else None,
+            "customer_name": testimonial.customer_name  if testimonial.customer_name else None,
             "avatar": testimonial.avatar if testimonial.avatar and testimonial.avatar.strip() else 'default-avatar.jpg',
             "rating": testimonial.rating,
             "review_text": testimonial.review_text,
