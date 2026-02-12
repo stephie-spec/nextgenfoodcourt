@@ -22,6 +22,10 @@ def serialize_order(order):
     return {
         "id": order.id,
         "customer_id": order.customer_id,
+        "tracking_code": getattr(order, 'tracking_code', None),
+        "guest_name": getattr(order, 'guest_name', None),
+        "guest_email": getattr(order, 'guest_email', None),
+        "customer_name": (order.customer.name if getattr(order, 'customer', None) else getattr(order, 'guest_name', None) or 'Guest'),
         "menu_outlet_item_id": order.menu_outlet_item_id,
         "quantity": order.quantity,
         "status": order.status.value,
@@ -63,14 +67,19 @@ class OrderListResource(Resource):
         customer_id = data.get("customer_id")
         menu_outlet_item_id = data.get("menu_outlet_item_id")
         quantity = data.get("quantity")
+        # guest fields (optional)
+        guest_name = data.get("guest_name")
+        guest_email = data.get("guest_email")
+        guest_phone = data.get("guest_phone")
 
-        if None in (customer_id, menu_outlet_item_id, quantity):
+        if menu_outlet_item_id is None or quantity is None:
             return {"error": "Missing required fields"}, 400
 
         if not isinstance(quantity, int) or quantity <= 0:
             return {"error": "quantity must be a positive integer"}, 400
 
-        if not Customer.query.get(customer_id):
+        # If a customer_id was provided, validate it. Otherwise allow guest order.
+        if customer_id is not None and not Customer.query.get(customer_id):
             return {"error": "Customer not found"}, 404
 
         if not MenuOutletItem.query.get(menu_outlet_item_id):
@@ -80,7 +89,10 @@ class OrderListResource(Resource):
             customer_id=customer_id,
             menu_outlet_item_id=menu_outlet_item_id,
             quantity=quantity,
-            status=OrderStatus.pending
+            status=OrderStatus.pending,
+            guest_name=guest_name,
+            guest_email=guest_email,
+            guest_phone=guest_phone
         )
 
         db.session.add(order)
@@ -156,5 +168,13 @@ class OwnerOrderResource(Resource):
         # Get all orders for these menu items
         orders = Order.query.filter(Order.menu_outlet_item_id.in_(menu_item_ids)).all()
         return [serialize_order(o) for o in orders], 200
+
+
+class OrderTrackResource(Resource):
+    def get(self, tracking_code):
+        order = Order.query.filter_by(tracking_code=tracking_code).first()
+        if not order:
+            return {"error": "Order not found"}, 404
+        return serialize_order(order), 200
 
 
