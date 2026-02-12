@@ -291,14 +291,6 @@ export default function BookingCard({ booking, isOwner = false, onBookingUpdate 
                       Complete Booking
                     </button>
                   )}
-
-                  <button
-                    onClick={() => setShowCancelModal(true)}
-                    disabled={isUpdating || booking.status === 'cancelled' || booking.status === 'completed'}
-                    className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors disabled:opacity-50 disabled:bg-gray-400"
-                  >
-                    Cancel Booking
-                  </button>
                 </>
               )}
 

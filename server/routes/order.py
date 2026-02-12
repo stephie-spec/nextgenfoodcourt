@@ -17,29 +17,32 @@ def serialize_order(order):
         total_price = item_price * (order.quantity or 0)
 
         table_booking_data = None
-        if getattr(order, 'table_booking', None):
+        if order.table_booking:
             table_booking_data = {
                 "id": order.table_booking.id,
                 "table_number": order.table_booking.table_number,
                 "capacity": order.table_booking.capacity,
                 "duration": str(order.table_booking.duration) if order.table_booking.duration else None,
                 "created_at": order.table_booking.created_at.isoformat() if order.table_booking.created_at else None,
+                "status": order.table_booking.status.value if hasattr(order.table_booking, 'status') and order.table_booking.status else 'pending',
+                "booking_date": order.table_booking.booking_date.isoformat() if hasattr(order.table_booking, 'booking_date') and order.table_booking.booking_date else None,
             }
 
         return {
             "id": order.id,
             "customer_id": order.customer_id,
-            "tracking_code": getattr(order, 'tracking_code', None),
-            "guest_name": getattr(order, 'guest_name', None),
-            "guest_email": getattr(order, 'guest_email', None),
-            "customer_name": (order.customer.name if getattr(order, 'customer', None) else (getattr(order, 'guest_name', None) or 'Guest')),
             "menu_outlet_item_id": order.menu_outlet_item_id,
             "quantity": order.quantity,
             "status": order.status.value,
             "created_at": order.created_at.isoformat() if order.created_at else None,
             "estimated": order.estimated.isoformat() if order.estimated else None,
             "outlet_name": outlet.name if outlet else 'Unknown Outlet',
+            "outlet_id": outlet.id if outlet else None,
             "outlet_category": outlet.category_name if outlet else None,
+            "customer_name": order.customer.name if order.customer else None,
+            "tracking_code": getattr(order, 'tracking_code', None),
+            "guest_name": getattr(order, 'guest_name', None),
+            "guest_email": getattr(order, 'guest_email', None),
             "items": [
                 {
                     "name": item.name if item else 'Unknown Item',
@@ -68,7 +71,6 @@ def serialize_order(order):
             "table_booking": None,
             "error": str(e)
         }
-
 
 class OrderListResource(Resource):
     def get(self):

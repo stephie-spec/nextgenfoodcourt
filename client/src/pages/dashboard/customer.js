@@ -8,7 +8,7 @@ import OutletCard from '@/components/OutletCard';
 import BookingCard from '@/components/BookingCard'
 import Tabs from '@/components/Tabs';
 import AuthGuard from '@/components/AuthGuard';
-import { Search, Filter, ShoppingBag, Star, Clock, Heart, Store, ArrowRight, RefreshCw } from 'lucide-react';
+import { Search, Filter, ShoppingBag, Star, Clock, Heart, Store, ArrowRight, RefreshCw, Calendar } from 'lucide-react';
 import { apiHelper } from '@/lib/apiHelper';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
@@ -21,6 +21,7 @@ export default function CustomerDashboard() {
   const [outlets, setOutlets] = useState([]);
   const [orders, setOrders] = useState([]);
   const [bookings, setBookings] = useState([]);
+  const [isRefreshingBookings, setIsRefreshingBookings] = useState(false);
   const [activeBookingTab, setActiveBookingTab] = useState('active');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -30,11 +31,65 @@ export default function CustomerDashboard() {
   const [sortOption, setSortOption] = useState('newest');
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  const API_BASE = 'http://localhost:5555';
+
   const tabs = [
     { id: 'orders', label: 'Active Orders' },
-    { id: 'bookings', label: 'Table Bookings' },
+    { id: 'bookings', label: 'Reservations' },
     { id: 'history', label: 'Order History' },
   ];
+
+const fetchCustomerBookings = async (token, customerId) => {
+  try {
+    const response = await fetch(`${API_BASE}/api/orders`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    if (!response.ok) throw new Error(`Failed to fetch orders: ${response.status}`);
+
+    const ordersData = await response.json();
+    console.log('All orders for bookings filter:', ordersData);
+
+    // Filter orders that belong to this customer AND have a table booking
+    const customerBookings = ordersData
+      .filter(order => 
+        String(order.customer_id) === String(customerId) && 
+        order.table_booking
+      )
+      .map(order => ({
+        id: order.table_booking.id,
+        order_id: order.id,
+        table_number: order.table_booking.table_number,
+        capacity: order.table_booking.capacity || 4,
+        status: order.table_booking.status || order.status || 'pending',
+        created_at: order.table_booking.created_at || order.created_at,
+        booking_date: order.table_booking.booking_date || null,
+        booking_time: order.table_booking.booking_time || null,
+        duration: order.table_booking.duration || null,
+        special_requests: order.table_booking.special_requests || '',
+        outlet_name: order.outlet_name || 'Unknown Outlet',
+        outlet_id: order.outlet_id || null,
+        customer_name: order.customer_name || 'You',
+        customer_id: order.customer_id,
+        items: order.items || [],
+        total: order.total || 0,
+        // For display consistency
+        formatted_date: order.table_booking.booking_date 
+          ? new Date(order.table_booking.booking_date).toLocaleDateString() 
+          : null,
+        formatted_time: order.table_booking.booking_time || null
+      }));
+
+    console.log(`Found ${customerBookings.length} table bookings for customer`);
+    return customerBookings;
+  } catch (error) {
+    console.error('Error fetching customer bookings:', error);
+    showToast('Failed to load reservations', 'error');
+    return [];
+  }
+};
 
 
   useEffect(() => {
@@ -68,22 +123,14 @@ export default function CustomerDashboard() {
         setLoading(false);
       });
 
-    fetch(`http://localhost:5555/api/customer/${customerId}/table-bookings`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
-    })
-      .then(res => res.ok ? res.json() : [])
-      .then(data => {
-        console.log('Bookings:', data);
-        setBookings(Array.isArray(data) ? data : []);
-      })
-      .catch(error => {
-        console.error('Error fetching bookings:', error);
-        setBookings([]);
-      })
-      .finally(() => setLoading(false));
+fetchCustomerBookings(token, customerId)
+  .then(data => {
+    setBookings(data);
+  })
+  .catch(error => {
+    console.error('Error fetching bookings:', error);
+    setBookings([]);
+  });
 
   }, [session]);
 
@@ -120,6 +167,7 @@ export default function CustomerDashboard() {
     }
   };
 
+
   const handleBookingUpdate = (updatedBooking) => {
     setBookings(prevBookings =>
       prevBookings.map(booking =>
@@ -136,6 +184,26 @@ export default function CustomerDashboard() {
     ['completed', 'cancelled', 'no-show'].includes(b.status)
   );
 
+  // Refresh bookings
+const refreshBookings = async () => {
+  if (!session?.accessToken || !session?.user?.id) return;
+  
+  setIsRefreshingBookings(true);
+  try {
+    const token = session.accessToken || localStorage.getItem('auth_token');
+    const customerId = session.user.id || localStorage.getItem('user_id');
+    
+    const bookingsData = await fetchCustomerBookings(token, customerId);
+    setBookings(bookingsData);
+    
+    showToast('Bookings refreshed successfully!', 'success');
+  } catch (err) {
+    console.error('Failed to refresh bookings:', err);
+    showToast('Failed to refresh bookings', 'error');
+  } finally {
+    setIsRefreshingBookings(false);
+  }
+};
 
   return (
     <AuthGuard requiredRole="customer">
@@ -265,6 +333,23 @@ export default function CustomerDashboard() {
 
           {activeTab === 'bookings' && (
             <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+      <h2 className="text-xl font-bold text-gray-900">Table Reservations</h2>
+      
+      {/* Refresh Button */}
+      <button
+    onClick={refreshBookings}
+    disabled={isRefreshingBookings}
+    className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+      isRefreshingBookings
+        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+        : 'bg-primary/10 text-primary hover:bg-primary/20'
+    }`}
+  >
+    <RefreshCw className={`w-4 h-4 ${isRefreshingBookings ? 'animate-spin' : ''}`} />
+    {isRefreshingBookings ? 'Refreshing...' : 'Refresh Bookings'}
+  </button>
+    </div>
               {/* Booking tabs */}
               <div className="flex gap-4 mb-6 border-b border-gray-200">
                 <button
