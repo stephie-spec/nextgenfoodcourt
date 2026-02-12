@@ -249,7 +249,7 @@ export default function CustomerDashboard() {
                     return true;
                   })
                   .map(order => (
-                    <OrderCard key={order.id} order={order} isOwner={false} />
+                    <OrderCard key={order.id} order={order} isOwner={false} onOrderUpdate={handleOrderUpdate} />
                   ))}
 
                 {activeOrders.length === 0 && (

@@ -1,7 +1,7 @@
 
 from flask import request
 from flask_restful import Resource
-from models import db, Item, CustomerFavourite
+from models import db, Item, CustomerFavourite, MenuOutletItem, Outlet
 from auth.permissions import require_customer
 from sqlalchemy import func # SQLAlchemy function imports - to be removed later
 
@@ -25,9 +25,11 @@ class CustomerFavourites ( Resource ) :
                 "name" : fav.item.name,
                 "description" : fav.item.description,
                 "image" : fav.item.image,
+                "image_path" : fav.item.image,
                 "price" : fav.item.price,
                 "is_available" : fav.item.is_available,
-                "favourites_count" : fav.item.favourites
+                "favourites_count" : fav.item.favourites,
+                "is_favorite" : True
             }
             for fav in favourites ]
             
@@ -55,7 +57,7 @@ class FavouriteButton ( Resource ) :
         if current_fav :
 
             db.session.delete ( current_fav )
-            item.favourites = Item.favourites - 1 if item.favourites > 0 else 0
+            item.favourites = item.favourites - 1 if item.favourites > 0 else 0
             db.session.commit()
 
             return { 

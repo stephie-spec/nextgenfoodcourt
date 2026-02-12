@@ -12,7 +12,7 @@ from routes.owner import (
     OwnerDetails,
     OwnerOutletResource
 )
-from routes.order import OrderListResource, OrderResource, CustomerOrderResource, OwnerOrderResource
+from routes.order import OrderListResource, OrderResource, CustomerOrderResource, OwnerOrderResource, OrderTrackResource
 from routes.item import ItemListResource, ItemResource
 from routes.menu import MenuListResource, MenuResource
 from routes.customer import CustomerLoginResource, CustomerDetails, CustomerSignUp
@@ -25,9 +25,13 @@ from routes.table_booking import (
     CustomerTableBookingsResource
 )
 from routes.favourite import CustomerFavourites, FavouriteButton, TopFavourites
+from routes.qr_code import QRCodeResource, OrderQRCodeResource, PaymentQRCodeResource, HomePageQRResource
 
 def create_app():
     app = Flask(__name__, static_url_path='/uploads', static_folder=os.path.abspath('../photos'))
+    
+    # app.config['SQLALCHEMY_DATABASE_URI'] = ("postgresql+psycopg2://otiende:12345678@localhost:5432/nextgen_food_court_db")
+
 
     # CONFIG
     app.config["SECRET_KEY"] = "super-secret-key-change-me"
@@ -54,6 +58,7 @@ def create_app():
     api.add_resource(OrderResource, "/api/orders/<int:order_id>")
     api.add_resource(CustomerOrderResource, "/api/orders/customer/<int:customer_id>")
     api.add_resource(OwnerOrderResource, "/api/orders/owner/<int:owner_id>")
+    api.add_resource(OrderTrackResource, "/api/orders/track/<string:tracking_code>")
     api.add_resource(ItemListResource, "/items")
     api.add_resource(ItemResource, "/items/<int:item_id>")
     api.add_resource(MenuListResource, "/api/menu")
@@ -77,9 +82,25 @@ def create_app():
     api.add_resource(CustomerTableBookingsResource, '/api/customer/<int:customer_id>/table-bookings')
 
 
+    # QR Code generation endpoints
+    api.add_resource(QRCodeResource, "/api/qr/generate")
+    api.add_resource(OrderQRCodeResource, "/api/qr/order/<int:order_id>")
+    api.add_resource(PaymentQRCodeResource, "/api/qr/payment")
+    api.add_resource(HomePageQRResource, "/api/qr/homepage")
+
     return app
 
 
 app = create_app()
 if __name__ == "__main__":
     app.run(debug=True, port=5555)
+
+
+
+
+# CREATE DATABASE nextgen_food_court_db;
+# CREATE USER otiende WITH PASSWORD '12345678';
+# GRANT ALL PRIVILEGES ON DATABASE nextgen_food_court_db TO otiende;
+# GRANT ALL ON SCHEMA public TO otiende;
+# ALTER SCHEMA public OWNER TO otiende;
+# ALTER DATABASE nextgen_food_court_db OWNER TO otiende;

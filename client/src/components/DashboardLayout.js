@@ -131,6 +131,20 @@ export default function DashboardLayout({ children, title }) {
                           <span className="text-sm text-foreground">Active Tables</span>
                           <span className="font-bold text-green-500">12/20</span>
                         </div>
+                      <>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-foreground">Today's Orders</span>
+                          <span className="font-bold text-primary">24</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-foreground">Active Tables</span>
+                          <span className="font-bold text-green-500">12/20</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-foreground">Revenue</span>
+                          <span className="font-bold text-green-500">Ksh 1,240</span>
+                        </div>
+                      </>
                       </>
                     ) : (
                       <>

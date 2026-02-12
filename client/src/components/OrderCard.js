@@ -184,7 +184,6 @@ export default function OrderCard({ order, isOwner = false, onOrderUpdate }) {
     showToast("Items added to your cart – review & checkout", "success");
     router.push('/cart');
   };
-
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden hover:border-primary/50 transition-all duration-200">
       <div className="p-4">
@@ -287,8 +286,8 @@ export default function OrderCard({ order, isOwner = false, onOrderUpdate }) {
                       onClick={() => handleStatusUpdate('confirmed')}
                       disabled={isUpdating}
                       className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isUpdating
-                        ? 'bg-gray-400 cursor-not-allowed'
-                        : 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                          ? 'bg-gray-400 cursor-not-allowed'
+                          : 'bg-emerald-600 hover:bg-emerald-700 text-white'
                         }`}
                     >
                       {isUpdating ? 'Confirming...' : 'Confirm Order'}
@@ -300,8 +299,8 @@ export default function OrderCard({ order, isOwner = false, onOrderUpdate }) {
                       onClick={() => handleStatusUpdate('completed')}
                       disabled={isUpdating}
                       className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isUpdating
-                        ? 'bg-gray-400 cursor-not-allowed'
-                        : 'bg-green-600 hover:bg-green-700 text-white'
+                          ? 'bg-gray-400 cursor-not-allowed'
+                          : 'bg-green-600 hover:bg-green-700 text-white'
                         }`}
                     >
                       {isUpdating ? 'Completing...' : 'Mark as Completed'}
@@ -329,8 +328,8 @@ export default function OrderCard({ order, isOwner = false, onOrderUpdate }) {
                       onClick={handleCancelOrder}
                       disabled={isUpdating}
                       className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isUpdating
-                        ? 'bg-gray-400 cursor-not-allowed'
-                        : 'bg-red-600 hover:bg-red-700 text-white'
+                          ? 'bg-gray-400 cursor-not-allowed'
+                          : 'bg-red-600 hover:bg-red-700 text-white'
                         }`}
                     >
                       {isUpdating ? 'Cancelling...' : 'Cancel Order'}
@@ -343,8 +342,8 @@ export default function OrderCard({ order, isOwner = false, onOrderUpdate }) {
                       onClick={handleMarkReceived}
                       disabled={isUpdating}
                       className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isUpdating
-                        ? 'bg-gray-400 cursor-not-allowed'
-                        : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                          ? 'bg-gray-400 cursor-not-allowed'
+                          : 'bg-indigo-600 hover:bg-indigo-700 text-white'
                         }`}
                     >
                       {isUpdating ? 'Updating...' : 'Mark as Received'}
@@ -415,19 +414,12 @@ export default function OrderCard({ order, isOwner = false, onOrderUpdate }) {
                   onClick={handleUpdateOrder}
                   disabled={isUpdating}
                   className={`flex-1 px-4 py-3 rounded-lg font-medium ${isUpdating
-                    ? 'bg-gray-400 cursor-not-allowed'
-                    : 'bg-primary hover:bg-primary/90 text-white'
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'bg-primary hover:bg-primary/90 text-white'
                     }`}
                 >
                   {isUpdating ? 'Updating...' : 'Update Order'}
                 </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Cancel Order Confirmation Modal */}
       {showCancelModal && (
         <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
           {/* Backdrop with blur */}
@@ -488,7 +480,6 @@ export default function OrderCard({ order, isOwner = false, onOrderUpdate }) {
           </div>
         </div>
       )}
-
     </div>
   );
 }

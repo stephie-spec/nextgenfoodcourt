@@ -63,8 +63,8 @@ if __name__ == "__main__":
             image_path="taj2.jpg"
         )
         outlet3 = Outlet(
-            name="Cairo Eats",
-            category_name="Egyptian",
+            name="Swahili Dishes",
+            category_name="Swahili",
             owner_id=owner3.id,
             image_path="taj3.jpg"
         )

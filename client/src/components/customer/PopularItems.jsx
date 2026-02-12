@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image'; // Optimized image handling
-import { Star, TrendingUp, Plus, Minus, ShoppingCart } from 'lucide-react'; // Icons for UI accents
+import { Star, TrendingUp, Plus, Minus, ShoppingCart, ChevronDown } from 'lucide-react'; // Icons for UI accents
 import { useCart } from '@/lib/CartContext'; // Cart context for shared state
 
 export default function PopularItems() { // Now modified to show top four favourited dishes.
@@ -14,6 +14,8 @@ export default function PopularItems() { // Now modified to show top four favour
   const [popularDishes, setPopularDishes] = useState([]);
   // Loading state while fetching data
   const [loading, setLoading] = useState(true);
+  // State to toggle showing all items
+  const [showAll, setShowAll] = useState(false);
 
   // Fetch top four favourited items from TopFavourites resource in favourites.py.
   useEffect(() => {
@@ -59,9 +61,13 @@ export default function PopularItems() { // Now modified to show top four favour
     fetchTopFavourites ();
   }, []);
 
+  // Determine which dishes to display
+  const displayedDishes = showAll ? popularDishes : popularDishes.slice(0, 4);
+  const hasMoreItems = popularDishes.length > 4;
 
   // Handle add to cart
   const handleAddToCart = (dish) => {
+    console.log(`Adding to cart: "${dish.id}" (outlet: ${dish.outlet}, item: ${dish.name})`);
     addToCart(dish.id);
   };
 
@@ -83,7 +89,7 @@ export default function PopularItems() { // Now modified to show top four favour
               Customer Favorites
             </h3>
             <p className="text-base sm:text-lg text-muted-foreground max-w-2xl">
-              Discover the dishes that have captured our customers' hearts.
+              Discover the dishes that have captured our customers&apos; hearts.
             </p>
           </div>
 
@@ -96,7 +102,7 @@ export default function PopularItems() { // Now modified to show top four favour
 
           {/* Popular items grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-            {popularDishes.map((dish) => {
+            {displayedDishes.map((dish) => {
               const quantity = getItemQuantity(dish.id);
               
               return (
@@ -196,6 +202,23 @@ export default function PopularItems() { // Now modified to show top four favour
               );
             })}
           </div>
+
+          {/* View All / Show Less Button */}
+          {hasMoreItems && (
+            <div className="flex justify-center mt-10 sm:mt-12">
+              <button
+                onClick={() => setShowAll(!showAll)}
+                className="flex items-center gap-2 px-6 sm:px-8 py-3 border-2 border-primary text-primary font-semibold rounded-xl hover:bg-primary/10 transition-all duration-300 transform hover:scale-105"
+              >
+                <span>{showAll ? 'Show Less' : 'View All Favorites'}</span>
+                <ChevronDown
+                  className={`w-5 h-5 transition-transform duration-300 ${
+                    showAll ? 'rotate-180' : ''
+                  }`}
+                />
+              </button>
+            </div>
+          )}
         </div>
 
         <aside className="hidden xl:block xl:col-start-3">

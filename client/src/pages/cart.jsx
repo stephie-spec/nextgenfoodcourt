@@ -36,9 +36,13 @@ export default function CartPage() {
         // Build a map: key = `${outlet_id}-${item_name}`
         const map = {};
         data.forEach(item => {
-          // Use backend outlet_id and item_name for key
-          const key = `${item.outlet_id || item.outletId}-${item.item_name || item.name}`;
+          // Use backend outlet_id and item_name for key - convert outlet_id to string for consistency
+          const key = `${String(item.outlet_id)}-${item.item_name}`;
           map[key] = item;
+        });
+        console.log(`✓ MenuMap built with ${Object.keys(map).length} items`, {
+          keys: Object.keys(map).slice(0, 20),
+          total: data.length,
         });
         setMenuMap(map);
       } catch (err) {
@@ -66,59 +70,137 @@ export default function CartPage() {
           prepTime: 'N/A',
           calories: 0,
           description: addon.name,
+          menu_outlet_item_id: null,
         };
       }
-      return { name: 'Unknown Add-on', outlet: 'Unknown Outlet', price: 0, image: '/placeholder.svg', category: 'Add-on', prepTime: 'N/A' };
+      return { name: 'Unknown Add-on', outlet: 'Unknown Outlet', price: 0, image: '/placeholder.svg', category: 'Add-on', prepTime: 'N/A', menu_outlet_item_id: null };
     }
-    // Handle regular menu items: compositeId = "outletId-itemName"
+    
+    // Try to parse as a direct MenuOutletItem ID (numeric)
+    const asNumber = parseInt(compositeId);
+    if (!isNaN(asNumber)) {
+      // Look for item by MenuOutletItem.id
+      const item = menuData.find(m => m.id === asNumber);
+      if (item) {
+        return {
+          name: item.item_name || item.name,
+          outlet: item.outlet_name || item.outlet,
+          price: item.price,
+          image: item.image_path ? `http://localhost:5555/uploads/${item.image_path.replace(/^\/+/, '')}` : '/placeholder.svg',
+          category: item.category || 'Food Item',
+          prepTime: item.prep_time || item.prepTime || 'N/A',
+          calories: item.calories,
+          description: item.description,
+          menu_outlet_item_id: item.id,
+        };
+      }
+    }
+    
+    // Handle composite ID format: compositeId = "outletId-itemName"
     const parts = compositeId.split('-');
-    if (parts.length < 2) {
-      return { name: 'Unknown Item', outlet: 'Unknown Outlet', price: 0, image: '/placeholder.svg', category: 'Unknown', prepTime: 'N/A' };
-    }
-    const outletId = parts[0];
-    const itemName = parts.slice(1).join('-');
-    const key = `${outletId}-${itemName}`;
-    let item = menuMap[key];
-
-    if (!item) {
-      console.warn(`[getItemDetails] Exact key not found: "${compositeId}"`);
-
-      const normalizedInput = compositeId.toLowerCase().trim();
-
-      item = Object.values(menuMap).find(m => {
-        const mOutlet = String(m.outlet_id || m.outletId || 'unknown');
-        const mName = String(m.item_name || m.name || 'unknown-item').trim().toLowerCase();
-        const mKey = `${mOutlet}-${mName}`;
-        return mKey === normalizedInput;
-      });
-
+    if (parts.length >= 2) {
+      const outletId = parts[0];
+      const itemName = parts.slice(1).join('-');
+      // Build the key with consistent format (string outlet_id)
+      const key = `${outletId}-${itemName}`;
+      
+      let item = menuMap[key];
+      console.log(`Looking up: "${key}"`, { found: !!item });
+      
+      // If not found in map, search in menuData
+      // IMPORTANT: Only search within the specific outlet to avoid cross-outlet matches
+      if (!item && menuData.length > 0) {
+        item = menuData.find(m => {
+          const mOutletId = String(m.outlet_id);
+          const mItemName = m.item_name;
+          // Match BOTH outlet_id AND item_name exactly
+          const exactMatch = mOutletId === outletId && mItemName === itemName;
+          if (exactMatch) {
+            console.log(`Found exact match in menuData for outlet ${outletId}: ${itemName}`);
+          }
+          return exactMatch;
+        });
+      }
+      
+      // If still not found, try case-insensitive match WITHIN SAME OUTLET
+      if (!item && menuData.length > 0) {
+        item = menuData.find(m => {
+          const mOutletId = String(m.outlet_id);
+          const mItemName = (m.item_name || '').trim();
+          const caseInsensitiveMatch = mOutletId === outletId && mItemName.toLowerCase() === itemName.toLowerCase();
+          if (caseInsensitiveMatch) {
+            console.log(`Found case-insensitive match in menuData for outlet ${outletId}`);
+          }
+          return caseInsensitiveMatch;
+        });
+      }
+      
       if (item) {
-        console.log(`[getItemDetails] Found via case-insensitive match for: "${compositeId}"`);
+        console.log(`✓ Resolved ${compositeId} to: ${item.item_name} from ${item.outlet_name} (MenuOutletItem ID: ${item.id})`);
+        return {
+          name: item.item_name || item.name,
+          outlet: item.outlet_name || item.outlet,
+          price: item.price,
+          image: item.image_path ? `http://localhost:5555/uploads/${item.image_path.replace(/^\/+/, '')}` : '/placeholder.svg',
+          category: item.category || 'Food Item',
+          prepTime: item.prep_time || item.prepTime || 'N/A',
+          calories: item.calories,
+          description: item.description,
+          menu_outlet_item_id: item.id,
+        };
+      } else {
+        console.error(`✗ Failed to find: "${key}"`, {
+          outletId,
+          itemName,
+          menuDataLength: menuData.length,
+          itemsInOutlet: menuData.filter(m => String(m.outlet_id) === outletId).length,
+        });
       }
     }
+     const outletId = parts[0];
+     const itemName = parts.slice(1).join('-');
+     const key = `${outletId}-${itemName}`;
+     let item = menuMap[key];
 
-    if (!item) {
-      const namePart = (compositeId.split('-')[1] || '').trim().toLowerCase();
-      item = Object.values(menuMap).find(m =>
-        (m.item_name || m.name || '').trim().toLowerCase() === namePart
-      );
-      if (item) {
-        console.log(`[getItemDetails] Fallback name match for: "${compositeId}"`);
-      }
-    }
-    if (!item) {
-      return { name: 'Unknown Item', outlet: 'Unknown Outlet', price: 0, image: '/placeholder.svg', category: 'Unknown', prepTime: 'N/A' };
-    }
-    return {
-      name: item.item_name || item.name,
-      outlet: item.outlet_name || item.outlet,
-      price: item.price,
-      image: item.image_path ? `http://localhost:5555/uploads/${item.image_path.replace(/^\/+/, '')}` : '/placeholder.svg',
-      category: item.category || 'Food Item',
-      prepTime: item.prep_time || item.prepTime || 'N/A',
-      calories: item.calories,
-      description: item.description,
-    };
+     if (!item) {
+       console.warn(`[getItemDetails] Exact key not found: "${compositeId}"`);
+
+       const normalizedInput = compositeId.toLowerCase().trim();
+
+       item = Object.values(menuMap).find(m => {
+         const mOutlet = String(m.outlet_id || m.outletId || 'unknown');
+         const mName = String(m.item_name || m.name || 'unknown-item').trim().toLowerCase();
+         const mKey = `${mOutlet}-${mName}`;
+         return mKey === normalizedInput;
+       });
+
+       if (item) {
+         console.log(`[getItemDetails] Found via case-insensitive match for: "${compositeId}"`);
+       }
+     }
+
+     if (!item) {
+       const namePart = (compositeId.split('-')[1] || '').trim().toLowerCase();
+       item = Object.values(menuMap).find(m =>
+         (m.item_name || m.name || '').trim().toLowerCase() === namePart
+       );
+       if (item) {
+         console.log(`[getItemDetails] Fallback name match for: "${compositeId}"`);
+       }
+     }
+     if (!item) {
+       return { name: 'Unknown Item', outlet: 'Unknown Outlet', price: 0, image: '/placeholder.svg', category: 'Unknown', prepTime: 'N/A' };
+     }
+     return {
+       name: item.item_name || item.name,
+       outlet: item.outlet_name || item.outlet,
+       price: item.price,
+       image: item.image_path ? `http://localhost:5555/uploads/${item.image_path.replace(/^\/+/, '')}` : '/placeholder.svg',
+       category: item.category || 'Food Item',
+       prepTime: item.prep_time || item.prepTime || 'N/A',
+       calories: item.calories,
+       description: item.description,
+     };
   };
 
   // Popular add-ons
@@ -171,14 +253,28 @@ export default function CartPage() {
     router.push('/checkout');
   };
 
-  // Calculate totals
+  // Calculate totals - only compute after menu is loaded
   const cartItemList = Object.entries(cartItems)
     .filter(([_, quantity]) => typeof quantity === 'number')
-    .map(([id, quantity]) => ({
-      id,
-      quantity,
-      ...getItemDetails(id),
-    }));
+    .map(([id, quantity]) => {
+      const itemDetails = getItemDetails(id);
+      // Log if item not found for debugging
+      if (!itemDetails.menu_outlet_item_id) {
+        console.warn(`Item not found in menu: cart ID "${id}"`, {
+          cartIds: Object.keys(cartItems),
+          menuDataLength: menuData.length,
+          menuMapKeys: Object.keys(menuMap).slice(0, 10),
+          searchedKey: id.includes('-') ? id : 'numeric-id',
+        });
+      } else {
+        console.log(`✓ Found item: ${itemDetails.name} from ${itemDetails.outlet} (cart ID: "${id}")`);
+      }
+      return {
+        id,
+        quantity,
+        ...itemDetails,
+      };
+    });
 
   if (loadingMenu) {
     return (
@@ -237,7 +333,7 @@ export default function CartPage() {
 
             {/* Empty Cart Tips */}
             <div className="mt-12 p-6 bg-secondary/30 rounded-xl">
-              <h3 className="font-semibold text-foreground mb-4">While you're here...</h3>
+              <h3 className="font-semibold text-foreground mb-4">While you&apos;re here...</h3>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-left">
                 <Link href="/special-offers" className="p-4 bg-background rounded-lg hover:border-primary border border-border transition-colors">
                   <Tag className="w-8 h-8 text-accent mb-2" />

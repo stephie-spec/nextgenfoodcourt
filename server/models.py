@@ -179,11 +179,18 @@ class Order(db.Model):
         db.ForeignKey("menu_outlet_items.id"),
         nullable=False
     )
+    # Allow nullable customer_id so guest (unauthenticated) orders are possible
     customer_id = db.Column(
         db.Integer,
         db.ForeignKey("customer.id"),
-        nullable=False
+        nullable=True
     )
+    # Tracking code for guests to track orders without logging in
+    tracking_code = db.Column(db.String(36), unique=True, default=lambda: str(uuid.uuid4()))
+    # Optional guest contact details
+    guest_name = db.Column(db.String(120), nullable=True)
+    guest_email = db.Column(db.String(120), nullable=True)
+    guest_phone = db.Column(db.String(30), nullable=True)
     quantity = db.Column(db.Integer, nullable=False)
     status = db.Column(Enum(OrderStatus), default=OrderStatus.pending)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
