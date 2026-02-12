@@ -18,7 +18,6 @@ export default function CheckoutPage() {
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [checkoutData, setCheckoutData] = useState(null);
   const [orderId, setOrderId] = useState(null);
-  const [menuItems, setMenuItems] = useState([]);
   const [qrCode, setQrCode] = useState(null);
   const [loadingQR, setLoadingQR] = useState(false);
   const [formData, setFormData] = useState({
@@ -41,21 +40,6 @@ export default function CheckoutPage() {
       // Redirect to cart if no checkout data
       router.push('/cart');
     }
-
-    // Fetch menu items to get their IDs
-    const fetchMenuItems = async () => {
-      try {
-        const res = await fetch('/api/menu');
-        if (res.ok) {
-          const items = await res.json();
-          setMenuItems(items);
-        }
-      } catch (error) {
-        console.error('Error fetching menu items:', error);
-      }
-    };
-
-    fetchMenuItems();
   }, [router]);
 
   const paymentMethods = [
@@ -139,21 +123,19 @@ export default function CheckoutPage() {
         throw new Error('No valid menu items in cart');
       }
 
-      // Find menu item IDs for each cart item
+      // Validate that all items have menu IDs before creating orders
+      const itemsWithoutIds = menuCartItems.filter(item => !item.menu_outlet_item_id);
+      if (itemsWithoutIds.length > 0) {
+        const itemNames = itemsWithoutIds.map(i => `${i.name} (${i.outlet})`).join(', ');
+        throw new Error(`Some items could not be found in menu: ${itemNames}. Please refresh the page and try again.`);
+      }
+
+      // Create orders for each menu item
       const orderPromises = menuCartItems.map(async (cartItem) => {
-        // Find the menu item that matches this cart item
-        const menuItem = menuItems.find(
-          m => m.item_name === cartItem.name && m.outlet_name === cartItem.outlet
-        );
-
-        if (!menuItem) {
-          throw new Error(`Menu item not found: ${cartItem.name} at ${cartItem.outlet}`);
-        }
-
         // Create individual order for each item
         const orderPayload = {
           customer_id: parseInt(session.user.id),
-          menu_outlet_item_id: menuItem.id,
+          menu_outlet_item_id: cartItem.menu_outlet_item_id,
           quantity: cartItem.quantity,
         };
 
