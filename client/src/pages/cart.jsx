@@ -157,9 +157,50 @@ export default function CartPage() {
         });
       }
     }
-    
-    // Item not found
-    return { name: 'Unknown Item', outlet: 'Unknown Outlet', price: 0, image: '/placeholder.svg', category: 'Unknown', prepTime: 'N/A', menu_outlet_item_id: null };
+     const outletId = parts[0];
+     const itemName = parts.slice(1).join('-');
+     const key = `${outletId}-${itemName}`;
+     let item = menuMap[key];
+
+     if (!item) {
+       console.warn(`[getItemDetails] Exact key not found: "${compositeId}"`);
+
+       const normalizedInput = compositeId.toLowerCase().trim();
+
+       item = Object.values(menuMap).find(m => {
+         const mOutlet = String(m.outlet_id || m.outletId || 'unknown');
+         const mName = String(m.item_name || m.name || 'unknown-item').trim().toLowerCase();
+         const mKey = `${mOutlet}-${mName}`;
+         return mKey === normalizedInput;
+       });
+
+       if (item) {
+         console.log(`[getItemDetails] Found via case-insensitive match for: "${compositeId}"`);
+       }
+     }
+
+     if (!item) {
+       const namePart = (compositeId.split('-')[1] || '').trim().toLowerCase();
+       item = Object.values(menuMap).find(m =>
+         (m.item_name || m.name || '').trim().toLowerCase() === namePart
+       );
+       if (item) {
+         console.log(`[getItemDetails] Fallback name match for: "${compositeId}"`);
+       }
+     }
+     if (!item) {
+       return { name: 'Unknown Item', outlet: 'Unknown Outlet', price: 0, image: '/placeholder.svg', category: 'Unknown', prepTime: 'N/A' };
+     }
+     return {
+       name: item.item_name || item.name,
+       outlet: item.outlet_name || item.outlet,
+       price: item.price,
+       image: item.image_path ? `http://localhost:5555/uploads/${item.image_path.replace(/^\/+/, '')}` : '/placeholder.svg',
+       category: item.category || 'Food Item',
+       prepTime: item.prep_time || item.prepTime || 'N/A',
+       calories: item.calories,
+       description: item.description,
+     };
   };
 
   // Popular add-ons
@@ -193,7 +234,7 @@ export default function CartPage() {
     setCheckoutLoading(true);
     // Simulate loading time for smooth transition
     await new Promise(resolve => setTimeout(resolve, 800));
-    
+
     // Pass cart data and table number to checkout page
     const checkoutData = {
       items: cartItemList,
@@ -205,10 +246,10 @@ export default function CartPage() {
       promoDiscount,
       promoCode: promoApplied ? promoCode : null,
     };
-    
+
     // Store in sessionStorage for checkout page
     sessionStorage.setItem('checkoutData', JSON.stringify(checkoutData));
-    
+
     router.push('/checkout');
   };
 
@@ -281,8 +322,8 @@ export default function CartPage() {
           <div className="text-center">
             <ShoppingCart className="w-24 h-24 mx-auto text-muted-foreground/30 mb-6" />
             <h1 className="text-3xl font-bold text-foreground mb-4">Your Cart is Empty</h1>
-            <p className="text-muted-foreground mb-8">Looks like you haven&apos;t added any items to your cart yet.</p>
-            <Link 
+            <p className="text-muted-foreground mb-8">Looks like you haven't added any items to your cart yet.</p>
+            <Link
               href="/dashboard/menu"
               className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition-colors"
             >
@@ -320,7 +361,7 @@ export default function CartPage() {
   return (
     <div className="min-h-screen bg-background pt-20">
       <Navbar />
-      
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
@@ -337,7 +378,7 @@ export default function CartPage() {
             <h1 className="text-3xl md:text-4xl font-bold text-foreground">Your Cart</h1>
             <p className="text-muted-foreground">{cartTotalItems} item{cartTotalItems !== 1 ? 's' : ''} from {cartItemList.map(i => i.outlet).filter((v, i, a) => a.indexOf(v) === i).length} outlet{cartItemList.map(i => i.outlet).filter((v, i, a) => a.indexOf(v) === i).length !== 1 ? 's' : ''}</p>
           </div>
-          <Link 
+          <Link
             href="/dashboard/menu"
             className="flex items-center gap-2 text-primary hover:text-primary/80 transition-colors"
           >
@@ -382,7 +423,7 @@ export default function CartPage() {
                   <p className="text-green-600 text-sm">-Ksh{promoDiscount.toFixed(2)} discount</p>
                 </div>
               )}
-              
+
               {/* Available Promo Codes */}
               <div className="mt-4 pt-4 border-t border-border">
                 <p className="text-xs text-muted-foreground mb-2">Try these codes:</p>
@@ -441,18 +482,16 @@ export default function CartPage() {
                   <button
                     key={addon.id}
                     onClick={() => toggleAddon(addon.id)}
-                    className={`w-full flex items-center justify-between p-3 rounded-lg transition-all ${
-                      selectedAddons[addon.id]
+                    className={`w-full flex items-center justify-between p-3 rounded-lg transition-all ${selectedAddons[addon.id]
                         ? 'bg-primary text-primary-foreground border border-primary'
                         : 'bg-secondary/50 text-foreground hover:bg-secondary border border-border'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center gap-3">
-                      <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
-                        selectedAddons[addon.id]
+                      <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${selectedAddons[addon.id]
                           ? 'bg-primary-foreground border-primary-foreground'
                           : 'border-muted-foreground'
-                      }`}>
+                        }`}>
                         {selectedAddons[addon.id] && <span className="text-xs font-bold text-primary">✓</span>}
                       </div>
                       <div className="text-left">
@@ -681,7 +720,7 @@ export default function CartPage() {
               </button>
 
               {/* Continue Shopping */}
-              <Link 
+              <Link
                 href="/dashboard/menu"
                 className="flex items-center justify-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm"
               >

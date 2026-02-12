@@ -124,7 +124,7 @@ export default function CheckoutPage() {
     try {
       // Filter out add-ons and create orders only for menu items
       const menuCartItems = checkoutData.items.filter(item => item.category !== 'Add-on');
-      
+
       if (menuCartItems.length === 0) {
         throw new Error('No valid menu items in cart');
       }
@@ -142,6 +142,7 @@ export default function CheckoutPage() {
         const orderPayload = {
           menu_outlet_item_id: cartItem.menu_outlet_item_id,
           quantity: cartItem.quantity,
+          table_number: parseInt(checkoutData.tableNumber) || null
         };
 
         if (isLoggedIn) {
@@ -159,7 +160,7 @@ export default function CheckoutPage() {
 
       // Wait for all orders to be created
       const results = await Promise.all(orderPromises);
-      
+
       if (results.length > 0 && (results[0].status === 201 || results[0].status === 200)) {
         // Use the first order ID/tracking code as reference
         const resp = results[0].data;
@@ -393,11 +394,10 @@ export default function CheckoutPage() {
                     return (
                       <label
                         key={method.id}
-                        className={`relative flex items-start p-4 border-2 rounded-xl cursor-pointer transition-all ${
-                          selectedPayment === method.id
+                        className={`relative flex items-start p-4 border-2 rounded-xl cursor-pointer transition-all ${selectedPayment === method.id
                             ? 'border-blue-600 bg-blue-50'
                             : 'border-gray-200 hover:border-gray-300 bg-white'
-                        }`}
+                          }`}
                       >
                         <input
                           type="radio"
@@ -410,9 +410,8 @@ export default function CheckoutPage() {
                         <div className="ml-4 flex-1">
                           <div className="flex items-center gap-3 mb-1">
                             <Icon
-                              className={`w-5 h-5 ${
-                                selectedPayment === method.id ? 'text-blue-600' : 'text-gray-600'
-                              }`}
+                              className={`w-5 h-5 ${selectedPayment === method.id ? 'text-blue-600' : 'text-gray-600'
+                                }`}
                             />
                             <span className="font-semibold">{method.name}</span>
                           </div>

@@ -23,7 +23,8 @@ export default function PopularItems() { // Now modified to show top four favour
     const fetchTopFavourites = async () => {
 
       try {
-        const response = await fetch('/api/menu');
+        const response = await fetch('http://localhost:5555/api/items/top_favourites');
+
         if (!response.ok) {
           throw new Error('Failed to fetch top favourite items');
         }
@@ -32,16 +33,15 @@ export default function PopularItems() { // Now modified to show top four favour
 
         const processedDishes = data.map((item) => ({
 
-          id : `${item.outlet_id}-${item.item_name}`,
-          menu_outlet_item_id: item.id,
-          name : item.item_name,
+          id : item.id,
+          name : item.name,
           outlet : item.outlet_name,
           price : item.price || 0,
-          rating: Math.floor(Math.random() * 5) + 1,
+          rating: ((Math.random() * (4.9 - 4.5)) + 4.5).toFixed(1),
           reviews: Math.floor(Math.random() * (300 - 100) + 100),
-          category : item.category,
-          image: item.image_path
-            ? `http://localhost:5555/uploads/${item.image_path.replace(/^\/+/, '')}`
+          category : item.category_name,
+          image: item.image
+            ? `http://localhost:5555/uploads/${item.image.replace(/^\/+/, '')}`
             : '/placeholder.svg',
           tag: 'Customer Favorite',
         }));

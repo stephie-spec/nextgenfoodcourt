@@ -13,6 +13,14 @@ class OrderStatus(enum.Enum):
     completed = "completed"
     cancelled = "cancelled"
 
+class BookingStatus(enum.Enum):
+    pending = "pending"
+    confirmed = "confirmed"
+    checked_in = "checked-in"
+    completed = "completed"
+    cancelled = "cancelled"
+    no_show = "no-show"
+
 class Testimonial(db.Model):
     __tablename__ = "testimonials"
     
@@ -222,6 +230,10 @@ class TableBooking(db.Model):
     capacity = db.Column(db.Integer, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     duration = db.Column(db.Interval)
+    status = db.Column(Enum(BookingStatus), default=BookingStatus.pending)
+    booking_date = db.Column(db.DateTime)
+    special_requests = db.Column(db.Text, nullable=True)
+
     order = db.relationship(
         "Order",
         back_populates="table_booking"

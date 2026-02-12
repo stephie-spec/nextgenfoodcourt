@@ -3,20 +3,17 @@
 import { useState, useEffect } from 'react';
 import { CheckCircle, XCircle, Clock, Package, Truck, Store, Users, Calendar, ChevronRight, Check, RotateCcw } from 'lucide-react';
 import Image from 'next/image';
+import { showToast } from '@/lib/toast';
+import { useCart } from '@/lib/CartContext';
+import { useRouter } from 'next/navigation';
 
-// Simple toast function (you can replace with your existing showToast)
-const showToast = (message, type = 'success') => {
-  const bg = type === 'success' ? 'bg-green-600' : type === 'error' ? 'bg-red-600' : 'bg-blue-600';
-  const toast = document.createElement('div');
-  toast.className = `fixed bottom-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg text-white ${bg} animate-fade-in`;
-  toast.textContent = message;
-  document.body.appendChild(toast);
-  setTimeout(() => toast.remove(), 3500);
-};
 
 export default function OrderCard({ order, isOwner = false, onOrderUpdate }) {
+  const { addToCart } = useCart();
+  const router = useRouter();
   const [isUpdating, setIsUpdating] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
   const [updatedQuantity, setUpdatedQuantity] = useState(order.quantity || 1);
 
   const statusConfig = {
@@ -137,7 +134,11 @@ export default function OrderCard({ order, isOwner = false, onOrderUpdate }) {
 
   // Cancel order
   const handleCancelOrder = async () => {
-    if (!confirm('Are you sure you want to cancel this order?')) return;
+    setShowCancelModal(true);
+  };
+
+  const confirmCancelOrder = async () => {
+    setShowCancelModal(false);
     await handleStatusUpdate('cancelled');
   };
 
@@ -146,13 +147,50 @@ export default function OrderCard({ order, isOwner = false, onOrderUpdate }) {
     await handleStatusUpdate('completed');
   };
 
+  const handleReorder = () => {
+    if (!order?.items?.length) {
+      showToast("No items to reorder", "error");
+      return;
+    }
+
+    order.items.forEach((item) => {
+      let compositeKey;
+
+      if (item.menu_outlet_item_id) {
+        compositeKey = String(item.menu_outlet_item_id);
+      } else {
+        const outletId = String(
+          item.outlet_id ||
+          order.outlet_id ||
+          order.outlet?.id ||
+          'unknown'
+        );
+
+        // Keep original case + trim only (no lowercase)
+        const itemName = String(
+          item.item_name ||
+          item.name ||
+          'unknown-item'
+        ).trim();
+
+        compositeKey = `${outletId}-${itemName}`;
+      }
+
+      console.log('[Reorder] Using original-case key:', compositeKey, 'qty:', item.quantity || 1);
+
+      addToCart(compositeKey, item.quantity || 1);
+    });
+
+    showToast("Items added to your cart – review & checkout", "success");
+    router.push('/cart');
+  };
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden hover:border-primary/50 transition-all duration-200">
       <div className="p-4">
         <div className="flex flex-col sm:flex-row sm:items-start gap-4">
           {/* Image */}
-          <div className="flex-shrink-0">
-            <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden bg-gray-100">
+          <div className="flex justify-center mb-4 sm:mb-0 sm:flex-shrink-0">
+            <div className="relative w-40 h-40 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-xl overflow-hidden bg-gray-100 shadow-sm">
               <Image
                 src={imageSrc}
                 alt={order.items?.[0]?.name || outletName}
@@ -314,14 +352,10 @@ export default function OrderCard({ order, isOwner = false, onOrderUpdate }) {
 
                   {/* Reorder - only for completed/cancelled (history) */}
                   {['completed', 'cancelled'].includes(order.estimated_status) && (
-                    <button className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors">
+                    <button onClick={handleReorder} className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors">
                       Reorder
                     </button>
                   )}
-
-                  <button className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">
-                    View Details
-                  </button>
                 </div>
               )}
             </div>
@@ -386,12 +420,66 @@ export default function OrderCard({ order, isOwner = false, onOrderUpdate }) {
                 >
                   {isUpdating ? 'Updating...' : 'Update Order'}
                 </button>
+      {showCancelModal && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
+          {/* Backdrop with blur */}
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={() => setShowCancelModal(false)}
+          />
+
+          {/* Modal */}
+          <div className="relative bg-white rounded-xl shadow-xl w-full max-w-sm p-6 animate-fade-in">
+            {/* Close button */}
+            <button
+              onClick={() => setShowCancelModal(false)}
+              className="absolute top-4 right-4 p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <XCircle className="w-5 h-5" />
+            </button>
+
+            {/* Icon */}
+            <div className="flex justify-center mb-4">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+                <XCircle className="w-8 h-8 text-red-600" />
               </div>
+            </div>
+
+            {/* Content */}
+            <div className="text-center mb-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-2">
+                Cancel Order?
+              </h3>
+              <p className="text-gray-600">
+                Are you sure you want to cancel this order?
+              </p>
+              <p className="text-sm text-gray-500 mt-2">
+                This action cannot be undone.
+              </p>
+            </div>
+
+            {/* Buttons */}
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowCancelModal(false)}
+                className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors"
+              >
+                Keep Order
+              </button>
+              <button
+                onClick={confirmCancelOrder}
+                disabled={isUpdating}
+                className={`flex-1 px-4 py-3 rounded-lg font-medium text-white transition-colors ${isUpdating
+                    ? 'bg-gray-400 cursor-not-allowed'
+                    : 'bg-red-600 hover:bg-red-700'
+                  }`}
+              >
+                {isUpdating ? 'Cancelling...' : 'Yes, Cancel'}
+              </button>
             </div>
           </div>
         </div>
       )}
-
     </div>
   );
 }

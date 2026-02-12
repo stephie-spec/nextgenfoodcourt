@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import Link from 'next/link';
 import Navbar from '@/components/navbar';
 import AuthGuard from '@/components/AuthGuard';
 import { useSession } from 'next-auth/react';
@@ -20,6 +21,8 @@ import {
   Edit,
   Pencil
 } from 'lucide-react';
+import { showToast } from '@/lib/toast';
+
 
 const API_BASE = 'http://localhost:5555';
 
@@ -617,12 +620,13 @@ export default function OutletManage() {
           <div className="text-center">
             <Store className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <p className="text-gray-600">Outlet not found</p>
-            <button
-              onClick={() => router.push('/dashboard/owner')}
-              className="mt-4 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
+            <Link
+              href="/dashboard/owner"
+              className="inline-flex items-center justify-center w-10 h-10 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+              aria-label="Back to Dashboard"
             >
-              Back to Dashboard
-            </button>
+              <ArrowLeft className="w-5 h-5" />
+            </Link>
           </div>
         </div>
       </AuthGuard>
@@ -634,19 +638,21 @@ export default function OutletManage() {
       <div className="min-h-screen bg-gray-50">
         <Navbar />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto pt-16 px-4 sm:px-6 lg:px-8 py-8">
           <div className="mb-8">
-            <button
-              onClick={() => router.push('/dashboard/owner')}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back to Dashboard
-            </button>
+            <div className="flex items-center gap-2">
+              <Link
+                href="/dashboard/owner"
+                className="inline-flex items-center justify-center w-10 h-10 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                aria-label="Back to Dashboard"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </Link>
 
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">{outlet.name}</h1>
-              <p className="text-gray-600 mt-1">{outlet.category_name}</p>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">{outlet.name}</h1>
+                <p className="text-gray-600 mt-1">{outlet.category_name}</p>
+              </div>
             </div>
           </div>
 
@@ -693,7 +699,8 @@ export default function OutletManage() {
                     <div>
                       <label className="block text-sm font-medium mb-2">Image</label>
                       <div
-                        className={`border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-colors ${editedOutlet.image_preview
+                        className={`border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-colors ${
+                            editedOutlet.image_preview
                             ? 'border-primary bg-primary/5'
                             : 'border-gray-300 hover:border-gray-400 hover:bg-gray-50'
                           }`}

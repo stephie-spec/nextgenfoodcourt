@@ -106,7 +106,9 @@ export default function BookTablePage() {
           table_number: parseInt(formData.table_number),
           capacity: parseInt(formData.capacity),
           quantity: parseInt(formData.quantity),
-          duration_hours: parseInt(formData.duration_hours)
+          duration_hours: parseInt(formData.duration_hours),
+          booking_date: formData.booking_date,
+          booking_time: formData.booking_time,
         }),
       });
 
@@ -142,7 +144,7 @@ export default function BookTablePage() {
 
   const prevStep = () => setStep(step - 1);
 
-if (success) {
+  if (success) {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
@@ -186,15 +188,13 @@ if (success) {
               <div className="flex items-center justify-between">
                 {[1, 2, 3].map((s) => (
                   <div key={s} className="flex items-center flex-1">
-                    <div className={`flex items-center justify-center w-10 h-10 rounded-full ${
-                      step >= s ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground'
-                    }`}>
+                    <div className={`flex items-center justify-center w-10 h-10 rounded-full ${step >= s ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground'
+                      }`}>
                       {s}
                     </div>
                     {s < 3 && (
-                      <div className={`flex-1 h-1 mx-2 ${
-                        step > s ? 'bg-primary' : 'bg-secondary'
-                      }`} />
+                      <div className={`flex-1 h-1 mx-2 ${step > s ? 'bg-primary' : 'bg-secondary'
+                        }`} />
                     )}
                   </div>
                 ))}
@@ -288,11 +288,10 @@ if (success) {
                           key={table}
                           type="button"
                           onClick={() => setFormData(prev => ({ ...prev, table_number: table.toString() }))}
-                          className={`p-4 rounded-lg border-2 font-semibold transition-all ${
-                            formData.table_number === table.toString()
+                          className={`p-4 rounded-lg border-2 font-semibold transition-all ${formData.table_number === table.toString()
                               ? 'border-primary bg-primary text-primary-foreground'
                               : 'border-border bg-background text-foreground hover:border-primary'
-                          }`}
+                            }`}
                         >
                           {table}
                         </button>
@@ -379,6 +378,13 @@ if (success) {
                     Confirm Your Booking
                   </h2>
 
+                  <div className="flex justify-between items-center pb-2 border-b border-border">
+                    <span className="text-muted-foreground">Booking Status:</span>
+                    <span className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-medium">
+                      Pending Confirmation
+                    </span>
+                  </div>
+
                   <div className="bg-secondary/30 rounded-lg p-6 space-y-4">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Table Number:</span>
@@ -415,7 +421,7 @@ if (success) {
                     Back
                   </button>
                 )}
-                
+
                 {step < 3 ? (
                   <button
                     type="button"

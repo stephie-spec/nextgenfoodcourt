@@ -16,53 +16,42 @@ def serialize_order(order):
         item_price = item.price if item and getattr(item, 'price', None) is not None else 0
         total_price = item_price * (order.quantity or 0)
 
-        # Get table booking if exists
-        table_number = None
-        if getattr(order, 'table_booking', None):
-            table_number = getattr(order.table_booking, 'table_number', None)
+    table_booking_data = None
+    if order.table_booking:
+        table_booking_data = {
+            "id": order.table_booking.id,
+            "table_number": order.table_booking.table_number,
+            "capacity": order.table_booking.capacity,
+            "duration": str(order.table_booking.duration) if order.table_booking.duration else None,
+            "created_at": order.table_booking.created_at.isoformat() if order.table_booking.created_at else None,
+        }
 
-        return {
-            "id": order.id,
-            "customer_id": order.customer_id,
-            "tracking_code": getattr(order, 'tracking_code', None),
-            "guest_name": getattr(order, 'guest_name', None),
-            "guest_email": getattr(order, 'guest_email', None),
-            "customer_name": (order.customer.name if getattr(order, 'customer', None) else (getattr(order, 'guest_name', None) or 'Guest')),
-            "menu_outlet_item_id": order.menu_outlet_item_id,
-            "quantity": order.quantity,
-            "status": order.status.value,
-            "created_at": order.created_at.isoformat() if order.created_at else None,
-            "estimated": order.estimated.isoformat() if order.estimated else None,
-            "outlet_name": outlet.name if outlet else 'Unknown Outlet',
-            "outlet_category": outlet.category_name if outlet else None,
-            "items": [
-                {
-                    "name": item.name if item else 'Unknown Item',
-                    "quantity": order.quantity,
-                    "price": item_price,
-                    "image_path": item.image if (item and item.image and item.image.strip()) else 'default-food.jpg'
-                }
-            ],
-            "total": total_price,
-            "table_number": table_number
-        }
-    except Exception as e:
-        # Fallback serialization if relationships are missing
-        print(f"Error serializing order {getattr(order,'id', '<unknown>')}: {str(e)}")
-        return {
-            "id": getattr(order, 'id', None),
-            "customer_id": getattr(order, 'customer_id', None),
-            "menu_outlet_item_id": getattr(order, 'menu_outlet_item_id', None),
-            "quantity": getattr(order, 'quantity', None),
-            "status": (getattr(order, 'status').value if getattr(order, 'status', None) else None),
-            "created_at": (getattr(order, 'created_at').isoformat() if getattr(order, 'created_at', None) else None),
-            "estimated": (getattr(order, 'estimated').isoformat() if getattr(order, 'estimated', None) else None),
-            "outlet_name": "Unknown",
-            "outlet_category": None,
-            "items": [],
-            "total": 0,
-            "error": str(e)
-        }
+    return {
+        "id": order.id,
+        "customer_id": order.customer_id,
+        "tracking_code": getattr(order, 'tracking_code', None),
+        "guest_name": getattr(order, 'guest_name', None),
+        "guest_email": getattr(order, 'guest_email', None),
+        "customer_name": (order.customer.name if getattr(order, 'customer', None) else (getattr(order, 'guest_name', None) or 'Guest')),
+        "menu_outlet_item_id": order.menu_outlet_item_id,
+        "quantity": order.quantity,
+        "status": order.status.value,
+        "created_at": order.created_at.isoformat() if order.created_at else None,
+        "estimated": order.estimated.isoformat() if order.estimated else None,
+
+        "outlet_name": outlet.name if outlet else 'Unknown Outlet',
+        "outlet_category": outlet.category_name if outlet else None,
+        "items": [
+            {
+                "name": item.name if item else 'Unknown Item',
+                "quantity": order.quantity,
+                "price": item_price,
+                "image_path": item.image if (item and item.image and item.image.strip()) else 'default-food.jpg'
+            }
+        ],
+        "total": total_price,
+        "table_booking": table_booking_data
+    }
 
 
 class OrderListResource(Resource):
@@ -88,6 +77,8 @@ class OrderListResource(Resource):
         guest_name = data.get("guest_name")
         guest_email = data.get("guest_email")
         guest_phone = data.get("guest_phone")
+        table_number = data.get("table_number")
+
         # menu_outlet_item_id and quantity are required; customer_id is optional (guest checkout)
         if menu_outlet_item_id is None or quantity is None:
             return {"error": "Missing required fields"}, 400
@@ -117,6 +108,20 @@ class OrderListResource(Resource):
             )
 
             db.session.add(order)
+            db.session.flush()
+
+            if table_number:
+                from models import TableBooking  
+            
+                table_booking = TableBooking(
+                    order_id=order.id,
+                    table_number=table_number,
+                    capacity=4, 
+                    duration=None, 
+                    created_at=datetime.utcnow()
+                )
+                db.session.add(table_booking)  
+
             db.session.commit()
 
             return serialize_order(order), 201
