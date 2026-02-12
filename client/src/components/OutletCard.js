@@ -119,9 +119,8 @@ export default function OutletCard({ outlet, isOwner = false }) {
         )}
 
         {/* Action Buttons */}
-        <div className={`flex gap-2 ${isOwner ? '' : 'pt-4 border-t border-gray-200'}`}>
           {isOwner && (
-            <div className="pt-4 border-t border-gray-200">
+            <div className="pt-4 border-t border-gray-200 flex justify-center">
               <Link
                 href={outlet?.id ? `/dashboard/owner/outlets/${outlet.id}/manage` : '#'}
                 onClick={(e) => {
@@ -130,7 +129,7 @@ export default function OutletCard({ outlet, isOwner = false }) {
                     console.error('Cannot navigate: no outlet ID');
                   }
                 }}
-                className="block w-full py-2 px-6 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis text-center"
+                className="py-2 px-6 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis text-center"
               >
                 Manage
               </Link>
@@ -138,6 +137,5 @@ export default function OutletCard({ outlet, isOwner = false }) {
           )}
         </div>
       </div>
-    </div>
   );
 }
