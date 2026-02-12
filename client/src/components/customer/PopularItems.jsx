@@ -30,15 +30,16 @@ export default function PopularItems() { // Now modified to show top four favour
 
         const processedDishes = data.map((item) => ({
 
-          id : item.id,
-          name : item.name,
+          id : `${item.outlet_id}-${item.item_name}`,
+          menu_outlet_item_id: item.id,
+          name : item.item_name,
           outlet : item.outlet_name,
           price : item.price || 0,
           rating: Math.floor(Math.random() * 5) + 1,
           reviews: Math.floor(Math.random() * (300 - 100) + 100),
-          category : item.category_name,
-          image: item.image
-            ? `http://localhost:5555/uploads/${item.image.replace(/^\/+/, '')}`
+          category : item.category,
+          image: item.image_path
+            ? `http://localhost:5555/uploads/${item.image_path.replace(/^\/+/, '')}`
             : '/placeholder.svg',
           tag: 'Customer Favorite',
         }));
@@ -82,7 +83,7 @@ export default function PopularItems() { // Now modified to show top four favour
               Customer Favorites
             </h3>
             <p className="text-base sm:text-lg text-muted-foreground max-w-2xl">
-              Discover the dishes that have captured our customers' hearts.
+              Discover the dishes that have captured our customers&apos; hearts.
             </p>
           </div>
 
