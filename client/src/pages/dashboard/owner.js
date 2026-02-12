@@ -9,14 +9,21 @@ import OrderCard from '@/components/OrderCard';
 import Tabs from '@/components/Tabs';
 import AuthGuard from '@/components/AuthGuard';
 import { apiHelper } from '@/lib/apiHelper';
-import { Search, Filter, Plus, Package, DollarSign, Users, TrendingUp, Store, ShoppingBag, Clock, ChefHat, Upload, CheckCircle, XCircle, Edit, Pencil, Trash2 } from 'lucide-react';
+import { Search, Filter, Plus, Package, DollarSign, Users, TrendingUp, Store, ShoppingBag, Clock, ChefHat, Upload, CheckCircle, XCircle, Edit, Pencil, Trash2, RefreshCw, Calendar } from 'lucide-react';
+import { showToast } from '@/lib/toast';
+import BookingCard from '@/components/BookingCard';
 
 export default function OwnerDashboard() {
   const { data: session, status } = useSession();
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [ownerId, setOwnerId] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
   const [outlets, setOutlets] = useState([]);
   const [orders, setOrders] = useState([]);
+  const [bookings, setBookings] = useState([]);
+  const [bookingStatusFilter, setBookingStatusFilter] = useState('all');
+  const [bookingOutletFilter, setBookingOutletFilter] = useState('all');
+  const [bookingSortBy, setBookingSortBy] = useState('newest');
   const [menuItems, setMenuItems] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
@@ -65,67 +72,8 @@ export default function OwnerDashboard() {
     { id: 'overview', label: 'Overview' },
     { id: 'outlets', label: 'My Outlets' },
     { id: 'orders', label: 'Orders' },
+    { id: 'bookings', label: 'Table Bookings' },
   ];
-
-  // Toast notification function
-  const showToast = (message, type = 'info') => {
-    // Remove any existing toasts
-    const existingToasts = document.querySelectorAll('.custom-toast');
-    existingToasts.forEach(toast => toast.remove());
-
-    // Create toast element
-    const toast = document.createElement('div');
-    toast.className = `custom-toast fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg flex items-center gap-3 transform transition-all duration-300 translate-y-0 opacity-100 ${getToastClasses(type)}`;
-
-    // Add icon based on type
-    const icon = getToastIcon(type);
-    toast.innerHTML = `
-    ${icon}
-    <span class="font-medium">${message}</span>
-    <button class="ml-4 text-lg hover:opacity-80" onclick="this.parentElement.remove()">&times;</button>
-  `;
-
-    document.body.appendChild(toast);
-
-    // Auto remove after 5 seconds
-    setTimeout(() => {
-      if (toast.parentElement) {
-        toast.style.transform = 'translateY(-20px)';
-        toast.style.opacity = '0';
-        setTimeout(() => toast.remove(), 300);
-      }
-    }, 5000);
-  };
-
-  const getToastClasses = (type) => {
-    switch (type) {
-      case 'success':
-        return 'bg-green-50 border border-green-200 text-green-800';
-      case 'error':
-        return 'bg-red-50 border border-red-200 text-red-800';
-      case 'warning':
-        return 'bg-yellow-50 border border-yellow-200 text-yellow-800';
-      case 'info':
-        return 'bg-blue-50 border border-blue-200 text-blue-800';
-      default:
-        return 'bg-gray-50 border border-gray-200 text-gray-800';
-    }
-  };
-
-  const getToastIcon = (type) => {
-    switch (type) {
-      case 'success':
-        return '<svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
-      case 'error':
-        return '<svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>';
-      case 'warning':
-        return '<svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.998-.833-2.732 0L4.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path></svg>';
-      case 'info':
-        return '<svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
-      default:
-        return '<svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
-    }
-  };
 
   useEffect(() => {
     // Early return if no session yet
@@ -169,10 +117,14 @@ export default function OwnerDashboard() {
         if (!isMounted) return;
         setOutlets(outletsData);
 
-        // Fetch owner's orders (similar pattern to customer orders)
+        // Fetch owner's orders
         const ordersData = await apiHelper.getOrders(token, ownerId);
         if (!isMounted) return;
         setOrders(ordersData);
+
+        const bookingsData = await fetchOwnerBookings(token, ownerId, outletsData);
+        if (!isMounted) return;
+        setBookings(bookingsData);
 
         // Fetch all menu items and filter for owner's outlets
         const menuResponse = await fetch(`${API_BASE}/api/menu`, {
@@ -363,6 +315,37 @@ export default function OwnerDashboard() {
     return outlet?.name || 'Unknown Outlet';
   };
 
+  // Filtered and sorted bookings
+  const filteredBookings = bookings
+    .filter(booking => {
+      // Status filter
+      if (bookingStatusFilter !== 'all' && booking.status !== bookingStatusFilter) {
+        return false;
+      }
+      // Outlet filter
+      if (bookingOutletFilter !== 'all' && booking.outlet_name !== bookingOutletFilter) {
+        return false;
+      }
+      // Search filter
+      if (searchTerm && !booking.customer_name?.toLowerCase().includes(searchTerm.toLowerCase())) {
+        return false;
+      }
+      return true;
+    })
+    .sort((a, b) => {
+      switch (bookingSortBy) {
+        case 'newest':
+          return new Date(b.booking_date || b.created_at) - new Date(a.booking_date || a.created_at);
+        case 'oldest':
+          return new Date(a.booking_date || a.created_at) - new Date(b.booking_date || b.created_at);
+        case 'table-asc':
+          return a.table_number - b.table_number;
+        case 'table-desc':
+          return b.table_number - a.table_number;
+        default:
+          return 0;
+      }
+    });
 
   const handleAddOutlet = async (e) => {
     e.preventDefault();
@@ -486,6 +469,94 @@ export default function OwnerDashboard() {
     }));
 
     showToast('Order updated successfully!', 'success');
+  };
+
+  const refreshOrders = async () => {
+    if (!session?.accessToken || !ownerId) return;
+
+    setIsRefreshing(true);
+    try {
+      const token = session.accessToken || localStorage.getItem('auth_token');
+      const ordersData = await apiHelper.getOrders(token, ownerId);
+
+      setOrders(ordersData);
+
+      // Optional: recalculate stats if needed
+      const totalRevenue = ordersData.reduce((sum, order) => sum + (order.total || 0), 0);
+      setStats(prev => ({
+        ...prev,
+        totalRevenue,
+        totalOrders: ordersData.length,
+      }));
+
+      showToast('Orders refreshed successfully!', 'success');
+    } catch (err) {
+      console.error('Failed to refresh orders:', err);
+      showToast('Failed to refresh orders', 'error');
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  // Fetch bookings for owner's outlets
+  const fetchOwnerBookings = async (token, ownerId, outletsData) => {
+    try {
+      if (!outletsData || outletsData.length === 0) return [];
+
+      // Get all outlet IDs
+      const outletIds = outletsData.map(outlet => outlet.id);
+
+      // Fetch all orders for these outlets
+      const ordersResponse = await fetch(`${API_BASE}/api/orders/owner/${ownerId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!ordersResponse.ok) {
+        throw new Error(`Failed to fetch orders: ${ordersResponse.status}`);
+      }
+
+      const ordersData = await ordersResponse.json();
+
+      // Filter orders that have table bookings
+      const bookingsData = ordersData
+        .filter(order => order.table_booking) // Only orders with table bookings
+        .map(order => ({
+          id: order.table_booking.id,
+          order_id: order.id,
+          table_number: order.table_booking.table_number,
+          capacity: order.table_booking.capacity,
+          status: order.table_booking.status || 'pending',
+          created_at: order.table_booking.created_at,
+          booking_date: order.table_booking.booking_date,
+          duration: order.table_booking.duration,
+          special_requests: order.table_booking.special_requests,
+          outlet_name: order.outlet_name,
+          outlet_id: order.outlet_id,
+          customer_name: order.customer_name || 'Customer',
+          customer_id: order.customer_id,
+          items: order.items || [],
+          total: order.total || 0
+        }));
+
+      console.log(`Found ${bookingsData.length} bookings for owner's outlets`);
+      return bookingsData;
+
+    } catch (error) {
+      console.error('Error fetching owner bookings:', error);
+      return [];
+    }
+  };
+
+  const handleBookingUpdate = (updatedBooking) => {
+    setBookings(prevBookings =>
+      prevBookings.map(booking =>
+        booking.id === updatedBooking.id ? updatedBooking : booking
+      )
+    );
+    showToast('Booking updated successfully!', 'success');
   };
 
   return (
@@ -686,6 +757,7 @@ export default function OwnerDashboard() {
                         />
                       </div>
                     </div>
+
                     <div className="grid grid-cols-2 sm:flex gap-2">
                       <select
                         value={orderStatusFilter}
@@ -718,6 +790,18 @@ export default function OwnerDashboard() {
                         <option value="price-high">Price: High to Low</option>
                         <option value="price-low">Price: Low to High</option>
                       </select>
+
+                      {/* Refresh button */}
+                      <button
+                        onClick={refreshOrders}
+                        disabled={isRefreshing}
+                        title={isRefreshing ? "Refreshing..." : "Refresh orders"}
+                        className={`p-2 rounded-full hover:bg-gray-100 transition-colors flex-shrink-0 ${isRefreshing ? 'opacity-60 cursor-not-allowed animate-spin' : ''
+                          }`}
+                        aria-label="Refresh orders"
+                      >
+                        <RefreshCw className="w-5 h-5 text-gray-600" />
+                      </button>
                     </div>
                   </div>
 
@@ -732,6 +816,136 @@ export default function OwnerDashboard() {
                       <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                       <h3 className="text-lg font-semibold text-gray-700">No Orders Found</h3>
                       <p className="text-gray-500 mt-2">Try adjusting your filters</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'bookings' && (
+            <div>
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                {/* Search and Filter Controls */}
+                <div className="mb-6">
+                  <div className="flex flex-col gap-3 sm:gap-4 mb-4 sm:mb-6">
+                    <div className="flex-1">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
+                        <input
+                          type="text"
+                          placeholder="Search bookings by customer name..."
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          className="w-full pl-9 sm:pl-10 pr-4 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:flex gap-2">
+                      <select
+                        value={bookingStatusFilter}
+                        onChange={(e) => setBookingStatusFilter(e.target.value)}
+                        className="px-3 py-2 text-sm border border-gray-300 rounded-lg w-full"
+                      >
+                        <option value="all">All Status</option>
+                        <option value="pending">Pending</option>
+                        <option value="confirmed">Confirmed</option>
+                        <option value="checked_in">Checked In</option>
+                        <option value="completed">Completed</option>
+                        <option value="cancelled">Cancelled</option>
+                        <option value="no_show">No Show</option>
+                      </select>
+
+                      <select
+                        value={bookingOutletFilter}
+                        onChange={(e) => setBookingOutletFilter(e.target.value)}
+                        className="px-3 py-2 text-sm border border-gray-300 rounded-lg w-full"
+                      >
+                        <option value="all">All Outlets</option>
+                        {outlets.map(outlet => (
+                          <option key={outlet.id} value={outlet.name}>{outlet.name}</option>
+                        ))}
+                      </select>
+
+                      <select
+                        value={bookingSortBy}
+                        onChange={(e) => setBookingSortBy(e.target.value)}
+                        className="col-span-2 sm:col-span-1 px-3 py-2 text-sm border border-gray-300 rounded-lg w-full"
+                      >
+                        <option value="newest">Newest First</option>
+                        <option value="oldest">Oldest First</option>
+                        <option value="table-asc">Table: Low to High</option>
+                        <option value="table-desc">Table: High to Low</option>
+                      </select>
+
+                      {/* Refresh button */}
+                      <button
+                        onClick={refreshOrders}
+                        disabled={isRefreshing}
+                        title={isRefreshing ? "Refreshing..." : "Refresh bookings"}
+                        className={`p-2 rounded-full hover:bg-gray-100 transition-colors flex-shrink-0 ${isRefreshing ? 'opacity-60 cursor-not-allowed animate-spin' : ''
+                          }`}
+                        aria-label="Refresh bookings"
+                      >
+                        <RefreshCw className="w-5 h-5 text-gray-600" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Stats Summary */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                      <p className="text-xs text-yellow-700">Pending</p>
+                      <p className="text-xl font-bold text-yellow-700">
+                        {bookings.filter(b => b.status === 'pending').length}
+                      </p>
+                    </div>
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                      <p className="text-xs text-green-700">Confirmed</p>
+                      <p className="text-xl font-bold text-green-700">
+                        {bookings.filter(b => b.status === 'confirmed').length}
+                      </p>
+                    </div>
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                      <p className="text-xs text-blue-700">Checked In</p>
+                      <p className="text-xl font-bold text-blue-700">
+                        {bookings.filter(b => b.status === 'checked_in').length}
+                      </p>
+                    </div>
+                    <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
+                      <p className="text-xs text-purple-700">Today's Bookings</p>
+                      <p className="text-xl font-bold text-purple-700">
+                        {bookings.filter(b => {
+                          if (!b.booking_date) return false;
+                          const today = new Date().toDateString();
+                          const bookingDate = new Date(b.booking_date).toDateString();
+                          return bookingDate === today;
+                        }).length}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-6">
+                    {filteredBookings.map(booking => (
+                      <BookingCard
+                        key={booking.id}
+                        booking={booking}
+                        isOwner={true}
+                        onBookingUpdate={handleBookingUpdate}
+                      />
+                    ))}
+                  </div>
+
+                  {filteredBookings.length === 0 && (
+                    <div className="text-center py-12 bg-gray-50 rounded-lg">
+                      <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-gray-700">No Bookings Found</h3>
+                      <p className="text-gray-500 mt-2">
+                        {searchTerm || bookingStatusFilter !== 'all' || bookingOutletFilter !== 'all'
+                          ? 'Try adjusting your filters'
+                          : 'No table reservations yet'}
+                      </p>
                     </div>
                   )}
                 </div>

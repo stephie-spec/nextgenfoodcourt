@@ -14,6 +14,16 @@ def serialize_order(order):
     item_price = order.menu_outlet_item.item.price
     total_price = item_price * order.quantity
 
+    table_booking_data = None
+    if order.table_booking:
+        table_booking_data = {
+            "id": order.table_booking.id,
+            "table_number": order.table_booking.table_number,
+            "capacity": order.table_booking.capacity,
+            "duration": str(order.table_booking.duration) if order.table_booking.duration else None,
+            "created_at": order.table_booking.created_at.isoformat() if order.table_booking.created_at else None,
+        }
+
     return {
         "id": order.id,
         "customer_id": order.customer_id,
@@ -26,15 +36,15 @@ def serialize_order(order):
         "outlet_name": outlet.name,
         "outlet_category": outlet.category_name,
         "items": [
-        {
-            "name": item.name,
-            "quantity":order.quantity,
-            "price": item_price,
-            "image_path": item.image if item.image and item.image.strip() else 'default-food.jpg'
-        }
-    ],
-    "total": total_price
-
+            {
+                "name": item.name,
+                "quantity":order.quantity,
+                "price": item_price,
+                "image_path": item.image if item.image and item.image.strip() else 'default-food.jpg'
+            }
+        ],
+        "total": total_price,
+        "table_booking": table_booking_data
     }
 
 
@@ -57,6 +67,7 @@ class OrderListResource(Resource):
         customer_id = data.get("customer_id")
         menu_outlet_item_id = data.get("menu_outlet_item_id")
         quantity = data.get("quantity")
+        table_number = data.get("table_number")
 
         if None in (customer_id, menu_outlet_item_id, quantity):
             return {"error": "Missing required fields"}, 400
@@ -78,6 +89,21 @@ class OrderListResource(Resource):
         )
 
         db.session.add(order)
+        db.session.flush()
+
+
+        if table_number:
+            from models import TableBooking  
+        
+            table_booking = TableBooking(
+                order_id=order.id,
+                table_number=table_number,
+                capacity=4, 
+                duration=None, 
+                created_at=datetime.utcnow()
+            )
+            db.session.add(table_booking)  
+
         db.session.commit()
 
         return serialize_order(order), 201

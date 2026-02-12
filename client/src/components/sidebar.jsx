@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import { ChevronRight, Home, Utensils, Star, Info, Phone, X, LayoutDashboard, Store, ShoppingBag } from 'lucide-react';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
+import Link from 'next/link';
+
 
 export default function Sidebar() {
   // Controls whether the sidebar is open or closed
@@ -39,12 +41,11 @@ export default function Sidebar() {
 
       {/* Sidebar container */}
       <aside
-        className={`fixed top-20 left-14 bg-background border border-border rounded-lg shadow-xl z-30 transition-all duration-300 ${
-          isOpen ? 'w-56 opacity-100 pointer-events-auto' : 'w-0 opacity-0 pointer-events-none'
-        } overflow-hidden`}
+        className={`fixed top-20 left-14 bg-background border border-border rounded-lg shadow-xl z-30 transition-all duration-300 ${isOpen ? 'w-56 opacity-100 pointer-events-auto' : 'w-0 opacity-0 pointer-events-none'
+          } overflow-hidden`}
       >
         <div className="flex flex-col h-full p-4 pr-6">
-          
+
           {/* Logo section (desktop only) */}
           <div className="mb-8 hidden md:flex justify-center">
             <div className="w-12 h-12 bg-gradient-to-br from-primary to-accent rounded-lg flex items-center justify-center">
@@ -59,7 +60,7 @@ export default function Sidebar() {
                 const Icon = item.icon;
                 return (
                   <li key={index}>
-                    <a
+                    <Link
                       href={item.href}
                       onClick={() => setIsOpen(false)}
                       className="flex items-center gap-3 px-4 py-3 text-foreground hover:bg-secondary rounded-lg transition-colors"
@@ -68,7 +69,7 @@ export default function Sidebar() {
                       <span className="text-sm font-medium whitespace-nowrap">
                         {item.label}
                       </span>
-                    </a>
+                    </Link>
                   </li>
                 );
               })}

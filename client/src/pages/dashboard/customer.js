@@ -5,11 +5,14 @@ import DashboardLayout from '@/components/DashboardLayout';
 import StatCard from '@/components/StatCard';
 import OrderCard from '@/components/OrderCard';
 import OutletCard from '@/components/OutletCard';
+import BookingCard from '@/components/BookingCard'
 import Tabs from '@/components/Tabs';
 import AuthGuard from '@/components/AuthGuard';
-import { Search, Filter, ShoppingBag, Star, Clock, Heart, Store, ArrowRight } from 'lucide-react';
+import { Search, Filter, ShoppingBag, Star, Clock, Heart, Store, ArrowRight, RefreshCw } from 'lucide-react';
 import { apiHelper } from '@/lib/apiHelper';
 import { useSession } from 'next-auth/react';
+import Link from 'next/link';
+import { showToast } from '@/lib/toast';
 
 
 export default function CustomerDashboard() {
@@ -17,28 +20,43 @@ export default function CustomerDashboard() {
   const [activeTab, setActiveTab] = useState('orders');
   const [outlets, setOutlets] = useState([]);
   const [orders, setOrders] = useState([]);
+  const [bookings, setBookings] = useState([]);
+  const [activeBookingTab, setActiveBookingTab] = useState('active');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [sortOption, setSortOption] = useState('newest');
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const tabs = [
     { id: 'orders', label: 'Active Orders' },
+    { id: 'bookings', label: 'Table Bookings' },
     { id: 'history', label: 'Order History' },
   ];
 
+
   useEffect(() => {
-    if (!session?.accessToken || !session?.user?.id) {
-      console.log('No session data');
+    if (!session || status === 'loading') {
       setLoading(false);
       return;
     }
 
+    // Get auth data - prefer session, fallback to localStorage
+    const token = session?.accessToken || localStorage.getItem('auth_token');
+    const customerId = session?.user?.id || localStorage.getItem('user_id');
+    const userRole = session?.user?.role || localStorage.getItem('user_role');
+
+    // Optional safety check
+    if (!token || !customerId || userRole !== 'customer') {
+      console.warn('Missing required auth data in CustomerDashboard');
+      setLoading(false);
+      return;
+    }
     setLoading(true);
 
-    apiHelper.getCustomerOrders(session.accessToken, session.user.id)
+    apiHelper.getCustomerOrders(token, customerId)
       .then(data => {
         console.log('Orders from apiHelper:', data);
         setOrders(data);
@@ -49,9 +67,27 @@ export default function CustomerDashboard() {
         setOrders([]);
         setLoading(false);
       });
+
+    fetch(`http://localhost:5555/api/customer/${customerId}/table-bookings`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    })
+      .then(res => res.ok ? res.json() : [])
+      .then(data => {
+        console.log('Bookings:', data);
+        setBookings(Array.isArray(data) ? data : []);
+      })
+      .catch(error => {
+        console.error('Error fetching bookings:', error);
+        setBookings([]);
+      })
+      .finally(() => setLoading(false));
+
   }, [session]);
 
-    const handleOrderUpdate = (updatedOrder) => {
+  const handleOrderUpdate = (updatedOrder) => {
     setOrders(prevOrders =>
       prevOrders.map(order =>
         order.id === updatedOrder.id ? updatedOrder : order
@@ -61,12 +97,45 @@ export default function CustomerDashboard() {
 
 
   const activeOrders = Array.isArray(orders)
-    ? orders.filter(o => o.estimated_status !== 'completed')
+    ? orders.filter(o => ['pending', 'confirmed'].includes(o.estimated_status))
     : [];
 
   const pastOrders = Array.isArray(orders)
-    ? orders.filter(o => o.estimated_status === 'completed')
+    ? orders.filter(o => ['completed', 'cancelled'].includes(o.estimated_status))
     : [];
+
+  const refreshOrders = async () => {
+    if (!session?.accessToken || !session?.user?.id) return;
+
+    setIsRefreshing(true);
+    try {
+      const data = await apiHelper.getCustomerOrders(session.accessToken, session.user.id);
+      setOrders(data);
+      showToast('Orders refreshed successfully!', 'success');   // ← use your toast
+    } catch (err) {
+      console.error('Refresh failed:', err);
+      showToast('Failed to refresh orders', 'error');
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  const handleBookingUpdate = (updatedBooking) => {
+    setBookings(prevBookings =>
+      prevBookings.map(booking =>
+        booking.id === updatedBooking.id ? updatedBooking : booking
+      )
+    );
+  };
+
+  const activeBookings = bookings.filter(b =>
+    ['pending', 'confirmed', 'checked-in'].includes(b.status)
+  );
+
+  const pastBookings = bookings.filter(b =>
+    ['completed', 'cancelled', 'no-show'].includes(b.status)
+  );
+
 
   return (
     <AuthGuard requiredRole="customer">
@@ -110,12 +179,12 @@ export default function CustomerDashboard() {
               <h3 className="font-bold text-base sm:text-lg text-blue-900">Want to order?</h3>
               <p className="text-blue-700 text-sm sm:text-base">Browse all food court outlets</p>
             </div>
-            <a
+            <Link
               href="/outlets"
               className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm sm:text-base"
             >
               View Outlets <ArrowRight className="w-4 h-4" />
-            </a>
+            </Link>
           </div>
         </div>
 
@@ -155,6 +224,16 @@ export default function CustomerDashboard() {
                     <option value="ready">Ready</option>
                     <option value="delivered">Delivered</option>
                   </select>
+                  <button
+                    onClick={refreshOrders}
+                    disabled={isRefreshing}
+                    title="Refresh orders"
+                    className={`p-2 rounded-full hover:bg-gray-100 transition-colors ${isRefreshing ? 'opacity-60 cursor-not-allowed animate-spin' : ''
+                      }`}
+                    aria-label="Refresh orders"
+                  >
+                    <RefreshCw className="w-5 h-5 text-gray-600" />
+                  </button>
                 </div>
               </div>
 
@@ -178,6 +257,68 @@ export default function CustomerDashboard() {
                     <ShoppingBag className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                     <h3 className="text-lg font-semibold text-gray-700">No Active Orders</h3>
                     <p className="text-gray-500 mt-2">Your active orders will appear here</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'bookings' && (
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+              {/* Booking tabs */}
+              <div className="flex gap-4 mb-6 border-b border-gray-200">
+                <button
+                  onClick={() => setActiveBookingTab('active')}
+                  className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${activeBookingTab === 'active'
+                      ? 'border-primary text-primary'
+                      : 'border-transparent text-gray-500 hover:text-gray-700'
+                    }`}
+                >
+                  Active Bookings ({activeBookings.length})
+                </button>
+                <button
+                  onClick={() => setActiveBookingTab('history')}
+                  className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${activeBookingTab === 'history'
+                      ? 'border-primary text-primary'
+                      : 'border-transparent text-gray-500 hover:text-gray-700'
+                    }`}
+                >
+                  Booking History ({pastBookings.length})
+                </button>
+              </div>
+
+              {/* Booking list */}
+              <div className="space-y-6">
+                {(activeBookingTab === 'active' ? activeBookings : pastBookings)
+                  .map(booking => (
+                    <BookingCard
+                      key={booking.id}
+                      booking={booking}
+                      isOwner={false}
+                      onBookingUpdate={handleBookingUpdate}
+                    />
+                  ))}
+
+                {activeBookingTab === 'active' && activeBookings.length === 0 && (
+                  <div className="text-center py-12">
+                    <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-gray-700">No Active Bookings</h3>
+                    <p className="text-gray-500 mt-2">Your table reservations will appear here</p>
+                    <Link
+                      href="/book-table"
+                      className="inline-flex items-center gap-2 mt-4 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90"
+                    >
+                      Book a Table
+                      <ArrowRight className="w-4 h-4" />
+                    </Link>
+                  </div>
+                )}
+
+                {activeBookingTab === 'history' && pastBookings.length === 0 && (
+                  <div className="text-center py-12">
+                    <Clock className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-gray-700">No Booking History</h3>
+                    <p className="text-gray-500 mt-2">Your past reservations will appear here</p>
                   </div>
                 )}
               </div>
