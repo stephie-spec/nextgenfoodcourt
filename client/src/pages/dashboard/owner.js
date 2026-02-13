@@ -136,6 +136,40 @@ export default function OwnerDashboard() {
     }
   };
 
+  // Refresh orders function
+  const refreshOrders = async () => {
+    const token = session?.accessToken || localStorage.getItem('auth_token');
+    if (!token || !ownerId) return;
+    
+    setIsRefreshing(true);
+    try {
+      const ordersData = await apiHelper.getOrders(token, ownerId);
+      setOrders(ordersData);
+    } catch (error) {
+      console.error('Error refreshing orders:', error);
+      showToast('error', 'Failed to refresh orders');
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  // Refresh bookings function
+  const refreshBookings = async () => {
+    const token = session?.accessToken || localStorage.getItem('auth_token');
+    if (!token || !ownerId) return;
+    
+    setIsRefreshing(true);
+    try {
+      const bookingsData = await fetchOwnerBookings(token, ownerId, outlets);
+      setBookings(bookingsData);
+    } catch (error) {
+      console.error('Error refreshing bookings:', error);
+      showToast('error', 'Failed to refresh bookings');
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   useEffect(() => {
     // Early return if no session yet
     if (!session || status === 'loading') {
