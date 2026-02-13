@@ -35,7 +35,7 @@ def create_app():
 
     # CONFIG
     app.config["SECRET_KEY"] = "super-secret-key-change-me"
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///app.db"
+    app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql+psycopg2://otiende:12345678@localhost:5432/nextgen_food_court_db"
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["SECRET_KEY"] = "12345"
     app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024 

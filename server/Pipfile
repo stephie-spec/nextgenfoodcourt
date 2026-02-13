@@ -15,6 +15,7 @@ flask-cors = "*"
 werkzeug = "*"
 pyjwt = "*"
 qrcode = {extras = ["pil"], version = "*"}
+psycopg2-binary = "*"
 
 
 [dev-packages]

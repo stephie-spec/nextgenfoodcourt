@@ -420,6 +420,12 @@ export default function OrderCard({ order, isOwner = false, onOrderUpdate }) {
                 >
                   {isUpdating ? 'Updating...' : 'Update Order'}
                 </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showCancelModal && (
         <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
           {/* Backdrop with blur */}
