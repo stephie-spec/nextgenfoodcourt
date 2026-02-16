@@ -22,6 +22,7 @@ export default function OwnerDashboard() {
   const [outlets, setOutlets] = useState([]);
   const [orders, setOrders] = useState([]);
   const [bookings, setBookings] = useState([]);
+  const [isRefreshingBookings, setIsRefreshingBookings] = useState(false);
   const [bookingStatusFilter, setBookingStatusFilter] = useState('all');
   const [bookingOutletFilter, setBookingOutletFilter] = useState('all');
   const [bookingSortBy, setBookingSortBy] = useState('newest');
@@ -73,7 +74,7 @@ export default function OwnerDashboard() {
     { id: 'overview', label: 'Overview' },
     { id: 'outlets', label: 'My Outlets' },
     { id: 'orders', label: 'Orders' },
-    { id: 'bookings', label: 'Table Bookings' },
+    { id: 'bookings', label: 'Reservations' },
   ];
 
   // Toast notification function
@@ -140,7 +141,7 @@ export default function OwnerDashboard() {
   const refreshOrders = async () => {
     const token = session?.accessToken || localStorage.getItem('auth_token');
     if (!token || !ownerId) return;
-    
+
     setIsRefreshing(true);
     try {
       const ordersData = await apiHelper.getOrders(token, ownerId);
@@ -157,7 +158,7 @@ export default function OwnerDashboard() {
   const refreshBookings = async () => {
     const token = session?.accessToken || localStorage.getItem('auth_token');
     if (!token || !ownerId) return;
-    
+
     setIsRefreshing(true);
     try {
       const bookingsData = await fetchOwnerBookings(token, ownerId, outlets);
@@ -568,51 +569,55 @@ export default function OwnerDashboard() {
   // Fetch bookings for owner's outlets
   const fetchOwnerBookings = async (token, ownerId, outletsData) => {
     try {
-      if (!outletsData || outletsData.length === 0) return [];
+      if (!outletsData?.length) return [];
 
-      // Get all outlet IDs
-      const outletIds = outletsData.map(outlet => outlet.id);
+      const outletIds = outletsData.map(o => o.id);
 
-      // Fetch all orders for these outlets
-      const ordersResponse = await fetch(`${API_BASE}/api/orders/owner/${ownerId}`, {
+      // Fetch all orders for owner's outlets
+      const response = await fetch(`${API_BASE}/api/orders/owner/${ownerId}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
 
-      if (!ordersResponse.ok) {
-        throw new Error(`Failed to fetch orders: ${ordersResponse.status}`);
-      }
+      if (!response.ok) throw new Error(`Failed to fetch orders: ${response.status}`);
 
-      const ordersData = await ordersResponse.json();
+      const ordersData = await response.json();
+      console.log('Owner orders for bookings:', ordersData);
 
       // Filter orders that have table bookings
-      const bookingsData = ordersData
-        .filter(order => order.table_booking) // Only orders with table bookings
+      const ownerBookings = ordersData
+        .filter(order => order.table_booking && outletIds.includes(order.outlet_id))
         .map(order => ({
           id: order.table_booking.id,
           order_id: order.id,
           table_number: order.table_booking.table_number,
-          capacity: order.table_booking.capacity,
-          status: order.table_booking.status || 'pending',
-          created_at: order.table_booking.created_at,
-          booking_date: order.table_booking.booking_date,
-          duration: order.table_booking.duration,
-          special_requests: order.table_booking.special_requests,
-          outlet_name: order.outlet_name,
+          capacity: order.table_booking.capacity || 4,
+          status: order.table_booking.status || order.status || 'pending',
+          created_at: order.table_booking.created_at || order.created_at,
+          booking_date: order.table_booking.booking_date || null,
+          booking_time: order.table_booking.booking_time || null,
+          duration: order.table_booking.duration || null,
+          special_requests: order.table_booking.special_requests || '',
+          outlet_name: order.outlet_name || 'Unknown Outlet',
           outlet_id: order.outlet_id,
           customer_name: order.customer_name || 'Customer',
           customer_id: order.customer_id,
           items: order.items || [],
-          total: order.total || 0
+          total: order.total || 0,
+          // Display helpers
+          formatted_date: order.table_booking.booking_date
+            ? new Date(order.table_booking.booking_date).toLocaleDateString()
+            : null,
+          formatted_time: order.table_booking.booking_time || null
         }));
 
-      console.log(`Found ${bookingsData.length} bookings for owner's outlets`);
-      return bookingsData;
-
+      console.log(`Found ${ownerBookings.length} table bookings for owner`);
+      return ownerBookings;
     } catch (error) {
       console.error('Error fetching owner bookings:', error);
+      showToast('Failed to load reservations', 'error');
       return [];
     }
   };
@@ -625,6 +630,7 @@ export default function OwnerDashboard() {
     );
     showToast('Booking updated successfully!', 'success');
   };
+
 
   return (
     <AuthGuard requiredRole="owner">
@@ -833,9 +839,7 @@ export default function OwnerDashboard() {
                       >
                         <option value="all">All Status</option>
                         <option value="pending">Pending</option>
-                        <option value="preparing">Preparing</option>
-                        <option value="ready">Ready</option>
-                        <option value="delivered">Delivered</option>
+                        <option value="completed">Completed</option>
                       </select>
                       <select
                         value={orderOutletFilter}
@@ -948,14 +952,15 @@ export default function OwnerDashboard() {
 
                       {/* Refresh button */}
                       <button
-                        onClick={refreshOrders}
+                        onClick={() => refreshBookings()}
                         disabled={isRefreshing}
-                        title={isRefreshing ? "Refreshing..." : "Refresh bookings"}
-                        className={`p-2 rounded-full hover:bg-gray-100 transition-colors flex-shrink-0 ${isRefreshing ? 'opacity-60 cursor-not-allowed animate-spin' : ''
+                        className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${isRefreshing
+                          ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                          : 'bg-primary/10 text-primary hover:bg-primary/20'
                           }`}
-                        aria-label="Refresh bookings"
                       >
-                        <RefreshCw className="w-5 h-5 text-gray-600" />
+                        <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                        {isRefreshing ? 'Refreshing...' : 'Refresh'}
                       </button>
                     </div>
                   </div>

@@ -263,6 +263,32 @@ export default function BookingCard({ booking, isOwner = false, onBookingUpdate 
                     </button>
                   )}
 
+
+                </>
+              )}
+
+              {/* CUSTOMER ACTIONS */}
+              {!isOwner && (
+                <div className="flex flex-wrap gap-2">
+                  {/* Pending bookings - can cancel */}
+                  {booking.status === 'pending' && (
+                    <>
+                      <button
+                        onClick={() => setShowRescheduleModal(true)}
+                        className="px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-medium hover:bg-amber-700 transition-colors"
+                      >
+                        Reschedule
+                      </button>
+                      <button
+                        onClick={() => setShowCancelModal(true)}
+                        disabled={isUpdating}
+                        className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors"
+                      >
+                        Cancel Booking
+                      </button>
+                    </>
+                  )}
+
                   {booking.status === 'confirmed' && (
                     <>
                       <button
@@ -289,59 +315,6 @@ export default function BookingCard({ booking, isOwner = false, onBookingUpdate 
                       className="px-4 py-2 bg-gray-600 text-white rounded-lg text-sm font-medium hover:bg-gray-700 transition-colors"
                     >
                       Complete Booking
-                    </button>
-                  )}
-
-                  <button
-                    onClick={() => setShowCancelModal(true)}
-                    disabled={isUpdating || booking.status === 'cancelled' || booking.status === 'completed'}
-                    className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors disabled:opacity-50 disabled:bg-gray-400"
-                  >
-                    Cancel Booking
-                  </button>
-                </>
-              )}
-
-              {/* CUSTOMER ACTIONS */}
-              {!isOwner && (
-                <div className="flex flex-wrap gap-2">
-                  {/* Pending bookings - can cancel */}
-                  {booking.status === 'pending' && (
-                    <>
-                      <button
-                        onClick={() => setShowRescheduleModal(true)}
-                        className="px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-medium hover:bg-amber-700 transition-colors"
-                      >
-                        Reschedule
-                      </button>
-                      <button
-                        onClick={() => setShowCancelModal(true)}
-                        disabled={isUpdating}
-                        className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors"
-                      >
-                        Cancel Booking
-                      </button>
-                    </>
-                  )}
-
-                  {/* Confirmed bookings - can cancel */}
-                  {booking.status === 'confirmed' && (
-                    <button
-                      onClick={() => setShowCancelModal(true)}
-                      disabled={isUpdating}
-                      className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors"
-                    >
-                      Cancel Booking
-                    </button>
-                  )}
-
-                  {/* Checked in / Completed - can view details */}
-                  {['checked-in', 'completed'].includes(booking.status) && (
-                    <button
-                      onClick={() => router.push(`/bookings/${booking.id}`)}
-                      className="px-4 py-2 bg-gray-600 text-white rounded-lg text-sm font-medium hover:bg-gray-700 transition-colors"
-                    >
-                      View Details
                     </button>
                   )}
 

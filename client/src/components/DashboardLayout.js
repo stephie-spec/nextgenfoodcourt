@@ -47,16 +47,13 @@ export default function DashboardLayout({ children, title }) {
       return [
         ...baseItems,
         { icon: User, label: 'Staff Management', href: '/dashboard/owner/staff' },
-        { icon: BarChart, label: 'Analytics', href: '/dashboard/owner/analytics' },
       ];
     }
 
     // Customer items
     return [
       ...baseItems,
-      { icon: Heart, label: 'Favorites', href: '/dashboard/customer/favorites' },
       { icon: CreditCard, label: 'Payment Methods', href: '/dashboard/customer/payments' },
-      { icon: Heart, label: 'Address Book', href: '/dashboard/customer/addresses' },
     ];
   };
 
@@ -131,20 +128,10 @@ export default function DashboardLayout({ children, title }) {
                           <span className="text-sm text-foreground">Active Tables</span>
                           <span className="font-bold text-green-500">12/20</span>
                         </div>
-                      <>
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm text-foreground">Today's Orders</span>
-                          <span className="font-bold text-primary">24</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm text-foreground">Active Tables</span>
-                          <span className="font-bold text-green-500">12/20</span>
-                        </div>
                         <div className="flex justify-between items-center">
                           <span className="text-sm text-foreground">Revenue</span>
                           <span className="font-bold text-green-500">Ksh 1,240</span>
                         </div>
-                      </>
                       </>
                     ) : (
                       <>
@@ -208,8 +195,8 @@ export default function DashboardLayout({ children, title }) {
                             href={item.href}
                             onClick={() => setMobileMenuOpen(false)}
                             className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive
-                                ? 'bg-primary text-white'
-                                : 'text-foreground hover:bg-secondary'
+                              ? 'bg-primary text-white'
+                              : 'text-foreground hover:bg-secondary'
                               }`}
                           >
                             <Icon className="w-5 h-5" />
