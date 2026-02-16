@@ -47,16 +47,13 @@ export default function DashboardLayout({ children, title }) {
       return [
         ...baseItems,
         { icon: User, label: 'Staff Management', href: '/dashboard/owner/staff' },
-        { icon: BarChart, label: 'Analytics', href: '/dashboard/owner/analytics' },
       ];
     }
 
     // Customer items
     return [
       ...baseItems,
-      { icon: Heart, label: 'Favorites', href: '/dashboard/customer/favorites' },
       { icon: CreditCard, label: 'Payment Methods', href: '/dashboard/customer/payments' },
-      { icon: Heart, label: 'Address Book', href: '/dashboard/customer/addresses' },
     ];
   };
 

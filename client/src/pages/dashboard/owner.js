@@ -858,9 +858,7 @@ const fetchOwnerBookings = async (token, ownerId, outletsData) => {
                       >
                         <option value="all">All Status</option>
                         <option value="pending">Pending</option>
-                        <option value="preparing">Preparing</option>
-                        <option value="ready">Ready</option>
-                        <option value="delivered">Delivered</option>
+                        <option value="completed">Completed</option>
                       </select>
                       <select
                         value={orderOutletFilter}
