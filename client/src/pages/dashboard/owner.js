@@ -141,7 +141,7 @@ export default function OwnerDashboard() {
   const refreshOrders = async () => {
     const token = session?.accessToken || localStorage.getItem('auth_token');
     if (!token || !ownerId) return;
-    
+
     setIsRefreshing(true);
     try {
       const ordersData = await apiHelper.getOrders(token, ownerId);
@@ -158,7 +158,7 @@ export default function OwnerDashboard() {
   const refreshBookings = async () => {
     const token = session?.accessToken || localStorage.getItem('auth_token');
     if (!token || !ownerId) return;
-    
+
     setIsRefreshing(true);
     try {
       const bookingsData = await fetchOwnerBookings(token, ownerId, outlets);
@@ -567,60 +567,60 @@ export default function OwnerDashboard() {
   };
 
   // Fetch bookings for owner's outlets
-const fetchOwnerBookings = async (token, ownerId, outletsData) => {
-  try {
-    if (!outletsData?.length) return [];
+  const fetchOwnerBookings = async (token, ownerId, outletsData) => {
+    try {
+      if (!outletsData?.length) return [];
 
-    const outletIds = outletsData.map(o => o.id);
+      const outletIds = outletsData.map(o => o.id);
 
-    // Fetch all orders for owner's outlets
-    const response = await fetch(`${API_BASE}/api/orders/owner/${ownerId}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
-    });
+      // Fetch all orders for owner's outlets
+      const response = await fetch(`${API_BASE}/api/orders/owner/${ownerId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
 
-    if (!response.ok) throw new Error(`Failed to fetch orders: ${response.status}`);
+      if (!response.ok) throw new Error(`Failed to fetch orders: ${response.status}`);
 
-    const ordersData = await response.json();
-    console.log('Owner orders for bookings:', ordersData);
+      const ordersData = await response.json();
+      console.log('Owner orders for bookings:', ordersData);
 
-    // Filter orders that have table bookings
-    const ownerBookings = ordersData
-      .filter(order => order.table_booking && outletIds.includes(order.outlet_id))
-      .map(order => ({
-        id: order.table_booking.id,
-        order_id: order.id,
-        table_number: order.table_booking.table_number,
-        capacity: order.table_booking.capacity || 4,
-        status: order.table_booking.status || order.status || 'pending',
-        created_at: order.table_booking.created_at || order.created_at,
-        booking_date: order.table_booking.booking_date || null,
-        booking_time: order.table_booking.booking_time || null,
-        duration: order.table_booking.duration || null,
-        special_requests: order.table_booking.special_requests || '',
-        outlet_name: order.outlet_name || 'Unknown Outlet',
-        outlet_id: order.outlet_id,
-        customer_name: order.customer_name || 'Customer',
-        customer_id: order.customer_id,
-        items: order.items || [],
-        total: order.total || 0,
-        // Display helpers
-        formatted_date: order.table_booking.booking_date 
-          ? new Date(order.table_booking.booking_date).toLocaleDateString() 
-          : null,
-        formatted_time: order.table_booking.booking_time || null
-      }));
+      // Filter orders that have table bookings
+      const ownerBookings = ordersData
+        .filter(order => order.table_booking && outletIds.includes(order.outlet_id))
+        .map(order => ({
+          id: order.table_booking.id,
+          order_id: order.id,
+          table_number: order.table_booking.table_number,
+          capacity: order.table_booking.capacity || 4,
+          status: order.table_booking.status || order.status || 'pending',
+          created_at: order.table_booking.created_at || order.created_at,
+          booking_date: order.table_booking.booking_date || null,
+          booking_time: order.table_booking.booking_time || null,
+          duration: order.table_booking.duration || null,
+          special_requests: order.table_booking.special_requests || '',
+          outlet_name: order.outlet_name || 'Unknown Outlet',
+          outlet_id: order.outlet_id,
+          customer_name: order.customer_name || 'Customer',
+          customer_id: order.customer_id,
+          items: order.items || [],
+          total: order.total || 0,
+          // Display helpers
+          formatted_date: order.table_booking.booking_date
+            ? new Date(order.table_booking.booking_date).toLocaleDateString()
+            : null,
+          formatted_time: order.table_booking.booking_time || null
+        }));
 
-    console.log(`Found ${ownerBookings.length} table bookings for owner`);
-    return ownerBookings;
-  } catch (error) {
-    console.error('Error fetching owner bookings:', error);
-    showToast('Failed to load reservations', 'error');
-    return [];
-  }
-};
+      console.log(`Found ${ownerBookings.length} table bookings for owner`);
+      return ownerBookings;
+    } catch (error) {
+      console.error('Error fetching owner bookings:', error);
+      showToast('Failed to load reservations', 'error');
+      return [];
+    }
+  };
 
   const handleBookingUpdate = (updatedBooking) => {
     setBookings(prevBookings =>
@@ -631,25 +631,6 @@ const fetchOwnerBookings = async (token, ownerId, outletsData) => {
     showToast('Booking updated successfully!', 'success');
   };
 
-  const refreshBookings = async () => {
-  if (!session?.accessToken || !session?.user?.id) return;
-  
-  setIsRefreshingBookings(true);
-  try {
-    const token = session.accessToken || localStorage.getItem('auth_token');
-    const customerId = session.user.id || localStorage.getItem('user_id');
-    
-    const bookingsData = await fetchCustomerBookings(token, customerId);
-    setBookings(bookingsData);
-    
-    showToast('Bookings refreshed successfully!', 'success');
-  } catch (err) {
-    console.error('Failed to refresh bookings:', err);
-    showToast('Failed to refresh bookings', 'error');
-  } finally {
-    setIsRefreshingBookings(false);
-  }
-};
 
   return (
     <AuthGuard requiredRole="owner">
@@ -971,17 +952,16 @@ const fetchOwnerBookings = async (token, ownerId, outletsData) => {
 
                       {/* Refresh button */}
                       <button
-    onClick={() => refreshBookings()} 
-    disabled={isRefreshing}
-    className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-      isRefreshing
-        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-        : 'bg-primary/10 text-primary hover:bg-primary/20'
-    }`}
-  >
-    <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-    {isRefreshing ? 'Refreshing...' : 'Refresh'}
-  </button>
+                        onClick={() => refreshBookings()}
+                        disabled={isRefreshing}
+                        className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${isRefreshing
+                          ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                          : 'bg-primary/10 text-primary hover:bg-primary/20'
+                          }`}
+                      >
+                        <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                        {isRefreshing ? 'Refreshing...' : 'Refresh'}
+                      </button>
                     </div>
                   </div>
 
