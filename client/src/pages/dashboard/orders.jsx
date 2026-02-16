@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Clock, MapPin, Package, AlertCircle, CheckCircle, XCircle, ArrowRight } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import Navbar from '@/components/navbar';
-import { getCustomerOrders } from '@/lib/apiHelper';
+import { apiHelper } from '@/lib/apiHelper';
 
 export default function CustomerOrdersPage() {
   const { data: session, status } = useSession();
@@ -28,7 +28,7 @@ export default function CustomerOrdersPage() {
       setIsLoading(true);
       setError('');
       const customerId = session?.user?.id;
-      const customerOrders = await getCustomerOrders(customerId, token);
+      const customerOrders = await apiHelper.getCustomerOrders(customerId, token);
       setOrders(customerOrders || []);
     } catch (err) {
       console.error('Error fetching orders:', err);
