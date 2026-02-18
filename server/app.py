@@ -1,4 +1,5 @@
 import os
+from dotenv import load_dotenv
 from flask import Flask
 from flask_restful import Api
 from flask_migrate import Migrate
@@ -27,21 +28,28 @@ from routes.table_booking import (
 from routes.favourite import CustomerFavourites, FavouriteButton, TopFavourites
 from routes.qr_code import QRCodeResource, OrderQRCodeResource, PaymentQRCodeResource, HomePageQRResource
 
+load_dotenv()
+
 def create_app():
     app = Flask(__name__, static_url_path='/uploads', static_folder=os.path.abspath('../photos'))
     
     # app.config['SQLALCHEMY_DATABASE_URI'] = ("postgresql+psycopg2://otiende:12345678@localhost:5432/nextgen_food_court_db")
 
+    database_url = os.environ.get("RENDER_DATABASE_URL")  
+    
+    if not database_url:
+        # Fallback to local PostgreSQL
+        database_url = os.environ.get("DATABASE_URL")
 
     # CONFIG
     app.config["SECRET_KEY"] = "super-secret-key-change-me"
-    app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql+psycopg2://otiende:12345678@localhost:5432/nextgen_food_court_db"
+    app.config["SQLALCHEMY_DATABASE_URI"] = database_url
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-    app.config["SECRET_KEY"] = "12345"
+    app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "12345")
     app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024 
 
     CORS(app, supports_credentials=True,
-    origins=["http://localhost:3000"],
+    origins=["http://localhost:3000", os.environ.get("FRONTEND_URL", "")],
     allow_headers=["Content-Type", "Authorization"])
     # INIT EXTENSIONS
     db.init_app(app)
