@@ -7,6 +7,7 @@ A full-stack food court platform with a Next.js frontend and a Flask backend. Bu
 **Quick Links**
 - **Client:** `client/` — Next.js + Tailwind UI frontend.
 - **Server:** `server/` — Flask API, SQLite database, seed script.
+- **Landing Page Screenshots:** - https://github.com/stephie-spec/nextgenfoodcourt/issues/79
 
 **Features**
 - **Customer-facing pages:** Browse outlets, view menus, add to cart, place orders, book tables.
