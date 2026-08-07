@@ -16,7 +16,7 @@ werkzeug = "*"
 pyjwt = "*"
 qrcode = {extras = ["pil"], version = "*"}
 psycopg2-binary = "*"
-
+python-dotenv = "*"
 
 [dev-packages]
 
